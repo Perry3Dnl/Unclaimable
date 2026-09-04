@@ -4,7 +4,8 @@ public enum UnclaimableMatchKind
 {
     None = 0,
     Exact = 1,
-    Compact = 2
+    Compact = 2,
+    Obfuscated = 3
 }
 
 public sealed class UnclaimableResult
