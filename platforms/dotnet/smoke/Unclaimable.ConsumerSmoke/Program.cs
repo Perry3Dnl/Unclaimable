@@ -25,6 +25,24 @@ Require(unicodeConfusable.MatchedValue == "apple", "Cyrillic-a apple should reso
 Require(unicodeConfusable.MatchKind == UnclaimableMatchKind.UnicodeConfusable, "Cyrillic-a apple should use Unicode-confusable matching.");
 
 Require(checker.IsClaimable("ordinary-user"), "ordinary-user should remain claimable.");
+Require(checker.IsClaimable("old-admin"), "Partial matching should remain opt-in.");
+
+var strictChecker = new UnclaimableChecker(new UnclaimableOptions
+{
+    PartialMatching = true,
+    AllowNumbers = false
+});
+
+var numberViolation = strictChecker.Check("old-admin2");
+Require(numberViolation.IsReserved, "Numbers should be rejected when AllowNumbers is false.");
+Require(numberViolation.MatchKind == UnclaimableMatchKind.NumbersNotAllowed, "Number policy should fail before reserved-name matching.");
+Require(numberViolation.OffendingCharacterIndex == 9, "Number policy should expose the offending index.");
+Require(numberViolation.OffendingCharacter == "2", "Number policy should expose the offending character.");
+
+var detailed = strictChecker.CheckDetailed("old-admin2", includeMessages: true);
+Require(detailed.Diagnostics.Any(item => item.Kind == UnclaimableMatchKind.NumbersNotAllowed), "Detailed checks should include the number-policy failure.");
+Require(detailed.Diagnostics.Any(item => item.Kind == UnclaimableMatchKind.Partial && item.MatchedValue == "admin"), "Detailed checks should also include the embedded reserved name.");
+Require(detailed.Diagnostics.All(item => !string.IsNullOrWhiteSpace(item.Message)), "Detailed checks with messages should provide user-facing feedback.");
 
 var asciiChecker = new UnclaimableChecker(new UnclaimableOptions
 {
@@ -34,13 +52,21 @@ var asciiChecker = new UnclaimableChecker(new UnclaimableOptions
 var invalidCharacters = asciiChecker.Check("caf\u00E9");
 Require(invalidCharacters.IsReserved, "Non-ASCII input should be rejected when AsciiOnly is enabled.");
 Require(invalidCharacters.MatchKind == UnclaimableMatchKind.InvalidCharacters, "AsciiOnly rejection should report InvalidCharacters.");
+Require(invalidCharacters.OffendingCharacterIndex == 3, "AsciiOnly rejection should report the original input index.");
 
 var services = new ServiceCollection();
-services.AddUnclaimable(options => options.AdditionalReserved.Add("examplebrand"));
+services.AddUnclaimable(options =>
+{
+    options.AdditionalReserved.Add("examplebrand");
+    options.PartialMatching = true;
+    options.AllowNumbers = false;
+});
 using var provider = services.BuildServiceProvider();
 
 var configuredChecker = provider.GetRequiredService<IUnclaimableChecker>();
 Require(configuredChecker.IsReserved("ExampleBrand"), "DI-configured AdditionalReserved entry should be rejected.");
+Require(configuredChecker.IsReserved("old-examplebrand"), "DI-configured partial matching should apply to AdditionalReserved entries.");
+Require(configuredChecker.Check("user2").MatchKind == UnclaimableMatchKind.NumbersNotAllowed, "DI-configured number policy should be enforced.");
 
 var rejectedModel = new SignupModel { UserName = "examplebrand" };
 var rejectedResults = new List<ValidationResult>();
