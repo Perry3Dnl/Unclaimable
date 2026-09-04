@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/ImtehQ/Unclaimable/main/assets/unclaimable-icon.png" alt="Unclaimable icon" width="180" />
+  <img src="https://raw.githubusercontent.com/Perry3Dnl/Unclaimable/main/assets/unclaimable-icon.png" alt="Unclaimable icon" width="180" />
 </p>
 
 <h1 align="center">Unclaimable</h1>
