@@ -43,6 +43,8 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
     private readonly Dictionary<string, ReservedEntry> _compact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
     private readonly bool _compactMatching;
     private readonly bool _obfuscationMatching;
+    private readonly bool _unicodeConfusableMatching;
+    private readonly bool _asciiOnly;
 
     public static UnclaimableChecker Default { get; } = new UnclaimableChecker();
 
@@ -60,6 +62,8 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
         _compactMatching = options.CompactMatching;
         _obfuscationMatching = options.ObfuscationMatching;
+        _unicodeConfusableMatching = options.UnicodeConfusableMatching;
+        _asciiOnly = options.AsciiOnly;
 
         foreach (var entry in BuiltInEntries.Value)
         {
@@ -78,6 +82,11 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
     public UnclaimableResult Check(string? value)
     {
+        if (_asciiOnly && value is not null && !ContainsOnlyPrintableAscii(value))
+        {
+            return UnclaimableResult.InvalidCharacters(value);
+        }
+
         var exact = NormalizeExact(value);
         if (exact is null)
         {
@@ -97,6 +106,15 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             if (compact.Length > 0 && _compact.TryGetValue(compact, out compactMatch))
             {
                 return CreateReservedResult(value, compactMatch, UnclaimableMatchKind.Compact);
+            }
+        }
+
+        if (_unicodeConfusableMatching)
+        {
+            ReservedEntry? confusableMatch;
+            if (TryMatchUnicodeConfusable(exact, out confusableMatch))
+            {
+                return CreateReservedResult(value, confusableMatch!, UnclaimableMatchKind.UnicodeConfusable);
             }
         }
 
@@ -143,6 +161,39 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         {
             _compact.Add(compact, entry);
         }
+    }
+
+    private bool TryMatchUnicodeConfusable(string value, out ReservedEntry? match)
+    {
+        bool changed;
+        var skeleton = NormalizeUnicodeConfusables(value, out changed);
+        if (!changed)
+        {
+            match = null;
+            return false;
+        }
+
+        if (_exact.TryGetValue(skeleton, out match))
+        {
+            return true;
+        }
+
+        if (_compactMatching)
+        {
+            var compact = NormalizeCompact(skeleton);
+            if (compact.Length > 0 && _compact.TryGetValue(compact, out match))
+            {
+                return true;
+            }
+        }
+
+        if (_obfuscationMatching && TryMatchObfuscated(skeleton, out match))
+        {
+            return true;
+        }
+
+        match = null;
+        return false;
     }
 
     private bool TryMatchObfuscated(string value, out ReservedEntry? match)
@@ -198,6 +249,94 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
         match = null;
         return false;
+    }
+
+    private static string NormalizeUnicodeConfusables(string value, out bool changed)
+    {
+        var decomposed = value.Normalize(NormalizationForm.FormD);
+        var builder = new StringBuilder(decomposed.Length);
+        changed = false;
+
+        for (var index = 0; index < decomposed.Length; index++)
+        {
+            var character = decomposed[index];
+            var category = CharUnicodeInfo.GetUnicodeCategory(decomposed, index);
+
+            if (category == UnicodeCategory.NonSpacingMark
+                || category == UnicodeCategory.SpacingCombiningMark
+                || category == UnicodeCategory.EnclosingMark)
+            {
+                changed = true;
+                continue;
+            }
+
+            char mapped;
+            if (TryMapUnicodeConfusable(character, out mapped))
+            {
+                builder.Append(mapped);
+                changed = true;
+            }
+            else
+            {
+                builder.Append(character);
+            }
+
+            if (char.IsHighSurrogate(character)
+                && index + 1 < decomposed.Length
+                && char.IsLowSurrogate(decomposed[index + 1]))
+            {
+                builder.Append(decomposed[index + 1]);
+                index++;
+            }
+        }
+
+        return builder.ToString().Normalize(NormalizationForm.FormC);
+    }
+
+    private static bool TryMapUnicodeConfusable(char character, out char mapped)
+    {
+        switch (character)
+        {
+            // Cyrillic lookalikes.
+            case '\u0430': mapped = 'a'; return true; // а
+            case '\u0432': mapped = 'b'; return true; // в
+            case '\u0435': mapped = 'e'; return true; // е
+            case '\u043A': mapped = 'k'; return true; // к
+            case '\u043C': mapped = 'm'; return true; // м
+            case '\u043D': mapped = 'h'; return true; // н
+            case '\u043E': mapped = 'o'; return true; // о
+            case '\u0440': mapped = 'p'; return true; // р
+            case '\u0441': mapped = 'c'; return true; // с
+            case '\u0442': mapped = 't'; return true; // т
+            case '\u0443': mapped = 'y'; return true; // у
+            case '\u0445': mapped = 'x'; return true; // х
+            case '\u0455': mapped = 's'; return true; // ѕ
+            case '\u0456': mapped = 'i'; return true; // і
+            case '\u0458': mapped = 'j'; return true; // ј
+            case '\u04CF': mapped = 'l'; return true; // ӏ
+
+            // Greek lookalikes.
+            case '\u03B1': mapped = 'a'; return true; // α
+            case '\u03B2': mapped = 'b'; return true; // β
+            case '\u03B5': mapped = 'e'; return true; // ε
+            case '\u03B9': mapped = 'i'; return true; // ι
+            case '\u03BA': mapped = 'k'; return true; // κ
+            case '\u03BC': mapped = 'm'; return true; // μ
+            case '\u03BD': mapped = 'v'; return true; // ν
+            case '\u03BF': mapped = 'o'; return true; // ο
+            case '\u03C1': mapped = 'p'; return true; // ρ
+            case '\u03C4': mapped = 't'; return true; // τ
+            case '\u03C5': mapped = 'y'; return true; // υ
+            case '\u03C7': mapped = 'x'; return true; // χ
+            case '\u03F2': mapped = 'c'; return true; // ϲ
+
+            // Latin characters commonly used as visual substitutions.
+            case '\u0131': mapped = 'i'; return true; // ı
+
+            default:
+                mapped = '\0';
+                return false;
+        }
     }
 
     private static List<string> ExpandCandidates(List<string> candidates, string[] substitutions)
@@ -279,6 +418,20 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
                 substitutions = null;
                 return false;
         }
+    }
+
+    private static bool ContainsOnlyPrintableAscii(string value)
+    {
+        for (var index = 0; index < value.Length; index++)
+        {
+            var character = value[index];
+            if (character < '\u0020' || character > '\u007E')
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static string? NormalizeExact(string? value)
