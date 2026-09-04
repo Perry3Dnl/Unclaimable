@@ -343,6 +343,8 @@ Unclaimable also deliberately avoids broad substring and edit-distance matching 
   workflows/
     dotnet.yml
 
+LICENSE
+
 assets/
   unclaimable-icon.png
 
@@ -384,11 +386,11 @@ dotnet pack platforms/dotnet/src/Unclaimable/Unclaimable.csproj --configuration 
 dotnet pack platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj --configuration Release --output artifacts
 ```
 
-GitHub Actions runs the test-and-pack workflow for relevant changes to the datasets, conformance cases, .NET implementation, README, and package assets.
+GitHub Actions runs the test-and-pack workflow for relevant changes to the datasets, conformance cases, .NET implementation, README, license, and package assets.
 
 ## NuGet status
 
-The projects already contain package metadata, repository information, README inclusion, and the Unclaimable package icon so the generated `.nupkg` files can be validated before release.
+The projects already contain package metadata, repository information, README inclusion, icon inclusion, and MPL-2.0 license metadata so the generated `.nupkg` files can be validated before release.
 
 **There is intentionally no NuGet publishing/release workflow yet.** Do not assume `dotnet add package Unclaimable` is available until the first package release has actually been published and verified.
 
@@ -400,6 +402,14 @@ The projects already contain package metadata, repository information, README in
 - Detect common impersonation tricks without making legitimate usernames unusable.
 - Keep private/project-specific names out of the global dataset.
 - Keep platform implementations aligned through shared conformance cases.
+
+## License
+
+Unclaimable is licensed under the **Mozilla Public License 2.0 (MPL-2.0)**.
+
+Copyright (c) 2026 Perry3D.nl.
+
+The MPL-2.0 permits Unclaimable to be used as a dependency in proprietary and commercial applications while keeping changes to MPL-covered Unclaimable source files under the MPL when those changes are distributed. See the root `LICENSE` file for the project notice and the official MPL-2.0 terms.
 
 ## Future adapters
 
