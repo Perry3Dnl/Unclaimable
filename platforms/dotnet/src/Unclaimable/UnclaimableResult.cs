@@ -7,13 +7,32 @@ public enum UnclaimableMatchKind
     Compact = 2
 }
 
-public sealed record UnclaimableResult(
-    bool IsReserved,
-    string? Input,
-    string? MatchedValue,
-    string? Category,
-    UnclaimableMatchKind MatchKind)
+public sealed class UnclaimableResult
 {
+    public UnclaimableResult(
+        bool isReserved,
+        string? input,
+        string? matchedValue,
+        string? category,
+        UnclaimableMatchKind matchKind)
+    {
+        IsReserved = isReserved;
+        Input = input;
+        MatchedValue = matchedValue;
+        Category = category;
+        MatchKind = matchKind;
+    }
+
+    public bool IsReserved { get; }
+
+    public string? Input { get; }
+
+    public string? MatchedValue { get; }
+
+    public string? Category { get; }
+
+    public UnclaimableMatchKind MatchKind { get; }
+
     public static UnclaimableResult Allowed(string? input) =>
-        new(false, input, null, null, UnclaimableMatchKind.None);
+        new UnclaimableResult(false, input, null, null, UnclaimableMatchKind.None);
 }
