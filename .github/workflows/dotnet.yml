@@ -3,6 +3,7 @@ name: .NET
 on:
   push:
     paths:
+      - "LICENSE"
       - "README.md"
       - "assets/**"
       - "data/**"
@@ -11,6 +12,7 @@ on:
       - ".github/workflows/dotnet.yml"
   pull_request:
     paths:
+      - "LICENSE"
       - "README.md"
       - "assets/**"
       - "data/**"
