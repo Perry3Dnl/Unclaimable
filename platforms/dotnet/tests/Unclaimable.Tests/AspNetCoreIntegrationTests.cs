@@ -18,22 +18,22 @@ public sealed class AspNetCoreIntegrationTests
     public void DependencyInjectionUsesApplicationSpecificReservations()
     {
         using var provider = new ServiceCollection()
-            .AddUnclaimable(options => options.AdditionalReserved.Add("thesugarlook"))
+            .AddUnclaimable(options => options.AdditionalReserved.Add("examplebrand"))
             .BuildServiceProvider();
 
         var checker = provider.GetRequiredService<IUnclaimableChecker>();
 
-        Assert.True(checker.IsReserved("TheSugarLook"));
+        Assert.True(checker.IsReserved("ExampleBrand"));
     }
 
     [Fact]
     public void ValidationAttributeUsesRegisteredChecker()
     {
         using var provider = new ServiceCollection()
-            .AddUnclaimable(options => options.AdditionalReserved.Add("thesugarlook"))
+            .AddUnclaimable(options => options.AdditionalReserved.Add("examplebrand"))
             .BuildServiceProvider();
 
-        var model = new SignupModel { Username = "thesugarlook" };
+        var model = new SignupModel { Username = "examplebrand" };
         var validationResults = new List<ValidationResult>();
         var context = new ValidationContext(model, provider, items: null);
 
