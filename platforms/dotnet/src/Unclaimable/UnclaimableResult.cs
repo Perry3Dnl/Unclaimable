@@ -5,7 +5,9 @@ public enum UnclaimableMatchKind
     None = 0,
     Exact = 1,
     Compact = 2,
-    Obfuscated = 3
+    Obfuscated = 3,
+    UnicodeConfusable = 4,
+    InvalidCharacters = 5
 }
 
 public sealed class UnclaimableResult
@@ -36,4 +38,7 @@ public sealed class UnclaimableResult
 
     public static UnclaimableResult Allowed(string? input) =>
         new UnclaimableResult(false, input, null, null, UnclaimableMatchKind.None);
+
+    public static UnclaimableResult InvalidCharacters(string? input) =>
+        new UnclaimableResult(true, input, null, null, UnclaimableMatchKind.InvalidCharacters);
 }
