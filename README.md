@@ -343,7 +343,9 @@ Unclaimable also deliberately avoids broad substring and edit-distance matching 
   workflows/
     dotnet.yml
 
+Directory.Build.props
 LICENSE
+README.md
 
 assets/
   unclaimable-icon.png
@@ -361,6 +363,10 @@ data/
 
 platforms/
   dotnet/
+    scripts/
+      Validate-Packages.ps1
+    smoke/
+      Unclaimable.ConsumerSmoke/
     src/
       Unclaimable/
       Unclaimable.AspNetCore/
@@ -386,17 +392,56 @@ dotnet pack platforms/dotnet/src/Unclaimable/Unclaimable.csproj --configuration 
 dotnet pack platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj --configuration Release --output artifacts
 ```
 
-GitHub Actions runs the test-and-pack workflow for relevant changes to the datasets, conformance cases, .NET implementation, README, license, and package assets.
+The package version is defined once as `UnclaimableVersion` in `Directory.Build.props`, so the core and ASP.NET Core packages use the same release version.
+
+Release builds generate both normal NuGet packages and symbol packages:
+
+```text
+Unclaimable.<version>.nupkg
+Unclaimable.<version>.snupkg
+Unclaimable.AspNetCore.<version>.nupkg
+Unclaimable.AspNetCore.<version>.snupkg
+```
+
+The symbol packages contain portable PDBs with Source Link information pointing back to this GitHub repository. `Microsoft.SourceLink.GitHub` is a private build dependency and is not exposed as a dependency to package consumers.
+
+Validate the generated package contents and metadata locally with PowerShell:
+
+```powershell
+./platforms/dotnet/scripts/Validate-Packages.ps1 -ArtifactsPath ./artifacts
+```
+
+The validator checks package IDs and versions, MPL-2.0/copyright metadata, README and icon inclusion, DLL/XML documentation files, repository URL and commit metadata, symbol PDBs, Source Link dependency isolation, and the ASP.NET Core package's dependency on the matching core package version.
+
+A separate consumer smoke project restores the generated `.nupkg` files instead of referencing the source projects. This verifies that a real consuming application can use the core checker, Unicode/obfuscation matching, `AsciiOnly`, ASP.NET Core dependency injection, `AdditionalReserved`, and `[ClaimableUsername]` directly from the packed artifacts.
+
+GitHub Actions performs the full sequence automatically:
+
+```text
+unit/conformance tests
+        ↓
+pack .nupkg + .snupkg
+        ↓
+validate package contents/metadata
+        ↓
+restore packages into clean consumer project
+        ↓
+run consumer smoke test
+        ↓
+upload package artifacts for inspection
+```
 
 ## NuGet status
 
-The projects already contain package metadata, repository information, README inclusion, icon inclusion, and MPL-2.0 license metadata so the generated `.nupkg` files can be validated before release.
+The projects now contain centralized version metadata, repository information, README and icon inclusion, MPL-2.0 license metadata, Source Link information, portable symbols, package-content validation, and an installed-package consumer smoke test.
+
+CI uploads the resulting `.nupkg` and `.snupkg` files as temporary GitHub Actions artifacts for inspection.
 
 **There is intentionally no NuGet publishing/release workflow yet.** Do not assume `dotnet add package Unclaimable` is available until the first package release has actually been published and verified.
 
 ## Design principles
 
-- Keep the core small and dependency-free.
+- Keep the core small and dependency-free at runtime.
 - Keep reserved-name data runtime-neutral and reviewable.
 - Prefer exact, deterministic matching over broad fuzzy guesses.
 - Detect common impersonation tricks without making legitimate usernames unusable.
