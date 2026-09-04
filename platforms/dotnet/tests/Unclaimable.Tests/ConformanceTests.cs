@@ -25,16 +25,21 @@ public sealed class ConformanceTests
         var cases = JsonSerializer.Deserialize<ConformanceCase[]>(json)
                     ?? throw new InvalidOperationException("Conformance cases could not be loaded.");
 
-        return cases.Select(testCase => new object[] { testCase });
+        return cases.Select(testCase => new object[]
+        {
+            testCase.Value,
+            testCase.Reserved,
+            testCase.Category
+        });
     }
 
     [Theory]
     [MemberData(nameof(Cases))]
-    public void DotNetAdapterMatchesSharedConformanceCases(ConformanceCase testCase)
+    public void DotNetAdapterMatchesSharedConformanceCases(string value, bool reserved, string? category)
     {
-        var result = UnclaimableChecker.Default.Check(testCase.Value);
+        var result = UnclaimableChecker.Default.Check(value);
 
-        Assert.Equal(testCase.Reserved, result.IsReserved);
-        Assert.Equal(testCase.Category, result.Category);
+        Assert.Equal(reserved, result.IsReserved);
+        Assert.Equal(category, result.Category);
     }
 }
