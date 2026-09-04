@@ -8,14 +8,8 @@
     <NoWarn>$(NoWarn);1591</NoWarn>
 
     <PackageId>Unclaimable.AspNetCore</PackageId>
-    <Version>0.1.0</Version>
-    <Authors>ImtehQ</Authors>
-    <Copyright>Copyright (c) 2026 Perry3D.nl</Copyright>
+    <Version>$(UnclaimableVersion)</Version>
     <Description>ASP.NET Core dependency injection and model validation integration for Unclaimable.</Description>
-    <RepositoryUrl>https://github.com/ImtehQ/Unclaimable</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/ImtehQ/Unclaimable</PackageProjectUrl>
-    <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>unclaimable-icon.png</PackageIcon>
     <PackageTags>username;validation;security;aspnetcore;reserved-names</PackageTags>
@@ -24,6 +18,7 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="../Unclaimable/Unclaimable.csproj" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     <None Include="../../../../README.md" Pack="true" PackagePath="/" Link="README.md" />
     <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
   </ItemGroup>

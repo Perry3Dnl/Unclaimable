@@ -3,6 +3,7 @@ name: .NET
 on:
   push:
     paths:
+      - "Directory.Build.props"
       - "LICENSE"
       - "README.md"
       - "assets/**"
@@ -12,6 +13,7 @@ on:
       - ".github/workflows/dotnet.yml"
   pull_request:
     paths:
+      - "Directory.Build.props"
       - "LICENSE"
       - "README.md"
       - "assets/**"
@@ -30,6 +32,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -44,3 +48,27 @@ jobs:
 
       - name: Pack ASP.NET Core integration
         run: dotnet pack platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj --configuration Release --output artifacts
+
+      - name: Validate package contents and metadata
+        shell: pwsh
+        run: ./platforms/dotnet/scripts/Validate-Packages.ps1 -ArtifactsPath ./artifacts
+
+      - name: Restore packaged consumer smoke test
+        run: >-
+          dotnet restore platforms/dotnet/smoke/Unclaimable.ConsumerSmoke/Unclaimable.ConsumerSmoke.csproj
+          --configfile platforms/dotnet/smoke/Unclaimable.ConsumerSmoke/NuGet.config
+          --packages artifacts/.smoke-packages
+          --no-cache
+
+      - name: Run packaged consumer smoke test
+        run: dotnet run --project platforms/dotnet/smoke/Unclaimable.ConsumerSmoke/Unclaimable.ConsumerSmoke.csproj --configuration Release --no-restore
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: unclaimable-nuget-packages
+          path: |
+            artifacts/*.nupkg
+            artifacts/*.snupkg
+          if-no-files-found: error
+          retention-days: 7
