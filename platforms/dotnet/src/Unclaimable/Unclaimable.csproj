@@ -11,10 +11,12 @@
     <PackageId>Unclaimable</PackageId>
     <Version>0.1.0</Version>
     <Authors>ImtehQ</Authors>
+    <Copyright>Copyright (c) 2026 Perry3D.nl</Copyright>
     <Description>Fast, dependency-free reserved username detection backed by the shared Unclaimable datasets.</Description>
     <RepositoryUrl>https://github.com/ImtehQ/Unclaimable</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageProjectUrl>https://github.com/ImtehQ/Unclaimable</PackageProjectUrl>
+    <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageIcon>unclaimable-icon.png</PackageIcon>
     <PackageTags>username;validation;security;reserved-names</PackageTags>
