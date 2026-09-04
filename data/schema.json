@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/ImtehQ/Unclaimable/data/schema.json",
+  "title": "Unclaimable reserved-name list",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "category", "description", "values"],
+  "properties": {
+    "schema": {
+      "const": 1
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "values": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "category": "support",
+  "description": "Names that could be mistaken for an official support or trust channel.",
+  "values": [
+    "support",
+    "help",
+    "helpdesk",
+    "customerservice",
+    "customer service",
+    "security",
+    "official"
+  ]
+}

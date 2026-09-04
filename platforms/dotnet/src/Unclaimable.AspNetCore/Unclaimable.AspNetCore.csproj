@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);1591</NoWarn>
+
+    <PackageId>Unclaimable.AspNetCore</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>ImtehQ</Authors>
+    <Description>ASP.NET Core dependency injection and model validation integration for Unclaimable.</Description>
+    <RepositoryUrl>https://github.com/ImtehQ/Unclaimable</RepositoryUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../Unclaimable/Unclaimable.csproj" />
+    <None Include="../../../../README.md" Pack="true" PackagePath="/" Link="README.md" />
+  </ItemGroup>
+
+</Project>

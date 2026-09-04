@@ -1,0 +1,40 @@
+name: .NET
+
+on:
+  push:
+    paths:
+      - "data/**"
+      - "conformance/**"
+      - "platforms/dotnet/**"
+      - ".github/workflows/dotnet.yml"
+  pull_request:
+    paths:
+      - "data/**"
+      - "conformance/**"
+      - "platforms/dotnet/**"
+      - ".github/workflows/dotnet.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-pack:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Test
+        run: dotnet test platforms/dotnet/tests/Unclaimable.Tests/Unclaimable.Tests.csproj --configuration Release
+
+      - name: Pack core
+        run: dotnet pack platforms/dotnet/src/Unclaimable/Unclaimable.csproj --configuration Release --output artifacts
+
+      - name: Pack ASP.NET Core integration
+        run: dotnet pack platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj --configuration Release --output artifacts

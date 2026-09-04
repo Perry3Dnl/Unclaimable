@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "category": "roles",
+  "description": "Names that imply privileged or trusted application roles.",
+  "values": [
+    "admin",
+    "administrator",
+    "moderator",
+    "moderation",
+    "staff",
+    "owner",
+    "root"
+  ]
+}
