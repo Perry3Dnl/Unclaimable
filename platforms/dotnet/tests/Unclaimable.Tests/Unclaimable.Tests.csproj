@@ -22,4 +22,8 @@
     <ProjectReference Include="../../src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="../../../../conformance/cases.json" Link="conformance-cases.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
