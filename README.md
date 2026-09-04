@@ -1,6 +1,12 @@
-# Unclaimable
+<p align="center">
+  <img src="assets/unclaimable-icon.png" alt="Unclaimable" width="160" />
+</p>
 
-A lightweight, cross-platform library for detecting reserved, protected, and impersonation-prone usernames before they can be claimed.
+<h1 align="center">Unclaimable</h1>
+
+<p align="center">
+  A lightweight, cross-platform library for detecting reserved, protected, and impersonation-prone usernames before they can be claimed.
+</p>
 
 Unclaimable keeps the **data** independent from the **runtime implementation**. The same JSON lists can therefore be consumed by .NET, JavaScript, Python, Go, or another adapter without duplicating the source of truth.
 
@@ -16,6 +22,9 @@ Unclaimable keeps the **data** independent from the **runtime implementation**. 
 ## Repository layout
 
 ```text
+assets/
+  unclaimable-icon.png
+
 data/
   schema.json
   roles/reserved.json
@@ -44,9 +53,18 @@ That means values such as `customer service`, `customer-service`, `customer_serv
 
 Unclaimable deliberately does not perform broad fuzzy matching. Applications can layer stricter anti-impersonation or Unicode-confusable policies on top when their threat model requires it.
 
-## .NET
+## .NET compatibility
 
-The core package targets .NET 8 and later and has no third-party runtime dependencies.
+The packages are deliberately split so the small core can support a much wider range of applications without taking a dependency on ASP.NET Core.
+
+| Package | Target | Purpose |
+| --- | --- | --- |
+| `Unclaimable` | `netstandard2.0` | Dependency-free core checker and shared datasets |
+| `Unclaimable.AspNetCore` | `net8.0` | ASP.NET Core DI and model-validation integration |
+
+The `netstandard2.0` core can be consumed by modern .NET as well as compatible .NET Framework and other .NET Standard implementations. Applications that do not need the ASP.NET Core integration can reference only the core package.
+
+## .NET
 
 ```csharp
 using Unclaimable;
@@ -118,6 +136,10 @@ var checker = new UnclaimableChecker(options);
 ```
 
 This keeps the global dataset useful to everyone without turning it into a collection of unrelated product names.
+
+## NuGet packaging status
+
+The projects already contain package metadata, README inclusion, and the Unclaimable package icon so local `.nupkg` files can be validated before the first public release. There is intentionally **no NuGet publishing workflow yet**.
 
 ## Development
 
