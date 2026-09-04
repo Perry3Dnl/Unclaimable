@@ -8,6 +8,8 @@ namespace Unclaimable;
 
 public sealed class UnclaimableChecker : IUnclaimableChecker
 {
+    private const int MaxObfuscationCandidates = 32;
+
     private sealed class ReservedEntry
     {
         public ReservedEntry(string value, string category)
@@ -40,6 +42,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
     private readonly Dictionary<string, ReservedEntry> _exact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
     private readonly Dictionary<string, ReservedEntry> _compact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
     private readonly bool _compactMatching;
+    private readonly bool _obfuscationMatching;
 
     public static UnclaimableChecker Default { get; } = new UnclaimableChecker();
 
@@ -56,6 +59,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         }
 
         _compactMatching = options.CompactMatching;
+        _obfuscationMatching = options.ObfuscationMatching;
 
         foreach (var entry in BuiltInEntries.Value)
         {
@@ -83,12 +87,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         ReservedEntry? exactMatch;
         if (_exact.TryGetValue(exact, out exactMatch))
         {
-            return new UnclaimableResult(
-                true,
-                value,
-                exactMatch.Value,
-                exactMatch.Category,
-                UnclaimableMatchKind.Exact);
+            return CreateReservedResult(value, exactMatch, UnclaimableMatchKind.Exact);
         }
 
         if (_compactMatching)
@@ -97,16 +96,33 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             ReservedEntry? compactMatch;
             if (compact.Length > 0 && _compact.TryGetValue(compact, out compactMatch))
             {
-                return new UnclaimableResult(
-                    true,
-                    value,
-                    compactMatch.Value,
-                    compactMatch.Category,
-                    UnclaimableMatchKind.Compact);
+                return CreateReservedResult(value, compactMatch, UnclaimableMatchKind.Compact);
+            }
+        }
+
+        if (_obfuscationMatching)
+        {
+            ReservedEntry? obfuscatedMatch;
+            if (TryMatchObfuscated(exact, out obfuscatedMatch))
+            {
+                return CreateReservedResult(value, obfuscatedMatch!, UnclaimableMatchKind.Obfuscated);
             }
         }
 
         return UnclaimableResult.Allowed(value);
+    }
+
+    private static UnclaimableResult CreateReservedResult(
+        string? input,
+        ReservedEntry match,
+        UnclaimableMatchKind matchKind)
+    {
+        return new UnclaimableResult(
+            true,
+            input,
+            match.Value,
+            match.Category,
+            matchKind);
     }
 
     private void Add(ReservedEntry entry)
@@ -126,6 +142,142 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         if (compact.Length > 0 && !_compact.ContainsKey(compact))
         {
             _compact.Add(compact, entry);
+        }
+    }
+
+    private bool TryMatchObfuscated(string value, out ReservedEntry? match)
+    {
+        var candidates = new List<string> { string.Empty };
+        var usedSubstitution = false;
+
+        for (var index = 0; index < value.Length; index++)
+        {
+            var character = value[index];
+            string[]? substitutions;
+
+            if (TryGetObfuscationSubstitutions(character, out substitutions))
+            {
+                usedSubstitution = true;
+                candidates = ExpandCandidates(candidates, substitutions!);
+                continue;
+            }
+
+            if (char.IsHighSurrogate(character)
+                && index + 1 < value.Length
+                && char.IsLowSurrogate(value[index + 1]))
+            {
+                var category = CharUnicodeInfo.GetUnicodeCategory(value, index);
+                if (IsLetterOrDigit(category))
+                {
+                    AppendToCandidates(candidates, new string(new[] { character, value[index + 1] }));
+                }
+
+                index++;
+                continue;
+            }
+
+            if (char.IsLetterOrDigit(character))
+            {
+                AppendToCandidates(candidates, character.ToString());
+            }
+        }
+
+        if (!usedSubstitution)
+        {
+            match = null;
+            return false;
+        }
+
+        foreach (var candidate in candidates)
+        {
+            if (candidate.Length > 0 && _compact.TryGetValue(candidate, out match))
+            {
+                return true;
+            }
+        }
+
+        match = null;
+        return false;
+    }
+
+    private static List<string> ExpandCandidates(List<string> candidates, string[] substitutions)
+    {
+        var expanded = new List<string>(Math.Min(
+            MaxObfuscationCandidates,
+            candidates.Count * substitutions.Length));
+
+        foreach (var candidate in candidates)
+        {
+            foreach (var substitution in substitutions)
+            {
+                if (expanded.Count >= MaxObfuscationCandidates)
+                {
+                    return expanded;
+                }
+
+                expanded.Add(candidate + substitution);
+            }
+        }
+
+        return expanded;
+    }
+
+    private static void AppendToCandidates(List<string> candidates, string value)
+    {
+        for (var index = 0; index < candidates.Count; index++)
+        {
+            candidates[index] += value;
+        }
+    }
+
+    private static bool TryGetObfuscationSubstitutions(char character, out string[]? substitutions)
+    {
+        switch (character)
+        {
+            case '0':
+                substitutions = new[] { "o" };
+                return true;
+            case '1':
+                substitutions = new[] { "i", "l" };
+                return true;
+            case '2':
+                substitutions = new[] { "z" };
+                return true;
+            case '3':
+                substitutions = new[] { "e" };
+                return true;
+            case '4':
+                substitutions = new[] { "a" };
+                return true;
+            case '5':
+                substitutions = new[] { "s" };
+                return true;
+            case '6':
+            case '9':
+                substitutions = new[] { "g" };
+                return true;
+            case '7':
+                substitutions = new[] { "t" };
+                return true;
+            case '8':
+                substitutions = new[] { "b" };
+                return true;
+            case '@':
+                substitutions = new[] { "a" };
+                return true;
+            case '$':
+                substitutions = new[] { "s" };
+                return true;
+            case '!':
+            case '|':
+                substitutions = new[] { "i", "l" };
+                return true;
+            case '+':
+                substitutions = new[] { "t" };
+                return true;
+            default:
+                substitutions = null;
+                return false;
         }
     }
 

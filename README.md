@@ -15,7 +15,8 @@ Unclaimable keeps the **data** independent from the **runtime implementation**. 
 - Small runtime surface and no unnecessary dependencies.
 - Shared, human-reviewable JSON datasets.
 - Fast lookups using normalized in-memory dictionaries.
-- Conservative defaults to avoid over-blocking legitimate usernames.
+- Conservative matching without broad fuzzy-name guessing.
+- Common impersonation and leetspeak attempts detected with bounded rules.
 - Application-specific reserved names without polluting the global dataset.
 - Platform adapters that feel native to their ecosystem.
 
@@ -27,9 +28,11 @@ assets/
 
 data/
   schema.json
+  brands/reserved.json
   roles/reserved.json
   support/reserved.json
   system/reserved.json
+  technology/reserved.json
 
 platforms/
   dotnet/
@@ -42,16 +45,31 @@ platforms/
 
 Each `reserved.json` file follows the contract in `data/schema.json`. New categories can be added as another folder without changing the consumers.
 
+The shared datasets currently include privileged/system identities, support identities, well-known technology names, and a curated set of commonly impersonated consumer brands.
+
 ## Matching
 
-The .NET implementation performs two intentionally small normalization passes:
+The .NET implementation uses three intentionally bounded matching layers:
 
 1. **Exact normalization** — trim, Unicode compatibility normalization (NFKC), and invariant lowercase.
 2. **Compact normalization** — optionally remove separators and punctuation while retaining letters and digits.
+3. **Obfuscation matching** — detect common leetspeak substitutions such as `0 → o`, `1 → i/l`, `3 → e`, `4 → a`, and a small set of common symbol substitutions.
 
-That means values such as `customer service`, `customer-service`, `customer_service`, and `customer.service` can resolve to the same reserved entry.
+That means values such as `customer service`, `customer-service`, `customer_service`, and `customer.service` can resolve to the same reserved entry. It also means common impersonation attempts such as `N1ke`, `N1k3`, `M1crosoft`, `G00gle`, `@pple`, and `r00t` can resolve back to their reserved names.
 
-Unclaimable deliberately does not perform broad fuzzy matching. Applications can layer stricter anti-impersonation or Unicode-confusable policies on top when their threat model requires it.
+Obfuscation expansion is deliberately capped so matching remains deterministic and small. Unclaimable does not perform broad edit-distance or fuzzy-name matching.
+
+Both optional matching layers can be controlled independently:
+
+```csharp
+var checker = new UnclaimableChecker(new UnclaimableOptions
+{
+    CompactMatching = true,
+    ObfuscationMatching = true
+});
+```
+
+`CompactMatching` and `ObfuscationMatching` are enabled by default.
 
 ## .NET compatibility
 
@@ -82,7 +100,7 @@ var result = UnclaimableChecker.Default.Check(userName);
 
 if (result.IsReserved)
 {
-    Console.WriteLine($"Matched '{result.MatchedValue}' from '{result.Category}'.");
+    Console.WriteLine($"Matched '{result.MatchedValue}' from '{result.Category}' using {result.MatchKind} matching.");
 }
 ```
 
@@ -125,7 +143,7 @@ public sealed class SignupModel
 
 ## Application-specific names
 
-Brand, project, tenant, and internal account names should normally **not** be added to the shared data files. Reserve them in the application instead:
+The shared brand and technology lists are intentionally limited to broadly recognizable names. Your own product names, tenant names, internal identities, private brands, and project-specific terms should normally be reserved in the application instead:
 
 ```csharp
 var options = new UnclaimableOptions();
@@ -135,7 +153,7 @@ options.AdditionalReserved.Add("internalbot");
 var checker = new UnclaimableChecker(options);
 ```
 
-This keeps the global dataset useful to everyone without turning it into a collection of unrelated product names.
+This keeps the global dataset broadly useful without turning it into a collection of unrelated private product names.
 
 ## NuGet packaging status
 

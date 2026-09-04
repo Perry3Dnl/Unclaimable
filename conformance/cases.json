@@ -25,6 +25,41 @@
     "category": "system"
   },
   {
+    "value": "Apple",
+    "reserved": true,
+    "category": "technology"
+  },
+  {
+    "value": "microsoft",
+    "reserved": true,
+    "category": "technology"
+  },
+  {
+    "value": "linux",
+    "reserved": true,
+    "category": "technology"
+  },
+  {
+    "value": "nike",
+    "reserved": true,
+    "category": "brands"
+  },
+  {
+    "value": "coca-cola",
+    "reserved": true,
+    "category": "brands"
+  },
+  {
+    "value": "N1k3",
+    "reserved": true,
+    "category": "brands"
+  },
+  {
+    "value": "G00gle",
+    "reserved": true,
+    "category": "technology"
+  },
+  {
     "value": "administrator2",
     "reserved": false,
     "category": null
@@ -36,6 +71,11 @@
   },
   {
     "value": "ordinary-user",
+    "reserved": false,
+    "category": null
+  },
+  {
+    "value": "ordinary123",
     "reserved": false,
     "category": null
   }
