@@ -85,9 +85,134 @@ public sealed class UnclaimableCheckerTests
     [InlineData("ordinary123")]
     [InlineData("apples")]
     [InlineData("nikee")]
-    public void SimilarButDifferentNamesRemainClaimable(string value)
+    public void SimilarButDifferentNamesRemainClaimableByDefault(string value)
     {
         Assert.True(UnclaimableChecker.Default.IsClaimable(value));
+    }
+
+    [Theory]
+    [InlineData("administrator2", "administrator")]
+    [InlineData("old-admin", "admin")]
+    [InlineData("admin-old", "admin")]
+    [InlineData("supportive", "support")]
+    [InlineData("apples", "apple")]
+    [InlineData("nikee", "nike")]
+    [InlineData("old-N1k3", "nike")]
+    public void PartialMatchingCanRejectEmbeddedReservedNames(string value, string expectedMatch)
+    {
+        var checker = new UnclaimableChecker(new UnclaimableOptions
+        {
+            PartialMatching = true
+        });
+
+        var result = checker.Check(value);
+
+        Assert.True(result.IsReserved);
+        Assert.Equal(expectedMatch, result.MatchedValue);
+        Assert.Equal(UnclaimableMatchKind.Partial, result.MatchKind);
+        Assert.NotNull(result.MatchStartIndex);
+        Assert.True(result.MatchLength >= 4);
+    }
+
+    [Fact]
+    public void PartialMatchingIgnoresShortReservedValuesByDefault()
+    {
+        var checker = new UnclaimableChecker(new UnclaimableOptions
+        {
+            PartialMatching = true
+        });
+
+        Assert.True(checker.IsReserved("api"));
+        Assert.True(checker.IsClaimable("rapid"));
+        Assert.True(checker.IsClaimable("api123"));
+    }
+
+    [Fact]
+    public void PartialMinimumLengthCanBeLoweredExplicitly()
+    {
+        var checker = new UnclaimableChecker(new UnclaimableOptions
+        {
+            PartialMatching = true,
+            PartialMatchMinimumLength = 3
+        });
+
+        Assert.True(checker.IsReserved("rapid"));
+        Assert.Equal("api", checker.Check("rapid").MatchedValue);
+    }
+
+    [Fact]
+    public void NumbersCanBeRejectedBeforeReservedNameMatching()
+    {
+        var checker = new UnclaimableChecker(new UnclaimableOptions
+        {
+            AllowNumbers = false,
+            PartialMatching = true
+        });
+
+        var result = checker.Check("old-admin2");
+
+        Assert.True(result.IsReserved);
+        Assert.Equal(UnclaimableMatchKind.NumbersNotAllowed, result.MatchKind);
+        Assert.Equal(9, result.OffendingCharacterIndex);
+        Assert.Equal("2", result.OffendingCharacter);
+        Assert.Null(result.MatchedValue);
+    }
+
+    [Fact]
+    public void NumberPolicyRecognizesUnicodeDecimalDigits()
+    {
+        var checker = new UnclaimableChecker(new UnclaimableOptions
+        {
+            AllowNumbers = false
+        });
+
+        var result = checker.Check("user\u0661");
+
+        Assert.True(result.IsReserved);
+        Assert.Equal(UnclaimableMatchKind.NumbersNotAllowed, result.MatchKind);
+        Assert.Equal("\u0661", result.OffendingCharacter);
+    }
+
+    [Fact]
+    public void DetailedCheckCollectsPolicyAndReservedNameDiagnostics()
+    {
+        var checker = new UnclaimableChecker(new UnclaimableOptions
+        {
+            AllowNumbers = false,
+            PartialMatching = true
+        });
+
+        var result = checker.CheckDetailed("old-admin2", includeMessages: true);
+
+        Assert.True(result.IsReserved);
+        Assert.False(result.IsClaimable);
+        Assert.Equal(10, result.InputLength);
+        Assert.Contains(result.Diagnostics, diagnostic =>
+            diagnostic.Kind == UnclaimableMatchKind.NumbersNotAllowed
+            && diagnostic.OffendingCharacterIndex == 9
+            && diagnostic.OffendingCharacter == "2"
+            && !string.IsNullOrWhiteSpace(diagnostic.Message));
+        Assert.Contains(result.Diagnostics, diagnostic =>
+            diagnostic.Kind == UnclaimableMatchKind.Partial
+            && diagnostic.MatchedValue == "admin"
+            && diagnostic.MatchStartIndex == 4
+            && diagnostic.MatchLength == 5
+            && !string.IsNullOrWhiteSpace(diagnostic.Message));
+    }
+
+    [Fact]
+    public void DetailedCheckCanReturnMachineReadableDiagnosticsWithoutMessages()
+    {
+        var checker = new UnclaimableChecker(new UnclaimableOptions
+        {
+            AllowNumbers = false,
+            PartialMatching = true
+        });
+
+        var result = checker.CheckDetailed("old-admin2");
+
+        Assert.NotEmpty(result.Diagnostics);
+        Assert.All(result.Diagnostics, diagnostic => Assert.Null(diagnostic.Message));
     }
 
     [Fact]
