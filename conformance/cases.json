@@ -1,0 +1,42 @@
+[
+  {
+    "value": "admin",
+    "reserved": true,
+    "category": "roles"
+  },
+  {
+    "value": " ADMIN ",
+    "reserved": true,
+    "category": "roles"
+  },
+  {
+    "value": "customer-service",
+    "reserved": true,
+    "category": "support"
+  },
+  {
+    "value": "customer_service",
+    "reserved": true,
+    "category": "support"
+  },
+  {
+    "value": "no.reply",
+    "reserved": true,
+    "category": "system"
+  },
+  {
+    "value": "administrator2",
+    "reserved": false,
+    "category": null
+  },
+  {
+    "value": "supportive",
+    "reserved": false,
+    "category": null
+  },
+  {
+    "value": "ordinary-user",
+    "reserved": false,
+    "category": null
+  }
+]
