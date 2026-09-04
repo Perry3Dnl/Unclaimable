@@ -12,7 +12,7 @@
 
 Unclaimable answers a simple question: **should this username be claimable?**
 
-It combines curated, runtime-neutral JSON datasets with a small matching engine that can detect direct reserved names, separator tricks, common leetspeak, and selected Unicode lookalikes. The shared data is intentionally independent from the runtime implementation so future JavaScript, Python, Go, or other adapters can use the same source of truth.
+It combines curated, runtime-neutral JSON datasets with a small matching engine that can detect direct reserved names, separator tricks, common leetspeak, selected Unicode lookalikes, optional partial-name impersonation, and configurable character policies. The shared data is intentionally independent from the runtime implementation so future JavaScript, Python, Go, or other adapters can use the same source of truth.
 
 ## What it catches
 
@@ -25,7 +25,7 @@ G00gle             -> google
 r00t               -> root
 ```
 
-It is deliberately **not** a broad fuzzy-name or substring blocker. Names such as `administrator2`, `supportive`, `apples`, and `nikee` remain claimable unless an application explicitly reserves them.
+By default, Unclaimable deliberately avoids broad substring blocking, so names such as `administrator2`, `supportive`, `apples`, and `nikee` remain claimable. Applications that want stricter protection can enable `PartialMatching`, which also rejects names such as `old-admin`, `administrator2`, and `nikee`.
 
 ## Current datasets
 
@@ -58,15 +58,17 @@ New categories can be added without changing the consumer API. Private product n
 
 ## Matching pipeline
 
-The .NET checker stops as soon as it finds a match. The current order is:
+The normal boolean and `Check(...)` APIs are deliberately fail-fast. Cheap policy checks are performed before more expensive normalization and impersonation checks:
 
-1. **ASCII policy check** — only when `AsciiOnly` is enabled.
-2. **Exact matching** — trim, Unicode NFKC normalization, invariant lowercase, then dictionary lookup.
-3. **Compact matching** — remove separators and punctuation while retaining letters/digits, then dictionary lookup.
-4. **Unicode-confusable matching** — normalize selected visually confusable characters and diacritics, then compare again.
-5. **Obfuscation matching** — try a bounded set of common leetspeak/symbol substitutions.
+1. **Number policy** — only when `AllowNumbers` is `false`.
+2. **ASCII policy** — only when `AsciiOnly` is enabled.
+3. **Exact matching** — trim, Unicode NFKC normalization, invariant lowercase, then dictionary lookup.
+4. **Compact matching** — remove separators and punctuation while retaining letters/digits, then dictionary lookup.
+5. **Partial matching** — optional substring protection against embedded reserved names.
+6. **Unicode-confusable matching** — normalize selected visually confusable characters and diacritics, then compare again.
+7. **Obfuscation matching** — try a bounded set of common leetspeak/symbol substitutions.
 
-Built-in values are loaded once and indexed in dictionaries, so normal exact/compact checks use average O(1) lookups after initialization.
+As soon as one check fails, the fail-fast APIs return. Built-in values are loaded once and indexed in dictionaries, so normal exact/compact checks use average O(1) lookups after initialization.
 
 ### Exact matching
 
@@ -90,6 +92,62 @@ customer-service
 customer_service
 customer.service
 ```
+
+### Partial matching
+
+`PartialMatching` is **off by default** because substring blocking is intentionally stricter and can create more false positives.
+
+Enable it when usernames must not contain protected names anywhere inside a larger value:
+
+```csharp
+var checker = new UnclaimableChecker(new UnclaimableOptions
+{
+    PartialMatching = true
+});
+```
+
+Examples:
+
+```text
+administrator2  -> administrator
+old-admin       -> admin
+admin-old       -> admin
+supportive      -> support
+apples          -> apple
+nikee           -> nike
+old-N1k3        -> nike
+```
+
+To reduce accidental matches, reserved values shorter than `PartialMatchMinimumLength` are ignored for partial matching. The default minimum is `4`, so an exact reserved value such as `api` is still blocked, while a normal word such as `rapid` does not become blocked merely because it contains `api`.
+
+Applications that deliberately want more aggressive matching can lower the threshold:
+
+```csharp
+var checker = new UnclaimableChecker(new UnclaimableOptions
+{
+    PartialMatching = true,
+    PartialMatchMinimumLength = 3
+});
+```
+
+### Number policy
+
+Numbers are allowed by default. Set `AllowNumbers = false` to reject Unicode decimal digits before reserved-name normalization or other slower checks:
+
+```csharp
+var checker = new UnclaimableChecker(new UnclaimableOptions
+{
+    AllowNumbers = false
+});
+```
+
+```text
+ordinary-user  -> continues to normal matching
+user123        -> rejected immediately at '1'
+old-admin2     -> rejected immediately at '2'
+```
+
+The fail-fast result exposes the offending character and its zero-based position in the original input.
 
 ### Obfuscation / leetspeak matching
 
@@ -171,7 +229,7 @@ The `netstandard2.0` core can be consumed by modern .NET and compatible .NET Fra
 
 ## Core .NET usage
 
-For a simple boolean check:
+For the cheapest possible answer, use the boolean APIs:
 
 ```csharp
 using Unclaimable;
@@ -187,7 +245,7 @@ if (UnclaimableChecker.Default.IsClaimable(userName))
 }
 ```
 
-For detailed information:
+For a fail-fast structured result:
 
 ```csharp
 var result = UnclaimableChecker.Default.Check("N1k3");
@@ -198,7 +256,26 @@ Console.WriteLine(result.Category);     // brands
 Console.WriteLine(result.MatchKind);    // Obfuscated
 ```
 
-The public checker contract is intentionally small:
+For a slower validation pass that collects policy diagnostics as well as the reserved-name result:
+
+```csharp
+var detailed = checker.CheckDetailed(userName);
+```
+
+This returns machine-readable diagnostics with no user-facing prose. When feedback text is useful, request messages explicitly:
+
+```csharp
+var detailed = checker.CheckDetailed(userName, includeMessages: true);
+```
+
+For example, with `AllowNumbers = false` and `PartialMatching = true`, checking `old-admin2` can report both:
+
+```text
+NumbersNotAllowed -> character "2", index 9
+Partial           -> matched "admin", start 4, length 5
+```
+
+The public checker contract remains compact:
 
 ```csharp
 public interface IUnclaimableChecker
@@ -206,20 +283,29 @@ public interface IUnclaimableChecker
     bool IsReserved(string? value);
     bool IsClaimable(string? value);
     UnclaimableResult Check(string? value);
+    UnclaimableDetailedResult CheckDetailed(string? value, bool includeMessages = false);
 }
 ```
 
 ## Result information
 
-`Check(...)` returns an `UnclaimableResult` with:
+`Check(...)` returns a fail-fast `UnclaimableResult` with structured information such as:
 
 | Property | Meaning |
 | --- | --- |
 | `IsReserved` | whether the input was rejected by Unclaimable |
-| `Input` | the original input |
-| `MatchedValue` | the stored reserved value that matched, when applicable |
+| `IsClaimable` | inverse of `IsReserved` |
+| `Input` | original input |
+| `InputLength` | original string length |
+| `MatchedValue` | stored reserved value that matched, when applicable |
 | `Category` | dataset category such as `roles`, `technology`, `brands`, or `custom` |
-| `MatchKind` | how the input was rejected/matched |
+| `MatchKind` | why the input was rejected/matched |
+| `OffendingCharacterIndex` | original zero-based input index for character-policy failures |
+| `OffendingCharacter` | offending input character/text element for character-policy failures |
+| `MatchStartIndex` | start of a reserved-name match when available |
+| `MatchLength` | length of the reserved-name match when available |
+
+`CheckDetailed(...)` returns `UnclaimableDetailedResult`, which has the original input, input length, overall claimable/reserved state, and a collection of `UnclaimableDiagnostic` entries. Each diagnostic is developer-friendly structured data; `Message` remains `null` unless `includeMessages: true` is requested.
 
 Current `UnclaimableMatchKind` values are:
 
@@ -230,9 +316,11 @@ Compact
 Obfuscated
 UnicodeConfusable
 InvalidCharacters
+Partial
+NumbersNotAllowed
 ```
 
-For `InvalidCharacters`, there is no reserved-name match, so `MatchedValue` and `Category` are null.
+For character-policy failures there is no reserved-name match, so `MatchedValue` and `Category` are null.
 
 ## Configuration
 
@@ -240,8 +328,11 @@ For `InvalidCharacters`, there is no reserved-name match, so `MatchedValue` and 
 var options = new UnclaimableOptions
 {
     CompactMatching = true,
+    PartialMatching = false,
+    PartialMatchMinimumLength = 4,
     ObfuscationMatching = true,
     UnicodeConfusableMatching = true,
+    AllowNumbers = true,
     AsciiOnly = false
 };
 
@@ -256,8 +347,11 @@ Defaults:
 | Option | Default | Purpose |
 | --- | ---: | --- |
 | `CompactMatching` | `true` | catch separator/punctuation variants |
+| `PartialMatching` | `false` | reject larger usernames containing reserved values |
+| `PartialMatchMinimumLength` | `4` | avoid short partials producing excessive false positives |
 | `ObfuscationMatching` | `true` | catch common leetspeak/symbol substitutions |
 | `UnicodeConfusableMatching` | `true` | catch selected visual Unicode lookalikes |
+| `AllowNumbers` | `true` | permit decimal digits; disable for a cheap fail-fast digit policy |
 | `AsciiOnly` | `false` | reject characters outside printable ASCII when enabled |
 | `AdditionalReserved` | empty | add application-specific reserved names |
 
@@ -276,7 +370,7 @@ checker.IsReserved("ExampleBrand"); // true
 checker.Check("examplebrand").Category; // custom
 ```
 
-Custom entries go through the same compact, obfuscation, and Unicode-confusable matching pipeline as built-in names.
+Custom entries go through the same configured compact, partial, obfuscation, and Unicode-confusable matching pipeline as built-in names.
 
 ## ASP.NET Core
 
@@ -286,8 +380,11 @@ Register the checker once:
 builder.Services.AddUnclaimable(options =>
 {
     options.CompactMatching = true;
+    options.PartialMatching = true;
+    options.PartialMatchMinimumLength = 4;
     options.ObfuscationMatching = true;
     options.UnicodeConfusableMatching = true;
+    options.AllowNumbers = false;
     options.AsciiOnly = false;
 
     options.AdditionalReserved.Add("examplebrand");
@@ -317,24 +414,24 @@ public sealed class SignupModel
 }
 ```
 
-`ClaimableUsernameAttribute` resolves `IUnclaimableChecker` from dependency injection, so the application's configured options and `AdditionalReserved` values are respected automatically.
+`ClaimableUsernameAttribute` resolves `IUnclaimableChecker` from dependency injection, so all configured options and `AdditionalReserved` values are respected automatically.
 
 `[Required]` should still be used when the field itself is mandatory; `ClaimableUsernameAttribute` intentionally treats `null` as a separate validation concern.
 
 ## What Unclaimable does not validate
 
-Unclaimable is focused on **reserved-name and impersonation checks**. Your application should still validate its own username policy, including things such as:
+Unclaimable is focused on **reserved-name, impersonation, and explicitly configured character-policy checks**. Your application should still validate its own remaining username policy, including things such as:
 
 - minimum and maximum length;
 - whether whitespace is allowed;
 - which punctuation is allowed;
 - leading/trailing separators;
-- profanity or content moderation;
+- profanity or broader content moderation;
 - uniqueness in your own database;
 - account-specific impersonation rules;
 - rate limiting and abuse controls.
 
-Unclaimable also deliberately avoids broad substring and edit-distance matching because those strategies can create large numbers of false positives.
+Unclaimable still deliberately avoids edit-distance fuzzy matching because it can create large numbers of false positives. Partial matching is available as an explicit opt-in instead of silently changing the conservative default behavior.
 
 ## Repository layout
 
@@ -413,7 +510,7 @@ Validate the generated package contents and metadata locally with PowerShell:
 
 The validator checks package IDs and versions, MPL-2.0/copyright metadata, README and icon inclusion, DLL/XML documentation files, repository URL and commit metadata, symbol PDBs, Source Link dependency isolation, and the ASP.NET Core package's dependency on the matching core package version.
 
-A separate consumer smoke project restores the generated `.nupkg` files instead of referencing the source projects. This verifies that a real consuming application can use the core checker, Unicode/obfuscation matching, `AsciiOnly`, ASP.NET Core dependency injection, `AdditionalReserved`, and `[ClaimableUsername]` directly from the packed artifacts.
+A separate consumer smoke project restores the generated `.nupkg` files instead of referencing the source projects. This verifies that a real consuming application can use the core checker, Unicode/obfuscation matching, optional partial matching, the number and ASCII policies, detailed diagnostics, ASP.NET Core dependency injection, `AdditionalReserved`, and `[ClaimableUsername]` directly from the packed artifacts.
 
 GitHub Actions performs the full sequence automatically:
 
@@ -442,8 +539,10 @@ CI uploads the resulting `.nupkg` and `.snupkg` files as temporary GitHub Action
 ## Design principles
 
 - Keep the core small and dependency-free at runtime.
+- Fail fast on cheap policy checks before running more expensive matching passes.
 - Keep reserved-name data runtime-neutral and reviewable.
 - Prefer exact, deterministic matching over broad fuzzy guesses.
+- Make stricter substring matching explicit and configurable.
 - Detect common impersonation tricks without making legitimate usernames unusable.
 - Keep private/project-specific names out of the global dataset.
 - Keep platform implementations aligned through shared conformance cases.
