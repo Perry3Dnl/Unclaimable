@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "category": "system",
+  "description": "Names commonly associated with application, protocol, or system-owned identities.",
+  "values": [
+    "system",
+    "api",
+    "auth",
+    "login",
+    "logout",
+    "signup",
+    "register",
+    "account",
+    "accounts",
+    "webmaster",
+    "postmaster",
+    "abuse",
+    "noreply",
+    "no-reply"
+  ]
+}
