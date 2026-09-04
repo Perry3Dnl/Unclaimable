@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -12,12 +13,17 @@
     <Authors>ImtehQ</Authors>
     <Description>Fast, dependency-free reserved username detection backed by the shared Unclaimable datasets.</Description>
     <RepositoryUrl>https://github.com/ImtehQ/Unclaimable</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/ImtehQ/Unclaimable</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>unclaimable-icon.png</PackageIcon>
+    <PackageTags>username;validation;security;reserved-names</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="../../../../data/**/reserved.json" LogicalName="Unclaimable.Data.%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="../../../../README.md" Pack="true" PackagePath="/" Link="README.md" />
+    <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
   </ItemGroup>
 
 </Project>
