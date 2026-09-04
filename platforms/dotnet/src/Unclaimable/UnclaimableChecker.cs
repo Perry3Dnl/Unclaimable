@@ -1,34 +1,47 @@
+using System.Globalization;
 using System.Reflection;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Unclaimable;
 
 public sealed class UnclaimableChecker : IUnclaimableChecker
 {
-    private sealed record ReservedEntry(string Value, string Category);
+    private sealed class ReservedEntry
+    {
+        public ReservedEntry(string value, string category)
+        {
+            Value = value;
+            Category = category;
+        }
 
+        public string Value { get; }
+
+        public string Category { get; }
+    }
+
+    [DataContract]
     private sealed class ReservedListDocument
     {
-        [JsonPropertyName("schema")]
-        public int Schema { get; init; }
+        [DataMember(Name = "schema")]
+        public int Schema { get; set; }
 
-        [JsonPropertyName("category")]
-        public string Category { get; init; } = string.Empty;
+        [DataMember(Name = "category")]
+        public string Category { get; set; } = string.Empty;
 
-        [JsonPropertyName("values")]
-        public string[] Values { get; init; } = [];
+        [DataMember(Name = "values")]
+        public string[] Values { get; set; } = Array.Empty<string>();
     }
 
     private static readonly Lazy<IReadOnlyList<ReservedEntry>> BuiltInEntries =
-        new(LoadBuiltInEntries, LazyThreadSafetyMode.ExecutionAndPublication);
+        new Lazy<IReadOnlyList<ReservedEntry>>(LoadBuiltInEntries, LazyThreadSafetyMode.ExecutionAndPublication);
 
-    private readonly Dictionary<string, ReservedEntry> _exact = new(StringComparer.Ordinal);
-    private readonly Dictionary<string, ReservedEntry> _compact = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, ReservedEntry> _exact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
+    private readonly Dictionary<string, ReservedEntry> _compact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
     private readonly bool _compactMatching;
 
-    public static UnclaimableChecker Default { get; } = new();
+    public static UnclaimableChecker Default { get; } = new UnclaimableChecker();
 
     public UnclaimableChecker()
         : this(new UnclaimableOptions())
@@ -37,7 +50,11 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
     public UnclaimableChecker(UnclaimableOptions options)
     {
-        ArgumentNullException.ThrowIfNull(options);
+        if (options is null)
+        {
+            throw new ArgumentNullException(nameof(options));
+        }
+
         _compactMatching = options.CompactMatching;
 
         foreach (var entry in BuiltInEntries.Value)
@@ -63,7 +80,8 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             return UnclaimableResult.Allowed(value);
         }
 
-        if (_exact.TryGetValue(exact, out var exactMatch))
+        ReservedEntry? exactMatch;
+        if (_exact.TryGetValue(exact, out exactMatch))
         {
             return new UnclaimableResult(
                 true,
@@ -76,7 +94,8 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         if (_compactMatching)
         {
             var compact = NormalizeCompact(exact);
-            if (compact.Length > 0 && _compact.TryGetValue(compact, out var compactMatch))
+            ReservedEntry? compactMatch;
+            if (compact.Length > 0 && _compact.TryGetValue(compact, out compactMatch))
             {
                 return new UnclaimableResult(
                     true,
@@ -98,12 +117,15 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             return;
         }
 
-        _exact.TryAdd(exact, entry);
+        if (!_exact.ContainsKey(exact))
+        {
+            _exact.Add(exact, entry);
+        }
 
         var compact = NormalizeCompact(exact);
-        if (compact.Length > 0)
+        if (compact.Length > 0 && !_compact.ContainsKey(compact))
         {
-            _compact.TryAdd(compact, entry);
+            _compact.Add(compact, entry);
         }
     }
 
@@ -124,41 +146,77 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
     {
         var builder = new StringBuilder(value.Length);
 
-        foreach (var rune in value.EnumerateRunes())
+        for (var index = 0; index < value.Length; index++)
         {
-            if (Rune.IsLetterOrDigit(rune))
+            var character = value[index];
+
+            if (char.IsHighSurrogate(character)
+                && index + 1 < value.Length
+                && char.IsLowSurrogate(value[index + 1]))
             {
-                builder.Append(rune.ToString());
+                var category = CharUnicodeInfo.GetUnicodeCategory(value, index);
+                if (IsLetterOrDigit(category))
+                {
+                    builder.Append(character);
+                    builder.Append(value[index + 1]);
+                }
+
+                index++;
+                continue;
+            }
+
+            if (char.IsLetterOrDigit(character))
+            {
+                builder.Append(character);
             }
         }
 
         return builder.ToString();
     }
 
+    private static bool IsLetterOrDigit(UnicodeCategory category)
+    {
+        return category == UnicodeCategory.UppercaseLetter
+               || category == UnicodeCategory.LowercaseLetter
+               || category == UnicodeCategory.TitlecaseLetter
+               || category == UnicodeCategory.ModifierLetter
+               || category == UnicodeCategory.OtherLetter
+               || category == UnicodeCategory.DecimalDigitNumber;
+    }
+
     private static IReadOnlyList<ReservedEntry> LoadBuiltInEntries()
     {
         var assembly = typeof(UnclaimableChecker).Assembly;
         var entries = new List<ReservedEntry>();
+        var serializer = new DataContractJsonSerializer(typeof(ReservedListDocument));
 
         foreach (var resourceName in assembly.GetManifestResourceNames()
                      .Where(name => name.StartsWith("Unclaimable.Data.", StringComparison.Ordinal)
                                     && name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
                      .OrderBy(name => name, StringComparer.Ordinal))
         {
-            using var stream = assembly.GetManifestResourceStream(resourceName)
-                               ?? throw new InvalidOperationException($"Embedded dataset '{resourceName}' could not be opened.");
-
-            var document = JsonSerializer.Deserialize<ReservedListDocument>(stream)
-                           ?? throw new InvalidOperationException($"Embedded dataset '{resourceName}' is invalid.");
-
-            if (document.Schema != 1 || string.IsNullOrWhiteSpace(document.Category))
+            using (var stream = assembly.GetManifestResourceStream(resourceName))
             {
-                throw new InvalidOperationException($"Embedded dataset '{resourceName}' has an unsupported schema.");
-            }
+                if (stream is null)
+                {
+                    throw new InvalidOperationException($"Embedded dataset '{resourceName}' could not be opened.");
+                }
 
-            entries.AddRange(document.Values
-                .Where(value => !string.IsNullOrWhiteSpace(value))
-                .Select(value => new ReservedEntry(value, document.Category)));
+                var document = serializer.ReadObject(stream) as ReservedListDocument;
+                if (document is null)
+                {
+                    throw new InvalidOperationException($"Embedded dataset '{resourceName}' is invalid.");
+                }
+
+                if (document.Schema != 1 || string.IsNullOrWhiteSpace(document.Category))
+                {
+                    throw new InvalidOperationException($"Embedded dataset '{resourceName}' has an unsupported schema.");
+                }
+
+                entries.AddRange(document.Values
+                    .Where(value => !string.IsNullOrWhiteSpace(value))
+                    .Select(value => new ReservedEntry(value, document.Category)));
+            }
         }
 
         return entries;
