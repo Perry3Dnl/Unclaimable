@@ -75,9 +75,8 @@ Register the checker once:
 ```csharp
 builder.Services.AddUnclaimable(options =>
 {
-    options.AdditionalReserved.Add("thesugarlook");
-    options.AdditionalReserved.Add("sugarlook");
-    options.AdditionalReserved.Add("sitecheckuser");
+    options.AdditionalReserved.Add("examplebrand");
+    options.AdditionalReserved.Add("internalbot");
 });
 ```
 
@@ -112,7 +111,7 @@ Brand, project, tenant, and internal account names should normally **not** be ad
 
 ```csharp
 var options = new UnclaimableOptions();
-options.AdditionalReserved.Add("mybrand");
+options.AdditionalReserved.Add("examplebrand");
 options.AdditionalReserved.Add("internalbot");
 
 var checker = new UnclaimableChecker(options);
