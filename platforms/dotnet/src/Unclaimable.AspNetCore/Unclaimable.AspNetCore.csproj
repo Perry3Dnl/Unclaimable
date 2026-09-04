@@ -12,13 +12,18 @@
     <Authors>ImtehQ</Authors>
     <Description>ASP.NET Core dependency injection and model validation integration for Unclaimable.</Description>
     <RepositoryUrl>https://github.com/ImtehQ/Unclaimable</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageProjectUrl>https://github.com/ImtehQ/Unclaimable</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>unclaimable-icon.png</PackageIcon>
+    <PackageTags>username;validation;security;aspnetcore;reserved-names</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="../Unclaimable/Unclaimable.csproj" />
     <None Include="../../../../README.md" Pack="true" PackagePath="/" Link="README.md" />
+    <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
   </ItemGroup>
 
 </Project>
