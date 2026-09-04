@@ -16,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="../../../../data/**/*.json" LogicalName="Unclaimable.Data.%(RecursiveDir)%(Filename)%(Extension)" />
+    <EmbeddedResource Include="../../../../data/**/reserved.json" LogicalName="Unclaimable.Data.%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="../../../../README.md" Pack="true" PackagePath="/" Link="README.md" />
   </ItemGroup>
 
