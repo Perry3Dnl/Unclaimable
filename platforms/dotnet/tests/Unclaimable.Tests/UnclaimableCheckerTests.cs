@@ -43,14 +43,14 @@ public sealed class UnclaimableCheckerTests
     public void ApplicationSpecificNamesCanBeAddedWithoutChangingGlobalData()
     {
         var options = new UnclaimableOptions();
-        options.AdditionalReserved.Add("thesugarlook");
-        options.AdditionalReserved.Add("sitecheckuser");
+        options.AdditionalReserved.Add("examplebrand");
+        options.AdditionalReserved.Add("internalbot");
 
         var checker = new UnclaimableChecker(options);
 
-        Assert.True(checker.IsReserved("TheSugarLook"));
-        Assert.True(checker.IsReserved("site-check-user"));
-        Assert.Equal("custom", checker.Check("thesugarlook").Category);
+        Assert.True(checker.IsReserved("ExampleBrand"));
+        Assert.True(checker.IsReserved("internal-bot"));
+        Assert.Equal("custom", checker.Check("examplebrand").Category);
     }
 
     [Fact]
