@@ -8,27 +8,33 @@ Initial public NuGet release.
 
 ### Added
 
-- Runtime-neutral reserved-name datasets for roles, support/trust identities, system names, technology names, and broadly recognizable brands.
-- More than 700 curated always-on reserved values across the shared datasets.
-- Opt-in English profanity dataset with separate opt-in partial matching to reduce substring false positives.
+- Strict-by-default validation so `AddUnclaimable()` enables the recommended protection set without additional configuration.
+- `UnclaimableRule` flags and `DisabledRules` for selectively relaxing individual checks while keeping all other protections enabled.
+- Runtime-neutral reserved-name datasets for roles, support/trust identities, system names, technology names, broadly recognizable brands, and English profanity.
+- More than 700 curated protected values across the shared datasets.
 - Exact matching with Unicode NFKC normalization and invariant case normalization.
 - Compact matching for separator and punctuation variants.
+- Strict embedded/partial reserved-name matching by default, with configurable `PartialMatchMinimumLength`.
+- `UnclaimableStrictness.Standard` as an explicit more-permissive reserved-name mode and `UnclaimableStrictness.Strict` as the default.
 - Bounded leetspeak and symbol-obfuscation matching.
 - Selected Unicode-confusable and diacritic normalization for common impersonation attempts.
-- Opt-in partial matching for embedded reserved values such as `old-admin` and `administrator2`.
-- `UnclaimableStrictness` with `Standard` and `Strict` modes; `Strict` automatically enables embedded reserved-name matching so values such as `admin2`, `old-admin`, and `admin-old` are rejected.
-- Configurable minimum reserved-name length for partial matching.
-- Optional fail-fast number policy through `AllowNumbers`.
+- English profanity matching enabled by default, with separate opt-in `ProfanityPartialMatching` for more aggressive substring filtering.
+- Fail-fast minimum and maximum length validation with defaults of 3 and 32 characters.
+- Fail-fast Unicode decimal-digit rejection by default.
+- Whitespace restrictions and a default blocked-character policy for `-` and `_`.
+- Leading and trailing separator validation.
+- Application-specific blocked characters through `AdditionalBlockedCharacters(...)`.
+- Thread-safe runtime character policy through `IUnclaimablePolicy` and `UnclaimablePolicy`, including `BlockCharacter(s)` and `AllowCharacter(s)` operations.
+- Application-specific reservations through `AdditionalReserved`.
 - Optional printable-ASCII-only policy through `AsciiOnly`.
 - Fast boolean checks through `IsClaimable` and `IsReserved`.
-- Structured fail-fast results through `Check`.
+- Structured fail-fast results through `Check`, including structural rejection reasons and offending-character metadata.
 - Multi-diagnostic validation through `CheckDetailed`, with optional user-facing diagnostic messages.
-- Application-specific reservations through `AdditionalReserved`.
-- ASP.NET Core dependency-injection integration.
+- ASP.NET Core dependency-injection integration with a live runtime `IUnclaimablePolicy` singleton.
 - `[ClaimableUsername]` model-validation attribute.
-- Application-wide ASP.NET validation-message configuration with `{FieldName}` support and attribute-level overrides.
-- Reason-specific ASP.NET validation messages through `options.Messages`, with placeholders for `{FieldName}`, `{MatchedValue}`, `{Category}`, `{Character}`, and `{Index}` plus built-in fallbacks for every rejection reason.
-- xUnit coverage for strictness behavior, message precedence/placeholders, profanity interaction, character policies, and packaged-consumer behavior.
+- Application-wide ASP.NET validation-message configuration with attribute-level overrides.
+- Reason-specific ASP.NET validation messages with placeholders for `{FieldName}`, `{MatchedValue}`, `{Category}`, `{Character}`, `{Index}`, `{Length}`, `{MinimumLength}`, and `{MaximumLength}`.
+- xUnit coverage for strict defaults, opt-out behavior, structural validation, runtime policy changes, message precedence/placeholders, profanity interaction, matching behavior, and packaged-consumer behavior.
 - `netstandard2.0` dependency-free runtime core.
 - `net8.0` ASP.NET Core integration package.
 - MPL-2.0 licensing under Perry3D.nl.
