@@ -97,7 +97,13 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
         foreach (var entry in BuiltInEntries.Value)
         {
-            Add(entry);
+            var isProfanity = string.Equals(entry.Category, "profanity", StringComparison.Ordinal);
+            if (isProfanity && !options.ProfanityMatching)
+            {
+                continue;
+            }
+
+            Add(entry, includeInPartialMatching: !isProfanity || options.ProfanityPartialMatching);
         }
 
         foreach (var value in options.AdditionalReserved)
@@ -253,7 +259,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             matchLength);
     }
 
-    private void Add(ReservedEntry entry)
+    private void Add(ReservedEntry entry, bool includeInPartialMatching = true)
     {
         var exact = NormalizeExact(entry.Value);
         if (exact is null)
@@ -272,7 +278,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             _compact.Add(compact, entry);
         }
 
-        if (compact.Length >= _partialMatchMinimumLength)
+        if (includeInPartialMatching && compact.Length >= _partialMatchMinimumLength)
         {
             _partialEntries.Add(new PartialEntry(exact, compact, entry));
         }
@@ -649,42 +655,36 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
     {
         switch (character)
         {
-            // Cyrillic lookalikes.
-            case '\u0430': mapped = 'a'; return true; // а
-            case '\u0432': mapped = 'b'; return true; // в
-            case '\u0435': mapped = 'e'; return true; // е
-            case '\u043A': mapped = 'k'; return true; // к
-            case '\u043C': mapped = 'm'; return true; // м
-            case '\u043D': mapped = 'h'; return true; // н
-            case '\u043E': mapped = 'o'; return true; // о
-            case '\u0440': mapped = 'p'; return true; // р
-            case '\u0441': mapped = 'c'; return true; // с
-            case '\u0442': mapped = 't'; return true; // т
-            case '\u0443': mapped = 'y'; return true; // у
-            case '\u0445': mapped = 'x'; return true; // х
-            case '\u0455': mapped = 's'; return true; // ѕ
-            case '\u0456': mapped = 'i'; return true; // і
-            case '\u0458': mapped = 'j'; return true; // ј
-            case '\u04CF': mapped = 'l'; return true; // ӏ
-
-            // Greek lookalikes.
-            case '\u03B1': mapped = 'a'; return true; // α
-            case '\u03B2': mapped = 'b'; return true; // β
-            case '\u03B5': mapped = 'e'; return true; // ε
-            case '\u03B9': mapped = 'i'; return true; // ι
-            case '\u03BA': mapped = 'k'; return true; // κ
-            case '\u03BC': mapped = 'm'; return true; // μ
-            case '\u03BD': mapped = 'v'; return true; // ν
-            case '\u03BF': mapped = 'o'; return true; // ο
-            case '\u03C1': mapped = 'p'; return true; // ρ
-            case '\u03C4': mapped = 't'; return true; // τ
-            case '\u03C5': mapped = 'y'; return true; // υ
-            case '\u03C7': mapped = 'x'; return true; // χ
-            case '\u03F2': mapped = 'c'; return true; // ϲ
-
-            // Latin characters commonly used as visual substitutions.
-            case '\u0131': mapped = 'i'; return true; // ı
-
+            case '\u0430': mapped = 'a'; return true;
+            case '\u0432': mapped = 'b'; return true;
+            case '\u0435': mapped = 'e'; return true;
+            case '\u043A': mapped = 'k'; return true;
+            case '\u043C': mapped = 'm'; return true;
+            case '\u043D': mapped = 'h'; return true;
+            case '\u043E': mapped = 'o'; return true;
+            case '\u0440': mapped = 'p'; return true;
+            case '\u0441': mapped = 'c'; return true;
+            case '\u0442': mapped = 't'; return true;
+            case '\u0443': mapped = 'y'; return true;
+            case '\u0445': mapped = 'x'; return true;
+            case '\u0455': mapped = 's'; return true;
+            case '\u0456': mapped = 'i'; return true;
+            case '\u0458': mapped = 'j'; return true;
+            case '\u04CF': mapped = 'l'; return true;
+            case '\u03B1': mapped = 'a'; return true;
+            case '\u03B2': mapped = 'b'; return true;
+            case '\u03B5': mapped = 'e'; return true;
+            case '\u03B9': mapped = 'i'; return true;
+            case '\u03BA': mapped = 'k'; return true;
+            case '\u03BC': mapped = 'm'; return true;
+            case '\u03BD': mapped = 'v'; return true;
+            case '\u03BF': mapped = 'o'; return true;
+            case '\u03C1': mapped = 'p'; return true;
+            case '\u03C4': mapped = 't'; return true;
+            case '\u03C5': mapped = 'y'; return true;
+            case '\u03C7': mapped = 'x'; return true;
+            case '\u03F2': mapped = 'c'; return true;
+            case '\u0131': mapped = 'i'; return true;
             default:
                 mapped = '\0';
                 return false;

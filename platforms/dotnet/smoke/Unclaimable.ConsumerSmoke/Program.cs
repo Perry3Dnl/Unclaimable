@@ -26,6 +26,18 @@ Require(unicodeConfusable.MatchKind == UnclaimableMatchKind.UnicodeConfusable, "
 
 Require(checker.IsClaimable("ordinary-user"), "ordinary-user should remain claimable.");
 Require(checker.IsClaimable("old-admin"), "Partial matching should remain opt-in.");
+Require(checker.IsClaimable("fuck"), "Profanity matching should remain opt-in.");
+
+var profanityChecker = new UnclaimableChecker(new UnclaimableOptions
+{
+    ProfanityMatching = true
+});
+
+var profanity = profanityChecker.Check("sh1t");
+Require(profanity.IsReserved, "Opt-in profanity matching should reject obfuscated profanity.");
+Require(profanity.MatchedValue == "shit", "sh1t should resolve to shit.");
+Require(profanity.Category == "profanity", "Profanity matches should preserve the profanity category.");
+Require(profanity.MatchKind == UnclaimableMatchKind.Obfuscated, "sh1t should use obfuscation matching.");
 
 var strictChecker = new UnclaimableChecker(new UnclaimableOptions
 {
