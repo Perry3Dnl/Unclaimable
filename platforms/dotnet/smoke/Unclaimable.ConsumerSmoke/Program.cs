@@ -25,7 +25,8 @@ Require(unicodeConfusable.MatchedValue == "apple", "Cyrillic-a apple should reso
 Require(unicodeConfusable.MatchKind == UnclaimableMatchKind.UnicodeConfusable, "Cyrillic-a apple should use Unicode-confusable matching.");
 
 Require(checker.IsClaimable("ordinary-user"), "ordinary-user should remain claimable.");
-Require(checker.IsClaimable("old-admin"), "Partial matching should remain opt-in.");
+Require(checker.IsClaimable("old-admin"), "Standard strictness should keep partial matching opt-in.");
+Require(checker.IsClaimable("admin2"), "Standard strictness should keep admin2 claimable.");
 Require(checker.IsClaimable("fuck"), "Profanity matching should remain opt-in.");
 
 var profanityChecker = new UnclaimableChecker(new UnclaimableOptions
@@ -41,9 +42,12 @@ Require(profanity.MatchKind == UnclaimableMatchKind.Obfuscated, "sh1t should use
 
 var strictChecker = new UnclaimableChecker(new UnclaimableOptions
 {
-    PartialMatching = true,
+    Strictness = UnclaimableStrictness.Strict,
     AllowNumbers = false
 });
+
+Require(strictChecker.IsReserved("old-admin"), "Strict mode should reject old-admin.");
+Require(strictChecker.IsReserved("admin2"), "Strict mode should reject admin2 when numbers are otherwise allowed.");
 
 var numberViolation = strictChecker.Check("old-admin2");
 Require(numberViolation.IsReserved, "Numbers should be rejected when AllowNumbers is false.");
@@ -70,15 +74,17 @@ var services = new ServiceCollection();
 services.AddUnclaimable(options =>
 {
     options.AdditionalReserved.Add("examplebrand");
-    options.PartialMatching = true;
+    options.Strictness = UnclaimableStrictness.Strict;
     options.AllowNumbers = false;
     options.ValidationMessage = "{FieldName} is unavailable.";
+    options.Messages.Reserved = "{FieldName} '{MatchedValue}' is reserved.";
+    options.Messages.Partial = "{FieldName} contains protected value '{MatchedValue}'.";
 });
 using var provider = services.BuildServiceProvider();
 
 var configuredChecker = provider.GetRequiredService<IUnclaimableChecker>();
 Require(configuredChecker.IsReserved("ExampleBrand"), "DI-configured AdditionalReserved entry should be rejected.");
-Require(configuredChecker.IsReserved("old-examplebrand"), "DI-configured partial matching should apply to AdditionalReserved entries.");
+Require(configuredChecker.IsReserved("old-examplebrand"), "DI-configured strict matching should apply to AdditionalReserved entries.");
 Require(configuredChecker.Check("user2").MatchKind == UnclaimableMatchKind.NumbersNotAllowed, "DI-configured number policy should be enforced.");
 
 var rejectedModel = new SignupModel { UserName = "examplebrand" };
@@ -88,8 +94,18 @@ Require(
     !Validator.TryValidateObject(rejectedModel, rejectedContext, rejectedResults, validateAllProperties: true),
     "ClaimableUsernameAttribute should reject a configured reserved value.");
 Require(
-    rejectedResults.Count == 1 && rejectedResults[0].ErrorMessage == "UserName is unavailable.",
-    "ClaimableUsernameAttribute should use the configured global validation message.");
+    rejectedResults.Count == 1 && rejectedResults[0].ErrorMessage == "UserName 'examplebrand' is reserved.",
+    "ClaimableUsernameAttribute should use the configured reason-specific validation message.");
+
+var partialModel = new SignupModel { UserName = "old-examplebrand" };
+var partialResults = new List<ValidationResult>();
+var partialContext = new ValidationContext(partialModel, provider, items: null);
+Require(
+    !Validator.TryValidateObject(partialModel, partialContext, partialResults, validateAllProperties: true),
+    "ClaimableUsernameAttribute should reject a strict partial match.");
+Require(
+    partialResults.Count == 1 && partialResults[0].ErrorMessage == "UserName contains protected value 'examplebrand'.",
+    "ClaimableUsernameAttribute should use the configured partial-match message.");
 
 var acceptedModel = new SignupModel { UserName = "ordinary-user" };
 var acceptedResults = new List<ValidationResult>();
