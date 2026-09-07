@@ -14,7 +14,7 @@ static void Require(bool condition, string message)
 var checker = UnclaimableChecker.Default;
 
 Require(checker.Check("systeembeheerder").Category == "roles", "Dutch role names should be reserved by default.");
-Require(checker.Check("klantenserviceportaal").MatchKind == UnclaimableMatchKind.Partial, "Strict partial matching should be enabled for Dutch data by default.");
+Require(checker.Check("facturatiehulpportaal").MatchKind == UnclaimableMatchKind.Partial, "Strict partial matching should be enabled for Dutch data by default.");
 Require(checker.Check("ordinary2").MatchKind == UnclaimableMatchKind.NumbersNotAllowed, "Numbers should be blocked by default.");
 Require(checker.Check("ordinary-user").MatchKind == UnclaimableMatchKind.BlockedCharacter, "Hyphens should be blocked by default.");
 Require(checker.Check("ordinary_user").MatchKind == UnclaimableMatchKind.BlockedCharacter, "Underscores should be blocked by default.");
@@ -29,13 +29,14 @@ var englishChecker = new UnclaimableChecker(new UnclaimableOptions
     Language = UnclaimableLanguage.English
 });
 Require(englishChecker.Check("customersupport").Category == "support", "English should be selectable explicitly.");
-Require(englishChecker.IsClaimable("klantenservice"), "Dutch localized support data should not load in English-only mode.");
+Require(englishChecker.IsClaimable("facturatiehulp"), "Dutch localized support data should not load in English-only mode.");
+Require(englishChecker.Check("klantenservice").MatchedValue == "service", "Enabled English protected substrings should still match inside mixed-language values.");
 
 var multiLanguageChecker = new UnclaimableChecker(new UnclaimableOptions
 {
     AllowMultiLanguage = true
 });
-Require(multiLanguageChecker.IsReserved("klantenservice"), "Multi-language mode should include Dutch data.");
+Require(multiLanguageChecker.IsReserved("facturatiehulp"), "Multi-language mode should include Dutch data.");
 Require(multiLanguageChecker.IsReserved("customersupport"), "Multi-language mode should include English data.");
 
 var relaxed = new UnclaimableChecker(new UnclaimableOptions
