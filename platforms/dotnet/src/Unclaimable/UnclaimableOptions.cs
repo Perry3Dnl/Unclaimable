@@ -23,6 +23,20 @@ public sealed class UnclaimableOptions
     public int PartialMatchMinimumLength { get; set; } = 4;
 
     /// <summary>
+    /// Include the built-in profanity dataset in username matching.
+    /// This is intentionally off by default because profanity policies are application-
+    /// and culture-specific.
+    /// </summary>
+    public bool ProfanityMatching { get; set; }
+
+    /// <summary>
+    /// Allow the profanity dataset to participate in partial/substring matching when both
+    /// ProfanityMatching and PartialMatching are enabled. This is off by default to avoid
+    /// false positives such as ordinary words containing a short vulgar fragment.
+    /// </summary>
+    public bool ProfanityPartialMatching { get; set; }
+
+    /// <summary>
     /// Also detect common username obfuscation and leetspeak substitutions.
     /// For example, "N1k3" can match the reserved name "nike".
     /// </summary>
