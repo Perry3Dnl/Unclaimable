@@ -2,6 +2,15 @@ namespace Unclaimable;
 
 public sealed class UnclaimableOptions
 {
+    private bool _partialMatching;
+
+    /// <summary>
+    /// Controls how aggressively reserved-name rules are applied.
+    /// Standard preserves the normal behavior. Strict also enables embedded/partial
+    /// reserved-name matching so values such as "admin2" and "old-admin" are rejected.
+    /// </summary>
+    public UnclaimableStrictness Strictness { get; set; } = UnclaimableStrictness.Standard;
+
     /// <summary>
     /// Also compare a compact form with separators and punctuation removed.
     /// For example, "customer-service" matches "customer service".
@@ -11,9 +20,13 @@ public sealed class UnclaimableOptions
     /// <summary>
     /// Also reject usernames that contain a reserved value as part of a larger value.
     /// For example, "administrator2" and "old-admin" can match "administrator" and "admin".
-    /// This stricter mode is intentionally off by default to avoid broad false positives.
+    /// This can be enabled directly, and is enabled automatically by Strictness.Strict.
     /// </summary>
-    public bool PartialMatching { get; set; }
+    public bool PartialMatching
+    {
+        get => _partialMatching || Strictness == UnclaimableStrictness.Strict;
+        set => _partialMatching = value;
+    }
 
     /// <summary>
     /// Minimum compact reserved-name length eligible for partial matching.
@@ -63,13 +76,19 @@ public sealed class UnclaimableOptions
     public bool AsciiOnly { get; set; }
 
     /// <summary>
-    /// Optional application-wide validation message used by the ASP.NET Core
+    /// Optional application-wide fallback validation message used by the ASP.NET Core
     /// ClaimableUsername attribute when a username is rejected.
-    /// Use {FieldName} to include the validation display name.
-    /// When not set, Unclaimable uses its built-in validation message.
-    /// An ErrorMessage configured directly on the attribute takes precedence.
+    /// Use {FieldName}, {MatchedValue}, {Category}, {Character}, and {Index} placeholders.
+    /// Reason-specific Messages take precedence over this fallback.
+    /// An ErrorMessage configured directly on the attribute takes precedence over both.
     /// </summary>
     public string? ValidationMessage { get; set; }
+
+    /// <summary>
+    /// Optional reason-specific validation messages. Any unset message falls back to
+    /// ValidationMessage, then to Unclaimable's built-in message for that rejection reason.
+    /// </summary>
+    public UnclaimableValidationMessages Messages { get; } = new UnclaimableValidationMessages();
 
     /// <summary>
     /// Application-specific names to reserve in addition to the shared dataset.
