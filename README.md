@@ -20,7 +20,7 @@ The default policy is intentionally strict. For most applications, configuration
 builder.Services.AddUnclaimable();
 ```
 
-The default localized dataset is **Dutch**. English or German can be selected explicitly, and applications can opt into checking every supported language together.
+The default localized dataset is **English**. Dutch or German can be selected explicitly, and applications can opt into checking every supported language together.
 
 ## Packages
 
@@ -48,10 +48,10 @@ Unclaimable provides a strict baseline for usernames, handles, slugs, account na
 The default policy includes:
 
 - reserved and protected names;
-- localized Dutch datasets by default;
-- optional English localized datasets;
+- localized English datasets by default;
+- optional Dutch localized datasets;
 - optional German localized datasets;
-- optional Dutch + English + German multi-language checking;
+- optional English + Dutch + German multi-language checking;
 - global brand and technology impersonation datasets regardless of selected language;
 - strict embedded/partial reserved-name matching;
 - separator and punctuation normalization for reserved-name matching;
@@ -78,7 +78,7 @@ The default policy includes:
 
 | Rule | Default |
 | --- | --- |
-| Selected localized language | `Dutch` |
+| Selected localized language | `English` |
 | Multi-language checking | disabled |
 | Strict reserved-name matching | enabled |
 | Compact matching | enabled |
@@ -112,29 +112,29 @@ This keeps every other Unclaimable rule active.
 
 Localized datasets currently support:
 
-- `UnclaimableLanguage.Dutch` — default;
-- `UnclaimableLanguage.English`;
+- `UnclaimableLanguage.English` — default;
+- `UnclaimableLanguage.Dutch`;
 - `UnclaimableLanguage.German`.
 
 Global datasets such as `brands` and `technology` are always active. Selecting one localized language therefore does not make names such as `paypal`, `github`, or `nike` claimable.
 
-### Dutch only — default
-
-```csharp
-builder.Services.AddUnclaimable(options =>
-{
-    options.Language = UnclaimableLanguage.Dutch;
-});
-```
-
-The explicit assignment is optional because Dutch is the default.
-
-### English only
+### English only — default
 
 ```csharp
 builder.Services.AddUnclaimable(options =>
 {
     options.Language = UnclaimableLanguage.English;
+});
+```
+
+The explicit assignment is optional because English is the default.
+
+### Dutch only
+
+```csharp
+builder.Services.AddUnclaimable(options =>
+{
+    options.Language = UnclaimableLanguage.Dutch;
 });
 ```
 
@@ -152,12 +152,11 @@ builder.Services.AddUnclaimable(options =>
 ```csharp
 builder.Services.AddUnclaimable(options =>
 {
-    options.Language = UnclaimableLanguage.Dutch;
     options.AllowMultiLanguage = true;
 });
 ```
 
-When `AllowMultiLanguage` is enabled, Unclaimable loads every supported localized dataset rather than only `Language`. With the current package this means Dutch, English, and German.
+When `AllowMultiLanguage` is enabled, Unclaimable loads every supported localized dataset rather than only `Language`. With the current package this means English, Dutch, and German.
 
 The additional language data is merged into the checker's indexes when the checker is constructed. Exact and compact checks remain dictionary lookups, but multi-language mode uses more memory and increases the amount of work performed by strict partial, Unicode-confusable, and obfuscation matching. For applications that only need one language, leaving multi-language mode disabled is the leaner option.
 
@@ -308,11 +307,11 @@ checker.IsClaimable("normal^name"); // false
 
 Reserved names are normalized for casing and surrounding whitespace during the reserved-name pipeline.
 
-For a Dutch checker:
+For the default English checker:
 
 ```text
-systeembeheerder
-SYSTEEMBEHEERDER
+customersupport
+CUSTOMERSUPPORT
 ```
 
 both resolve to the same protected value.
@@ -392,16 +391,16 @@ resolves to protected `apple` because technology and brand-style impersonation d
 
 Profanity from the selected localized dataset participates in matching by default.
 
-Dutch is used by default:
+English is used by default:
 
 ```text
-godverdomme -> profanity
+fuckwaffle -> profanity
 ```
 
-Select English or German when the application primarily serves those users:
+Select Dutch or German when the application primarily serves those users:
 
 ```csharp
-options.Language = UnclaimableLanguage.English;
+options.Language = UnclaimableLanguage.Dutch;
 // or
 options.Language = UnclaimableLanguage.German;
 ```
@@ -452,16 +451,16 @@ using Unclaimable;
 
 if (UnclaimableChecker.Default.IsClaimable(userName))
 {
-    // Identifier passed the strict Dutch default policy plus global datasets.
+    // Identifier passed the strict English default policy plus global datasets.
 }
 ```
 
-English checker:
+Dutch checker:
 
 ```csharp
 var checker = new UnclaimableChecker(new UnclaimableOptions
 {
-    Language = UnclaimableLanguage.English
+    Language = UnclaimableLanguage.Dutch
 });
 ```
 
@@ -523,7 +522,7 @@ Use `CheckDetailed(...)` when UI, logging, or diagnostics benefit from seeing mu
 
 ```csharp
 var result = UnclaimableChecker.Default.CheckDetailed(
-    "systeembeheerder2",
+    "support2",
     includeMessages: true);
 
 foreach (var diagnostic in result.Diagnostics)
@@ -547,7 +546,7 @@ Or customize the policy:
 ```csharp
 builder.Services.AddUnclaimable(options =>
 {
-    options.Language = UnclaimableLanguage.English;
+    options.Language = UnclaimableLanguage.Dutch;
     options.AllowMultiLanguage = false;
 
     options.MinimumLength = 4;
@@ -649,8 +648,8 @@ Current scopes:
 
 | Scope | Categories | Behavior |
 | --- | --- | --- |
+| `en` | profanity, roles, support, system | loaded by default or when English is selected |
 | `nl` | profanity, roles, support, system | loaded when Dutch is selected |
-| `en` | profanity, roles, support, system | loaded when English is selected |
 | `de` | profanity, roles, support, system | loaded when German is selected |
 | `global` | brands, technology | always loaded |
 
@@ -698,9 +697,9 @@ Built-in protected values for the selected language scope are indexed when the c
 assets/
 conformance/
 data/
-  de/
   en/
   nl/
+  de/
   global/
 platforms/dotnet/src/Unclaimable/
 platforms/dotnet/src/Unclaimable.AspNetCore/
