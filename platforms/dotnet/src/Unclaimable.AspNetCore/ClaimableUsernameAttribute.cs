@@ -5,8 +5,6 @@ namespace Unclaimable.AspNetCore;
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
 public sealed class ClaimableUsernameAttribute : ValidationAttribute
 {
-    private const string DefaultValidationMessage = "{FieldName} is reserved and cannot be claimed.";
-
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
         if (value is null)
@@ -22,20 +20,97 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
         var checker = validationContext.GetService(typeof(IUnclaimableChecker)) as IUnclaimableChecker
                       ?? UnclaimableChecker.Default;
 
-        if (!checker.IsReserved(text))
+        var result = checker.Check(text);
+        if (!result.IsReserved)
         {
             return ValidationResult.Success;
         }
 
         var options = validationContext.GetService(typeof(UnclaimableOptions)) as UnclaimableOptions;
-        var message = !string.IsNullOrWhiteSpace(ErrorMessage)
-            ? ErrorMessage!
-            : !string.IsNullOrWhiteSpace(options?.ValidationMessage)
-                ? options!.ValidationMessage!
-                : DefaultValidationMessage;
-
-        message = message.Replace("{FieldName}", validationContext.DisplayName, StringComparison.Ordinal);
+        var message = ResolveMessage(result, options);
+        message = ApplyPlaceholders(message, validationContext.DisplayName, result);
 
         return new ValidationResult(message);
+    }
+
+    private string ResolveMessage(UnclaimableResult result, UnclaimableOptions? options)
+    {
+        if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            return ErrorMessage!;
+        }
+
+        var reasonSpecific = ResolveReasonSpecificMessage(result, options?.Messages);
+        if (!string.IsNullOrWhiteSpace(reasonSpecific))
+        {
+            return reasonSpecific!;
+        }
+
+        if (!string.IsNullOrWhiteSpace(options?.ValidationMessage))
+        {
+            return options!.ValidationMessage!;
+        }
+
+        return GetBuiltInMessage(result);
+    }
+
+    private static string? ResolveReasonSpecificMessage(
+        UnclaimableResult result,
+        UnclaimableValidationMessages? messages)
+    {
+        if (messages is null)
+        {
+            return null;
+        }
+
+        if (string.Equals(result.Category, "profanity", StringComparison.Ordinal))
+        {
+            return messages.Profanity;
+        }
+
+        return result.MatchKind switch
+        {
+            UnclaimableMatchKind.Exact => messages.Reserved,
+            UnclaimableMatchKind.Compact => messages.Compact,
+            UnclaimableMatchKind.Partial => messages.Partial,
+            UnclaimableMatchKind.Obfuscated => messages.Obfuscated,
+            UnclaimableMatchKind.UnicodeConfusable => messages.UnicodeConfusable,
+            UnclaimableMatchKind.NumbersNotAllowed => messages.NumbersNotAllowed,
+            UnclaimableMatchKind.InvalidCharacters => messages.InvalidCharacters,
+            _ => null
+        };
+    }
+
+    private static string GetBuiltInMessage(UnclaimableResult result)
+    {
+        if (string.Equals(result.Category, "profanity", StringComparison.Ordinal))
+        {
+            return "{FieldName} contains language that is not allowed.";
+        }
+
+        return result.MatchKind switch
+        {
+            UnclaimableMatchKind.Exact => "{FieldName} is reserved and cannot be claimed.",
+            UnclaimableMatchKind.Compact => "{FieldName} matches a reserved name after separators or punctuation are ignored.",
+            UnclaimableMatchKind.Partial => "{FieldName} contains a reserved name and cannot be claimed.",
+            UnclaimableMatchKind.Obfuscated => "{FieldName} appears to imitate a reserved name and cannot be claimed.",
+            UnclaimableMatchKind.UnicodeConfusable => "{FieldName} contains Unicode lookalikes that match a reserved name.",
+            UnclaimableMatchKind.NumbersNotAllowed => "Numbers are not allowed in {FieldName}.",
+            UnclaimableMatchKind.InvalidCharacters => "{FieldName} contains an invalid character.",
+            _ => "{FieldName} is not allowed."
+        };
+    }
+
+    private static string ApplyPlaceholders(
+        string message,
+        string fieldName,
+        UnclaimableResult result)
+    {
+        return message
+            .Replace("{FieldName}", fieldName, StringComparison.Ordinal)
+            .Replace("{MatchedValue}", result.MatchedValue ?? string.Empty, StringComparison.Ordinal)
+            .Replace("{Category}", result.Category ?? string.Empty, StringComparison.Ordinal)
+            .Replace("{Character}", result.OffendingCharacter ?? string.Empty, StringComparison.Ordinal)
+            .Replace("{Index}", result.OffendingCharacterIndex?.ToString() ?? string.Empty, StringComparison.Ordinal);
     }
 }
