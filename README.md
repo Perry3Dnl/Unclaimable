@@ -48,7 +48,17 @@ G00gle             -> google
 r00t               -> root
 ```
 
-Strict behavior:
+Basic behavior keeps only exact and compact matching:
+
+```text
+nike               -> nike
+customer-service   -> customer service
+N1k3               -> allowed
+аpple              -> allowed
+old-admin          -> allowed
+```
+
+Strict behavior adds embedded/partial matching to all standard rules:
 
 ```text
 admin2             -> admin
@@ -82,7 +92,7 @@ Reserved values are stored as human-reviewable JSON under `data/<category>/reser
 | `brands` | on | broadly recognizable consumer/commercial brands | `nike`, `adidas`, `coca cola`, `disney`, `tesla`, `paypal` |
 | `profanity` | **off** | common English profanity and vulgar insults | opt-in via `ProfanityMatching` |
 
-The always-on categories contain more than 700 curated values. Profanity is separate and opt-in because content policy is application- and culture-dependent. Identity-targeting slurs are intentionally not mixed into the profanity dataset.
+The always-on categories contain **1,467 unique curated values**. The opt-in profanity category contains another **191 values**, for **1,658 values in total**. Profanity is separate because content policy is application- and culture-dependent. Identity-targeting slurs are intentionally not mixed into the profanity dataset.
 
 Private product names, tenant names, internal bots, and project-specific terms should normally use `AdditionalReserved` rather than the global datasets.
 
@@ -124,7 +134,29 @@ customer.service
 
 ### Strictness
 
-`UnclaimableStrictness.Standard` is the default and preserves the conservative behavior where embedded reserved names are allowed unless `PartialMatching` is explicitly enabled.
+`UnclaimableStrictness` is a preset for the four matching rules that most directly control false positives:
+
+| Preset | Exact | Compact | Obfuscation | Unicode confusables | Partial |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `Basic` | on | on | off | off | off |
+| `Standard` (default) | on | on | on | on | off |
+| `Strict` | on | on | on | on | on |
+
+Exact matching is always enabled. Number, ASCII, and profanity policies are independent of the preset.
+
+An explicitly set rule property wins over its preset. This means strict mode can be used with one deliberate exception:
+
+```csharp
+var options = new UnclaimableOptions
+{
+    Strictness = UnclaimableStrictness.Strict,
+    PartialMatching = false
+};
+```
+
+Call `options.ResetMatchingRuleOverrides()` to clear explicit overrides and return control to the current preset. `options.EnabledRules` exposes the final combined `UnclaimableRule` flags for logging, diagnostics, or startup checks.
+
+`Standard` preserves the normal behavior where embedded reserved names are allowed unless `PartialMatching` is explicitly enabled.
 
 For signup systems where impersonation prevention matters more than permissiveness, use strict mode:
 
@@ -139,7 +171,7 @@ checker.IsReserved("old-admin"); // true
 checker.IsReserved("admin-old"); // true
 ```
 
-`Strict` automatically enables partial matching. It still honors `PartialMatchMinimumLength`, which defaults to `4`, so very short reserved values such as `api` do not automatically match inside ordinary longer words.
+`Strict` enables partial matching unless it is explicitly overridden. It still honors `PartialMatchMinimumLength`, which defaults to `4`, so very short reserved values such as `api` do not automatically match inside ordinary longer words.
 
 You can also enable partial matching directly without selecting strict mode:
 
@@ -356,19 +388,22 @@ Defaults:
 
 | Option | Default | Purpose |
 | --- | ---: | --- |
-| `Strictness` | `Standard` | choose standard or strict reserved-name behavior |
-| `CompactMatching` | `true` | catch separator/punctuation variants |
-| `PartialMatching` | `false` | catch embedded reserved values; implied by `Strict` |
+| `Strictness` | `Standard` | choose a basic, standard, or strict matching-rule preset |
+| `CompactMatching` | preset: `true` | catch separator/punctuation variants |
+| `PartialMatching` | preset: strict only | catch embedded reserved values |
 | `PartialMatchMinimumLength` | `4` | minimum reserved-name length eligible for partial matching |
 | `ProfanityMatching` | `false` | include the profanity dataset |
 | `ProfanityPartialMatching` | `false` | let profanity entries participate in partial matching |
-| `ObfuscationMatching` | `true` | catch common leetspeak/symbol substitutions |
-| `UnicodeConfusableMatching` | `true` | catch selected visual Unicode lookalikes |
+| `ObfuscationMatching` | preset: standard/strict | catch common leetspeak/symbol substitutions |
+| `UnicodeConfusableMatching` | preset: standard/strict | catch selected visual Unicode lookalikes |
 | `AllowNumbers` | `true` | allow Unicode decimal digits |
 | `AsciiOnly` | `false` | restrict input to printable ASCII when enabled |
 | `ValidationMessage` | `null` | ASP.NET Core catch-all validation message |
 | `Messages` | all `null` | reason-specific ASP.NET Core validation messages |
 | `AdditionalReserved` | empty | application-specific reserved values |
+| `EnabledRules` | computed | inspect the final rules after preset and overrides are combined |
+
+For the complete rule-order, preset, override, and interaction reference, see [Matching rules and options](docs/matching-rules.md).
 
 ## ASP.NET Core
 
@@ -523,6 +558,8 @@ CHANGELOG.md
 Directory.Build.props
 LICENSE
 README.md
+docs/
+  matching-rules.md
 
 assets/
   unclaimable-icon.png
@@ -614,7 +651,7 @@ NuGet publishing uses GitHub Actions OIDC / NuGet Trusted Publishing. The reposi
 - Keep reserved-name data runtime-neutral and human-reviewable.
 - Prefer deterministic matching over broad fuzzy guesses.
 - Make aggressive/false-positive-prone policies explicit.
-- Provide a strict mode for applications that need stronger impersonation protection.
+- Provide explicit basic, standard, and strict presets with per-rule overrides.
 - Fail cheaply and early when a configured policy can decide the result.
 - Keep private/project-specific names out of the shared datasets.
 - Keep platform implementations aligned through shared conformance cases.

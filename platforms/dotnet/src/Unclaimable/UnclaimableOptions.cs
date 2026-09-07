@@ -2,12 +2,16 @@ namespace Unclaimable;
 
 public sealed class UnclaimableOptions
 {
-    private bool _partialMatching;
+    private bool? _compactMatching;
+    private bool? _partialMatching;
+    private bool? _obfuscationMatching;
+    private bool? _unicodeConfusableMatching;
 
     /// <summary>
     /// Controls how aggressively reserved-name rules are applied.
-    /// Standard preserves the normal behavior. Strict also enables embedded/partial
-    /// reserved-name matching so values such as "admin2" and "old-admin" are rejected.
+    /// Basic uses exact and compact rules. Standard also enables obfuscation and Unicode
+    /// confusable rules. Strict additionally enables embedded/partial matching.
+    /// An explicitly configured rule property overrides its preset value.
     /// </summary>
     public UnclaimableStrictness Strictness { get; set; } = UnclaimableStrictness.Standard;
 
@@ -15,16 +19,20 @@ public sealed class UnclaimableOptions
     /// Also compare a compact form with separators and punctuation removed.
     /// For example, "customer-service" matches "customer service".
     /// </summary>
-    public bool CompactMatching { get; set; } = true;
+    public bool CompactMatching
+    {
+        get => _compactMatching ?? true;
+        set => _compactMatching = value;
+    }
 
     /// <summary>
     /// Also reject usernames that contain a reserved value as part of a larger value.
     /// For example, "administrator2" and "old-admin" can match "administrator" and "admin".
-    /// This can be enabled directly, and is enabled automatically by Strictness.Strict.
+    /// This can be enabled directly, and is enabled by Strictness.Strict unless explicitly disabled.
     /// </summary>
     public bool PartialMatching
     {
-        get => _partialMatching || Strictness == UnclaimableStrictness.Strict;
+        get => _partialMatching ?? Strictness == UnclaimableStrictness.Strict;
         set => _partialMatching = value;
     }
 
@@ -53,13 +61,21 @@ public sealed class UnclaimableOptions
     /// Also detect common username obfuscation and leetspeak substitutions.
     /// For example, "N1k3" can match the reserved name "nike".
     /// </summary>
-    public bool ObfuscationMatching { get; set; } = true;
+    public bool ObfuscationMatching
+    {
+        get => _obfuscationMatching ?? Strictness != UnclaimableStrictness.Basic;
+        set => _obfuscationMatching = value;
+    }
 
     /// <summary>
     /// Also detect common Unicode lookalikes and diacritic-based impersonation.
     /// For example, Cyrillic characters in "аpple" can match the reserved name "apple".
     /// </summary>
-    public bool UnicodeConfusableMatching { get; set; } = true;
+    public bool UnicodeConfusableMatching
+    {
+        get => _unicodeConfusableMatching ?? Strictness != UnclaimableStrictness.Basic;
+        set => _unicodeConfusableMatching = value;
+    }
 
     /// <summary>
     /// Allow Unicode decimal digits in usernames.
@@ -96,4 +112,40 @@ public sealed class UnclaimableOptions
     /// rather than in the global data files.
     /// </summary>
     public ICollection<string> AdditionalReserved { get; } = new List<string>();
+
+    /// <summary>
+    /// Gets the rules that are effectively enabled after the strictness preset and all
+    /// explicit property overrides have been combined.
+    /// </summary>
+    public UnclaimableRule EnabledRules
+    {
+        get
+        {
+            var rules = UnclaimableRule.Exact;
+
+            if (CompactMatching) rules |= UnclaimableRule.Compact;
+            if (PartialMatching) rules |= UnclaimableRule.Partial;
+            if (ObfuscationMatching) rules |= UnclaimableRule.Obfuscation;
+            if (UnicodeConfusableMatching) rules |= UnclaimableRule.UnicodeConfusables;
+            if (ProfanityMatching) rules |= UnclaimableRule.Profanity;
+            if (ProfanityMatching && PartialMatching && ProfanityPartialMatching)
+                rules |= UnclaimableRule.ProfanityPartial;
+            if (!AllowNumbers) rules |= UnclaimableRule.RejectNumbers;
+            if (AsciiOnly) rules |= UnclaimableRule.AsciiOnly;
+
+            return rules;
+        }
+    }
+
+    /// <summary>
+    /// Clears explicit matching-rule overrides so the current Strictness preset controls
+    /// compact, partial, obfuscation, and Unicode-confusable matching again.
+    /// </summary>
+    public void ResetMatchingRuleOverrides()
+    {
+        _compactMatching = null;
+        _partialMatching = null;
+        _obfuscationMatching = null;
+        _unicodeConfusableMatching = null;
+    }
 }

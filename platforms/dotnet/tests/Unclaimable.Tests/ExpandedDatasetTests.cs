@@ -23,6 +23,16 @@ public sealed class ExpandedDatasetTests
     [InlineData("lamborghini", "brands")]
     [InlineData("underarmour", "brands")]
     [InlineData("qatarairways", "brands")]
+    [InlineData("bitwarden", "technology")]
+    [InlineData("homeassistant", "technology")]
+    [InlineData("stackoverflow", "technology")]
+    [InlineData("turkishairlines", "brands")]
+    [InlineData("ticketmaster", "brands")]
+    [InlineData("lloydsbank", "brands")]
+    [InlineData("accountverification", "support")]
+    [InlineData("verificationteam", "support")]
+    [InlineData("databaseadministrator", "roles")]
+    [InlineData("signin callback", "system")]
     public void ExpandedReservedNamesAreRejected(string value, string category)
     {
         var result = UnclaimableChecker.Default.Check(value);
