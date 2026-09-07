@@ -43,14 +43,13 @@ public sealed class ValidationMessageOptionsTests
         using var provider = new ServiceCollection()
             .AddUnclaimable(options =>
             {
-                options.Strictness = UnclaimableStrictness.Strict;
                 options.Messages.Partial = "{FieldName} contains protected value '{MatchedValue}'.";
             })
             .BuildServiceProvider();
 
-        var error = Validate("old-admin", provider);
+        var error = Validate("supportive", provider);
 
-        Assert.Equal("Username contains protected value 'admin'.", error.ErrorMessage);
+        Assert.Equal("Username contains protected value 'support'.", error.ErrorMessage);
     }
 
     [Fact]
@@ -59,7 +58,6 @@ public sealed class ValidationMessageOptionsTests
         using var provider = new ServiceCollection()
             .AddUnclaimable(options =>
             {
-                options.AllowNumbers = false;
                 options.Messages.NumbersNotAllowed = "{FieldName}: '{Character}' is not allowed at index {Index}.";
             })
             .BuildServiceProvider();
@@ -75,7 +73,6 @@ public sealed class ValidationMessageOptionsTests
         using var provider = new ServiceCollection()
             .AddUnclaimable(options =>
             {
-                options.ProfanityMatching = true;
                 options.Messages.Reserved = "Reserved fallback.";
                 options.Messages.Profanity = "{FieldName} contains blocked language.";
             })
@@ -92,12 +89,11 @@ public sealed class ValidationMessageOptionsTests
         using var provider = new ServiceCollection()
             .AddUnclaimable(options =>
             {
-                options.Strictness = UnclaimableStrictness.Strict;
                 options.ValidationMessage = "{FieldName} is unavailable.";
             })
             .BuildServiceProvider();
 
-        var error = Validate("old-admin", provider);
+        var error = Validate("supportive", provider);
 
         Assert.Equal("Username is unavailable.", error.ErrorMessage);
     }
@@ -106,12 +102,28 @@ public sealed class ValidationMessageOptionsTests
     public void BuiltInReasonMessageIsUsedWhenDeveloperConfiguresNothing()
     {
         using var provider = new ServiceCollection()
-            .AddUnclaimable(options => options.Strictness = UnclaimableStrictness.Strict)
+            .AddUnclaimable()
             .BuildServiceProvider();
 
-        var error = Validate("old-admin", provider);
+        var error = Validate("supportive", provider);
 
         Assert.Equal("Username contains a reserved name and cannot be claimed.", error.ErrorMessage);
+    }
+
+    [Fact]
+    public void StructuralMessagesSupportLengthPlaceholders()
+    {
+        using var provider = new ServiceCollection()
+            .AddUnclaimable(options =>
+            {
+                options.MinimumLength = 4;
+                options.Messages.TooShort = "{FieldName} has {Length} characters; minimum is {MinimumLength}.";
+            })
+            .BuildServiceProvider();
+
+        var error = Validate("abc", provider);
+
+        Assert.Equal("Username has 3 characters; minimum is 4.", error.ErrorMessage);
     }
 
     [Fact]
