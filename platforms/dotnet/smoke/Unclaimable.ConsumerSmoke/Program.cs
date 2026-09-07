@@ -42,7 +42,7 @@ Require(numberViolation.OffendingCharacter == "2", "Number policy should expose 
 var detailed = strictChecker.CheckDetailed("old-admin2", includeMessages: true);
 Require(detailed.Diagnostics.Any(item => item.Kind == UnclaimableMatchKind.NumbersNotAllowed), "Detailed checks should include the number-policy failure.");
 Require(detailed.Diagnostics.Any(item => item.Kind == UnclaimableMatchKind.Partial && item.MatchedValue == "admin"), "Detailed checks should also include the embedded reserved name.");
-Require(detailed.Diagnostics.All(item => !string.IsNullOrWhiteSpace(item.Message)), "Detailed checks with messages should provide user-facing feedback.");
+Require(detailed.Diagnostics.All(item => !string.IsNullOrWhiteSpace(item.Message)), "Detailed checks with messages should provide feedback text.");
 
 var asciiChecker = new UnclaimableChecker(new UnclaimableOptions
 {
@@ -60,6 +60,7 @@ services.AddUnclaimable(options =>
     options.AdditionalReserved.Add("examplebrand");
     options.PartialMatching = true;
     options.AllowNumbers = false;
+    options.ValidationMessage = "{FieldName} is unavailable.";
 });
 using var provider = services.BuildServiceProvider();
 
@@ -74,6 +75,9 @@ var rejectedContext = new ValidationContext(rejectedModel, provider, items: null
 Require(
     !Validator.TryValidateObject(rejectedModel, rejectedContext, rejectedResults, validateAllProperties: true),
     "ClaimableUsernameAttribute should reject a configured reserved value.");
+Require(
+    rejectedResults.Count == 1 && rejectedResults[0].ErrorMessage == "UserName is unavailable.",
+    "ClaimableUsernameAttribute should use the configured global validation message.");
 
 var acceptedModel = new SignupModel { UserName = "ordinary-user" };
 var acceptedResults = new List<ValidationResult>();
