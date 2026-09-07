@@ -6,21 +6,23 @@ on:
       - "Directory.Build.props"
       - "LICENSE"
       - "README.md"
+      - "CHANGELOG.md"
       - "assets/**"
       - "data/**"
       - "conformance/**"
       - "platforms/dotnet/**"
-      - ".github/workflows/dotnet.yml"
+      - ".github/workflows/**"
   pull_request:
     paths:
       - "Directory.Build.props"
       - "LICENSE"
       - "README.md"
+      - "CHANGELOG.md"
       - "assets/**"
       - "data/**"
       - "conformance/**"
       - "platforms/dotnet/**"
-      - ".github/workflows/dotnet.yml"
+      - ".github/workflows/**"
 
 permissions:
   contents: read
