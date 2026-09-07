@@ -90,6 +90,11 @@ public sealed class UnclaimableOptions
     public ICollection<string> AdditionalReserved { get; } = new List<string>();
 
     /// <summary>
+    /// Characters configured at startup in addition to Unclaimable's built-in blocked characters.
+    /// </summary>
+    public IReadOnlyCollection<string> ConfiguredBlockedCharacters => _additionalBlockedCharacters;
+
+    /// <summary>
     /// Adds application-specific blocked characters to the strict built-in character policy.
     /// </summary>
     public UnclaimableOptions AdditionalBlockedCharacters(params string[] characters)
@@ -107,8 +112,6 @@ public sealed class UnclaimableOptions
 
         return this;
     }
-
-    internal IReadOnlyCollection<string> AdditionalBlockedCharacterValues => _additionalBlockedCharacters;
 
     internal bool IsRuleEnabled(UnclaimableRule rule) => (DisabledRules & rule) == 0;
 
