@@ -3,24 +3,35 @@ namespace Unclaimable;
 public sealed class UnclaimableOptions
 {
     private bool _partialMatching;
+    private readonly HashSet<string> _additionalBlockedCharacters = new HashSet<string>(StringComparer.Ordinal);
 
     /// <summary>
     /// Controls how aggressively reserved-name rules are applied.
-    /// Standard preserves the normal behavior. Strict also enables embedded/partial
-    /// reserved-name matching so values such as "admin2" and "old-admin" are rejected.
+    /// Strict is the default and enables embedded/partial reserved-name matching.
     /// </summary>
-    public UnclaimableStrictness Strictness { get; set; } = UnclaimableStrictness.Standard;
+    public UnclaimableStrictness Strictness { get; set; } = UnclaimableStrictness.Strict;
+
+    /// <summary>
+    /// Built-in rules to disable. No rules are disabled by default.
+    /// </summary>
+    public UnclaimableRule DisabledRules { get; set; } = UnclaimableRule.None;
+
+    /// <summary>Minimum accepted identifier length. Defaults to 3.</summary>
+    public int MinimumLength { get; set; } = 3;
+
+    /// <summary>Maximum accepted identifier length. Defaults to 32.</summary>
+    public int MaximumLength { get; set; } = 32;
 
     /// <summary>
     /// Also compare a compact form with separators and punctuation removed.
-    /// For example, "customer-service" matches "customer service".
+    /// Kept for compatibility; prefer disabling UnclaimableRule.CompactMatching.
     /// </summary>
     public bool CompactMatching { get; set; } = true;
 
     /// <summary>
     /// Also reject usernames that contain a reserved value as part of a larger value.
-    /// For example, "administrator2" and "old-admin" can match "administrator" and "admin".
-    /// This can be enabled directly, and is enabled automatically by Strictness.Strict.
+    /// Strict mode enables this automatically. Kept for compatibility; prefer
+    /// disabling UnclaimableRule.PartialMatching when relaxation is required.
     /// </summary>
     public bool PartialMatching
     {
@@ -28,72 +39,96 @@ public sealed class UnclaimableOptions
         set => _partialMatching = value;
     }
 
-    /// <summary>
-    /// Minimum compact reserved-name length eligible for partial matching.
-    /// Short values such as "api" are ignored by default because matching them inside
-    /// ordinary words can create excessive false positives.
-    /// </summary>
+    /// <summary>Minimum compact reserved-name length eligible for partial matching.</summary>
     public int PartialMatchMinimumLength { get; set; } = 4;
 
     /// <summary>
-    /// Include the built-in profanity dataset in username matching.
-    /// This is intentionally off by default because profanity policies are application-
-    /// and culture-specific.
+    /// Include the built-in English profanity dataset. Enabled by default.
+    /// Kept for compatibility; prefer disabling UnclaimableRule.Profanity.
     /// </summary>
-    public bool ProfanityMatching { get; set; }
+    public bool ProfanityMatching { get; set; } = true;
 
     /// <summary>
-    /// Allow the profanity dataset to participate in partial/substring matching when both
-    /// ProfanityMatching and PartialMatching are enabled. This is off by default to avoid
-    /// false positives such as ordinary words containing a short vulgar fragment.
+    /// Allow profanity entries to participate in substring matching when partial matching is enabled.
+    /// This remains opt-in to avoid avoidable false positives for ordinary words.
     /// </summary>
     public bool ProfanityPartialMatching { get; set; }
 
     /// <summary>
-    /// Also detect common username obfuscation and leetspeak substitutions.
-    /// For example, "N1k3" can match the reserved name "nike".
+    /// Detect common username obfuscation and leetspeak substitutions.
+    /// Kept for compatibility; prefer disabling UnclaimableRule.ObfuscationMatching.
     /// </summary>
     public bool ObfuscationMatching { get; set; } = true;
 
     /// <summary>
-    /// Also detect common Unicode lookalikes and diacritic-based impersonation.
-    /// For example, Cyrillic characters in "аpple" can match the reserved name "apple".
+    /// Detect common Unicode lookalikes and diacritic-based impersonation.
+    /// Kept for compatibility; prefer disabling UnclaimableRule.UnicodeConfusableMatching.
     /// </summary>
     public bool UnicodeConfusableMatching { get; set; } = true;
 
     /// <summary>
-    /// Allow Unicode decimal digits in usernames.
-    /// Disable this to reject numeric characters as an inexpensive policy check before
-    /// reserved-name matching and other more expensive normalization passes.
+    /// Allow Unicode decimal digits. Numbers are rejected by default.
+    /// Kept for compatibility; prefer disabling UnclaimableRule.Numbers.
     /// </summary>
-    public bool AllowNumbers { get; set; } = true;
+    public bool AllowNumbers { get; set; }
 
     /// <summary>
     /// Reject input containing characters outside printable ASCII (U+0020 through U+007E).
-    /// This is intentionally off by default so applications can support international names.
-    /// Application-specific length and punctuation rules should still be validated separately.
+    /// This additional restriction remains opt-in because Unclaimable supports Unicode-aware checks.
     /// </summary>
     public bool AsciiOnly { get; set; }
 
     /// <summary>
-    /// Optional application-wide fallback validation message used by the ASP.NET Core
-    /// ClaimableUsername attribute when a username is rejected.
-    /// Use {FieldName}, {MatchedValue}, {Category}, {Character}, and {Index} placeholders.
-    /// Reason-specific Messages take precedence over this fallback.
-    /// An ErrorMessage configured directly on the attribute takes precedence over both.
+    /// Optional application-wide fallback validation message used by the ASP.NET Core attribute.
     /// </summary>
     public string? ValidationMessage { get; set; }
 
-    /// <summary>
-    /// Optional reason-specific validation messages. Any unset message falls back to
-    /// ValidationMessage, then to Unclaimable's built-in message for that rejection reason.
-    /// </summary>
+    /// <summary>Optional reason-specific validation messages.</summary>
     public UnclaimableValidationMessages Messages { get; } = new UnclaimableValidationMessages();
 
-    /// <summary>
-    /// Application-specific names to reserve in addition to the shared dataset.
-    /// Tenant names, internal identities, and project-specific terms belong here
-    /// rather than in the global data files.
-    /// </summary>
+    /// <summary>Application-specific names to reserve in addition to the shared dataset.</summary>
     public ICollection<string> AdditionalReserved { get; } = new List<string>();
+
+    /// <summary>
+    /// Adds application-specific blocked characters to the strict built-in character policy.
+    /// </summary>
+    public UnclaimableOptions AdditionalBlockedCharacters(params string[] characters)
+    {
+        if (characters is null)
+        {
+            throw new ArgumentNullException(nameof(characters));
+        }
+
+        foreach (var character in characters)
+        {
+            ValidateCharacter(character, nameof(characters));
+            _additionalBlockedCharacters.Add(character);
+        }
+
+        return this;
+    }
+
+    internal IReadOnlyCollection<string> AdditionalBlockedCharacterValues => _additionalBlockedCharacters;
+
+    internal bool IsRuleEnabled(UnclaimableRule rule) => (DisabledRules & rule) == 0;
+
+    private static void ValidateCharacter(string value, string parameterName)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            throw new ArgumentException("A blocked character cannot be null or empty.", parameterName);
+        }
+
+        if (value.Length == 1 && !char.IsSurrogate(value[0]))
+        {
+            return;
+        }
+
+        if (value.Length == 2 && char.IsSurrogatePair(value[0], value[1]))
+        {
+            return;
+        }
+
+        throw new ArgumentException("Values must contain exactly one Unicode character.", parameterName);
+    }
 }
