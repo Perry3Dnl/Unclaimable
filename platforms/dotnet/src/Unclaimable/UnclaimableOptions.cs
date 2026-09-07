@@ -28,6 +28,15 @@ public sealed class UnclaimableOptions
     public bool AsciiOnly { get; set; }
 
     /// <summary>
+    /// Optional application-wide validation message used by the ASP.NET Core
+    /// ClaimableUsername attribute when a username is rejected.
+    /// Use {FieldName} to include the validation display name.
+    /// When not set, Unclaimable uses its built-in validation message.
+    /// An ErrorMessage configured directly on the attribute takes precedence.
+    /// </summary>
+    public string? ValidationMessage { get; set; }
+
+    /// <summary>
     /// Application-specific names to reserve in addition to the shared dataset.
     /// Tenant names, internal identities, and project-specific terms belong here
     /// rather than in the global data files.

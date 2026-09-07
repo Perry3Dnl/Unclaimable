@@ -5,6 +5,8 @@ namespace Unclaimable.AspNetCore;
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
 public sealed class ClaimableUsernameAttribute : ValidationAttribute
 {
+    private const string DefaultValidationMessage = "{FieldName} is reserved and cannot be claimed.";
+
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
         if (value is null)
@@ -20,8 +22,20 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
         var checker = validationContext.GetService(typeof(IUnclaimableChecker)) as IUnclaimableChecker
                       ?? UnclaimableChecker.Default;
 
-        return checker.IsReserved(text)
-            ? new ValidationResult(ErrorMessage ?? $"{validationContext.DisplayName} is reserved and cannot be claimed.")
-            : ValidationResult.Success;
+        if (!checker.IsReserved(text))
+        {
+            return ValidationResult.Success;
+        }
+
+        var options = validationContext.GetService(typeof(UnclaimableOptions)) as UnclaimableOptions;
+        var message = !string.IsNullOrWhiteSpace(ErrorMessage)
+            ? ErrorMessage!
+            : !string.IsNullOrWhiteSpace(options?.ValidationMessage)
+                ? options!.ValidationMessage!
+                : DefaultValidationMessage;
+
+        message = message.Replace("{FieldName}", validationContext.DisplayName, StringComparison.Ordinal);
+
+        return new ValidationResult(message);
     }
 }
