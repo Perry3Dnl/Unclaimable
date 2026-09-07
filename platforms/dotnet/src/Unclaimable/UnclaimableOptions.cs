@@ -17,10 +17,10 @@ public sealed class UnclaimableOptions
     public UnclaimableRule DisabledRules { get; set; } = UnclaimableRule.None;
 
     /// <summary>
-    /// Localized built-in dataset to use. Dutch is the default.
+    /// Localized built-in dataset to use. English is the default.
     /// Global datasets such as brands and technology are always included.
     /// </summary>
-    public UnclaimableLanguage Language { get; set; } = UnclaimableLanguage.Dutch;
+    public UnclaimableLanguage Language { get; set; } = UnclaimableLanguage.English;
 
     /// <summary>
     /// Include every supported localized dataset instead of only <see cref="Language"/>.
