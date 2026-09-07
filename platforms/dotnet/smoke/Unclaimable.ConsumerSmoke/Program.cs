@@ -13,79 +13,68 @@ static void Require(bool condition, string message)
 
 var checker = UnclaimableChecker.Default;
 
-var obfuscated = checker.Check("N1k3");
-Require(obfuscated.IsReserved, "N1k3 should be rejected.");
-Require(obfuscated.MatchedValue == "nike", "N1k3 should resolve to nike.");
-Require(obfuscated.Category == "brands", "N1k3 should resolve to the brands category.");
+Require(checker.Check("admin").Category == "roles", "admin should be reserved.");
+Require(checker.Check("supportive").MatchKind == UnclaimableMatchKind.Partial, "Strict partial matching should be enabled by default.");
+Require(checker.Check("ordinary2").MatchKind == UnclaimableMatchKind.NumbersNotAllowed, "Numbers should be blocked by default.");
+Require(checker.Check("ordinary-user").MatchKind == UnclaimableMatchKind.BlockedCharacter, "Hyphens should be blocked by default.");
+Require(checker.Check("ordinary_user").MatchKind == UnclaimableMatchKind.BlockedCharacter, "Underscores should be blocked by default.");
+Require(checker.Check("ordinary user").MatchKind == UnclaimableMatchKind.BlockedCharacter, "Whitespace should be blocked by default.");
+Require(checker.Check("ab").MatchKind == UnclaimableMatchKind.TooShort, "Minimum length should be enforced by default.");
+Require(checker.Check(new string('a', 33)).MatchKind == UnclaimableMatchKind.TooLong, "Maximum length should be enforced by default.");
+Require(checker.Check("fuck").Category == "profanity", "Profanity should participate by default.");
+
+var relaxed = new UnclaimableChecker(new UnclaimableOptions
+{
+    Strictness = UnclaimableStrictness.Standard,
+    DisabledRules = UnclaimableRule.Numbers
+                    | UnclaimableRule.BlockedCharacters
+                    | UnclaimableRule.Whitespace
+                    | UnclaimableRule.LeadingSeparator
+                    | UnclaimableRule.TrailingSeparator
+});
+
+Require(relaxed.IsClaimable("ordinary-user2"), "Applications should be able to relax individual rules.");
+
+var obfuscationChecker = new UnclaimableChecker(new UnclaimableOptions
+{
+    DisabledRules = UnclaimableRule.Numbers
+});
+var obfuscated = obfuscationChecker.Check("N1k3");
+Require(obfuscated.MatchedValue == "nike", "N1k3 should resolve to nike when numeric identifiers are allowed.");
 Require(obfuscated.MatchKind == UnclaimableMatchKind.Obfuscated, "N1k3 should use obfuscation matching.");
 
 var unicodeConfusable = checker.Check("\u0430pple");
-Require(unicodeConfusable.IsReserved, "Cyrillic-a apple should be rejected.");
 Require(unicodeConfusable.MatchedValue == "apple", "Cyrillic-a apple should resolve to apple.");
 Require(unicodeConfusable.MatchKind == UnclaimableMatchKind.UnicodeConfusable, "Cyrillic-a apple should use Unicode-confusable matching.");
 
-Require(checker.IsClaimable("ordinary-user"), "ordinary-user should remain claimable.");
-Require(checker.IsClaimable("old-admin"), "Standard strictness should keep partial matching opt-in.");
-Require(checker.IsClaimable("admin2"), "Standard strictness should keep admin2 claimable.");
-Require(checker.IsClaimable("fuck"), "Profanity matching should remain opt-in.");
+var startupOptions = new UnclaimableOptions();
+startupOptions.AdditionalBlockedCharacters("^", "$");
+var startupChecker = new UnclaimableChecker(startupOptions);
+Require(startupChecker.Check("normal^name").MatchKind == UnclaimableMatchKind.BlockedCharacter, "Startup blocked characters should be enforced.");
 
-var profanityChecker = new UnclaimableChecker(new UnclaimableOptions
-{
-    ProfanityMatching = true
-});
-
-var profanity = profanityChecker.Check("sh1t");
-Require(profanity.IsReserved, "Opt-in profanity matching should reject obfuscated profanity.");
-Require(profanity.MatchedValue == "shit", "sh1t should resolve to shit.");
-Require(profanity.Category == "profanity", "Profanity matches should preserve the profanity category.");
-Require(profanity.MatchKind == UnclaimableMatchKind.Obfuscated, "sh1t should use obfuscation matching.");
-
-var strictChecker = new UnclaimableChecker(new UnclaimableOptions
-{
-    Strictness = UnclaimableStrictness.Strict,
-    AllowNumbers = false
-});
-
-Require(strictChecker.IsReserved("old-admin"), "Strict mode should reject old-admin.");
-Require(strictChecker.IsReserved("admin2"), "Strict mode should reject admin2 when numbers are otherwise allowed.");
-
-var numberViolation = strictChecker.Check("old-admin2");
-Require(numberViolation.IsReserved, "Numbers should be rejected when AllowNumbers is false.");
-Require(numberViolation.MatchKind == UnclaimableMatchKind.NumbersNotAllowed, "Number policy should fail before reserved-name matching.");
-Require(numberViolation.OffendingCharacterIndex == 9, "Number policy should expose the offending index.");
-Require(numberViolation.OffendingCharacter == "2", "Number policy should expose the offending character.");
-
-var detailed = strictChecker.CheckDetailed("old-admin2", includeMessages: true);
-Require(detailed.Diagnostics.Any(item => item.Kind == UnclaimableMatchKind.NumbersNotAllowed), "Detailed checks should include the number-policy failure.");
-Require(detailed.Diagnostics.Any(item => item.Kind == UnclaimableMatchKind.Partial && item.MatchedValue == "admin"), "Detailed checks should also include the embedded reserved name.");
-Require(detailed.Diagnostics.All(item => !string.IsNullOrWhiteSpace(item.Message)), "Detailed checks with messages should provide feedback text.");
-
-var asciiChecker = new UnclaimableChecker(new UnclaimableOptions
-{
-    AsciiOnly = true
-});
-
-var invalidCharacters = asciiChecker.Check("caf\u00E9");
-Require(invalidCharacters.IsReserved, "Non-ASCII input should be rejected when AsciiOnly is enabled.");
-Require(invalidCharacters.MatchKind == UnclaimableMatchKind.InvalidCharacters, "AsciiOnly rejection should report InvalidCharacters.");
-Require(invalidCharacters.OffendingCharacterIndex == 3, "AsciiOnly rejection should report the original input index.");
+var runtimeOptions = new UnclaimableOptions { Strictness = UnclaimableStrictness.Standard };
+var runtimePolicy = new UnclaimablePolicy(runtimeOptions.ConfiguredBlockedCharacters);
+var runtimeChecker = new UnclaimableChecker(runtimeOptions, runtimePolicy);
+Require(runtimeChecker.IsClaimable("normal^name"), "Caret should initially be allowed.");
+runtimePolicy.BlockCharacter("^");
+Require(runtimeChecker.Check("normal^name").MatchKind == UnclaimableMatchKind.BlockedCharacter, "Runtime policy changes should affect the existing checker.");
 
 var services = new ServiceCollection();
 services.AddUnclaimable(options =>
 {
     options.AdditionalReserved.Add("examplebrand");
-    options.Strictness = UnclaimableStrictness.Strict;
-    options.AllowNumbers = false;
+    options.AdditionalBlockedCharacters("^");
     options.ValidationMessage = "{FieldName} is unavailable.";
     options.Messages.Reserved = "{FieldName} '{MatchedValue}' is reserved.";
-    options.Messages.Partial = "{FieldName} contains protected value '{MatchedValue}'.";
 });
 using var provider = services.BuildServiceProvider();
 
 var configuredChecker = provider.GetRequiredService<IUnclaimableChecker>();
+var configuredPolicy = provider.GetRequiredService<IUnclaimablePolicy>();
 Require(configuredChecker.IsReserved("ExampleBrand"), "DI-configured AdditionalReserved entry should be rejected.");
-Require(configuredChecker.IsReserved("old-examplebrand"), "DI-configured strict matching should apply to AdditionalReserved entries.");
-Require(configuredChecker.Check("user2").MatchKind == UnclaimableMatchKind.NumbersNotAllowed, "DI-configured number policy should be enforced.");
+Require(configuredChecker.Check("normal^name").MatchKind == UnclaimableMatchKind.BlockedCharacter, "DI should seed startup blocked characters.");
+configuredPolicy.BlockCharacter("@");
+Require(configuredChecker.Check("normal@name").MatchKind == UnclaimableMatchKind.BlockedCharacter, "DI runtime policy should stay live.");
 
 var rejectedModel = new SignupModel { UserName = "examplebrand" };
 var rejectedResults = new List<ValidationResult>();
@@ -96,23 +85,6 @@ Require(
 Require(
     rejectedResults.Count == 1 && rejectedResults[0].ErrorMessage == "UserName 'examplebrand' is reserved.",
     "ClaimableUsernameAttribute should use the configured reason-specific validation message.");
-
-var partialModel = new SignupModel { UserName = "old-examplebrand" };
-var partialResults = new List<ValidationResult>();
-var partialContext = new ValidationContext(partialModel, provider, items: null);
-Require(
-    !Validator.TryValidateObject(partialModel, partialContext, partialResults, validateAllProperties: true),
-    "ClaimableUsernameAttribute should reject a strict partial match.");
-Require(
-    partialResults.Count == 1 && partialResults[0].ErrorMessage == "UserName contains protected value 'examplebrand'.",
-    "ClaimableUsernameAttribute should use the configured partial-match message.");
-
-var acceptedModel = new SignupModel { UserName = "ordinary-user" };
-var acceptedResults = new List<ValidationResult>();
-var acceptedContext = new ValidationContext(acceptedModel, provider, items: null);
-Require(
-    Validator.TryValidateObject(acceptedModel, acceptedContext, acceptedResults, validateAllProperties: true),
-    "ClaimableUsernameAttribute should accept an ordinary value.");
 
 Console.WriteLine("Packaged Unclaimable consumer smoke test passed.");
 

@@ -1,20 +1,21 @@
 namespace Unclaimable;
 
 /// <summary>
-/// Controls how aggressively Unclaimable applies reserved-name matching rules.
+/// Controls how aggressively Unclaimable applies embedded reserved-name matching rules.
 /// </summary>
 public enum UnclaimableStrictness
 {
     /// <summary>
-    /// Preserves the normal matching behavior. Embedded reserved names are only
+    /// Uses the more conservative reserved-name behavior. Embedded reserved names are only
     /// rejected when <see cref="UnclaimableOptions.PartialMatching"/> is enabled explicitly.
+    /// Use this when an application intentionally prefers fewer substring matches.
     /// </summary>
     Standard = 0,
 
     /// <summary>
     /// Enables embedded/partial reserved-name matching in addition to the normal checks.
-    /// For example, "admin2", "old-admin", and "admin-old" are rejected because they
-    /// contain the reserved value "admin".
+    /// This is the default through <see cref="UnclaimableOptions"/>. Values such as
+    /// "supportive", "apples", and "nikee" can therefore resolve to protected values.
     /// </summary>
     Strict = 1
 }

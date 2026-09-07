@@ -28,7 +28,7 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
 
         var options = validationContext.GetService(typeof(UnclaimableOptions)) as UnclaimableOptions;
         var message = ResolveMessage(result, options);
-        message = ApplyPlaceholders(message, validationContext.DisplayName, result);
+        message = ApplyPlaceholders(message, validationContext.DisplayName, result, options);
 
         return new ValidationResult(message);
     }
@@ -77,6 +77,11 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
             UnclaimableMatchKind.UnicodeConfusable => messages.UnicodeConfusable,
             UnclaimableMatchKind.NumbersNotAllowed => messages.NumbersNotAllowed,
             UnclaimableMatchKind.InvalidCharacters => messages.InvalidCharacters,
+            UnclaimableMatchKind.TooShort => messages.TooShort,
+            UnclaimableMatchKind.TooLong => messages.TooLong,
+            UnclaimableMatchKind.BlockedCharacter => messages.BlockedCharacter,
+            UnclaimableMatchKind.LeadingSeparator => messages.LeadingSeparator,
+            UnclaimableMatchKind.TrailingSeparator => messages.TrailingSeparator,
             _ => null
         };
     }
@@ -97,6 +102,11 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
             UnclaimableMatchKind.UnicodeConfusable => "{FieldName} contains Unicode lookalikes that match a reserved name.",
             UnclaimableMatchKind.NumbersNotAllowed => "Numbers are not allowed in {FieldName}.",
             UnclaimableMatchKind.InvalidCharacters => "{FieldName} contains an invalid character.",
+            UnclaimableMatchKind.TooShort => "{FieldName} must be at least {MinimumLength} characters long.",
+            UnclaimableMatchKind.TooLong => "{FieldName} must be no more than {MaximumLength} characters long.",
+            UnclaimableMatchKind.BlockedCharacter => "{FieldName} contains a blocked character.",
+            UnclaimableMatchKind.LeadingSeparator => "{FieldName} cannot start with a separator.",
+            UnclaimableMatchKind.TrailingSeparator => "{FieldName} cannot end with a separator.",
             _ => "{FieldName} is not allowed."
         };
     }
@@ -104,13 +114,17 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
     private static string ApplyPlaceholders(
         string message,
         string fieldName,
-        UnclaimableResult result)
+        UnclaimableResult result,
+        UnclaimableOptions? options)
     {
         return message
             .Replace("{FieldName}", fieldName, StringComparison.Ordinal)
             .Replace("{MatchedValue}", result.MatchedValue ?? string.Empty, StringComparison.Ordinal)
             .Replace("{Category}", result.Category ?? string.Empty, StringComparison.Ordinal)
             .Replace("{Character}", result.OffendingCharacter ?? string.Empty, StringComparison.Ordinal)
-            .Replace("{Index}", result.OffendingCharacterIndex?.ToString() ?? string.Empty, StringComparison.Ordinal);
+            .Replace("{Index}", result.OffendingCharacterIndex?.ToString() ?? string.Empty, StringComparison.Ordinal)
+            .Replace("{Length}", result.InputLength.ToString(), StringComparison.Ordinal)
+            .Replace("{MinimumLength}", options?.MinimumLength.ToString() ?? string.Empty, StringComparison.Ordinal)
+            .Replace("{MaximumLength}", options?.MaximumLength.ToString() ?? string.Empty, StringComparison.Ordinal);
     }
 }
