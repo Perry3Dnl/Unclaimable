@@ -9,5 +9,8 @@ public enum UnclaimableLanguage
     English = 0,
 
     /// <summary>Dutch localized datasets.</summary>
-    Dutch = 1
+    Dutch = 1,
+
+    /// <summary>German localized datasets.</summary>
+    German = 2
 }

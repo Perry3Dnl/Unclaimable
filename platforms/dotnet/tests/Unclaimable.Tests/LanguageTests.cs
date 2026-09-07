@@ -13,6 +13,7 @@ public sealed class LanguageTests
         Assert.False(options.AllowMultiLanguage);
         Assert.True(UnclaimableChecker.Default.IsReserved("facturatiehulp"));
         Assert.True(UnclaimableChecker.Default.IsClaimable("customersupport"));
+        Assert.True(UnclaimableChecker.Default.IsClaimable("abrechnungshilfe"));
     }
 
     [Fact]
@@ -27,6 +28,7 @@ public sealed class LanguageTests
         Assert.True(checker.IsReserved("fuckwaffle"));
         Assert.True(checker.IsClaimable("facturatiehulp"));
         Assert.True(checker.IsClaimable("godverdomme"));
+        Assert.True(checker.IsClaimable("abrechnungshilfe"));
     }
 
     [Fact]
@@ -44,7 +46,24 @@ public sealed class LanguageTests
     }
 
     [Fact]
-    public void MultiLanguageIncludesEnglishAndDutch()
+    public void GermanCanBeSelectedExplicitly()
+    {
+        var checker = new UnclaimableChecker(new UnclaimableOptions
+        {
+            Language = UnclaimableLanguage.German
+        });
+
+        Assert.Equal("support", checker.Check("abrechnungshilfe").Category);
+        Assert.Equal("roles", checker.Check("systemverwalter").Category);
+        Assert.Equal("system", checker.Check("passwortvergessen").Category);
+        Assert.Equal("profanity", checker.Check("scheiße").Category);
+        Assert.True(checker.IsReserved("scheisse"));
+        Assert.True(checker.IsClaimable("facturatiehulp"));
+        Assert.True(checker.IsClaimable("customersupport"));
+    }
+
+    [Fact]
+    public void MultiLanguageIncludesAllSupportedLanguages()
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
@@ -54,13 +73,16 @@ public sealed class LanguageTests
 
         Assert.True(checker.IsReserved("facturatiehulp"));
         Assert.True(checker.IsReserved("customersupport"));
+        Assert.True(checker.IsReserved("abrechnungshilfe"));
         Assert.True(checker.IsReserved("godverdomme"));
         Assert.True(checker.IsReserved("fuckwaffle"));
+        Assert.True(checker.IsReserved("scheiße"));
     }
 
     [Theory]
     [InlineData(UnclaimableLanguage.Dutch)]
     [InlineData(UnclaimableLanguage.English)]
+    [InlineData(UnclaimableLanguage.German)]
     public void GlobalDatasetsAreAlwaysIncluded(UnclaimableLanguage language)
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
