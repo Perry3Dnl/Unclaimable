@@ -11,7 +11,7 @@ Initial public NuGet release.
 - Strict-by-default validation so `AddUnclaimable()` enables the recommended protection set without additional configuration.
 - `UnclaimableRule` flags and `DisabledRules` for selectively relaxing individual checks while keeping all other protections enabled.
 - Localized built-in datasets for Dutch, English, and German across profanity, roles, support/trust identities, and system names.
-- Dutch as the default localized language through `UnclaimableOptions.Language`, with explicit English and German selection through `UnclaimableLanguage`.
+- English as the default localized language through `UnclaimableOptions.Language`, with explicit Dutch and German selection through `UnclaimableLanguage`.
 - Opt-in `AllowMultiLanguage` support that loads every supported localized dataset while keeping single-language mode as the lean default.
 - Language-independent global datasets for technology names and broadly recognizable brands.
 - Extensible language-tagged JSON dataset format using ISO-style language codes or `global` scope.
