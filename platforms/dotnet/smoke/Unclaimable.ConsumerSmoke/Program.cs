@@ -36,7 +36,11 @@ Require(invalidCharacters.IsReserved, "Non-ASCII input should be rejected when A
 Require(invalidCharacters.MatchKind == UnclaimableMatchKind.InvalidCharacters, "AsciiOnly rejection should report InvalidCharacters.");
 
 var services = new ServiceCollection();
-services.AddUnclaimable(options => options.AdditionalReserved.Add("examplebrand"));
+services.AddUnclaimable(options =>
+{
+    options.AdditionalReserved.Add("examplebrand");
+    options.ValidationMessage = "{FieldName} is unavailable.";
+});
 using var provider = services.BuildServiceProvider();
 
 var configuredChecker = provider.GetRequiredService<IUnclaimableChecker>();
@@ -48,6 +52,9 @@ var rejectedContext = new ValidationContext(rejectedModel, provider, items: null
 Require(
     !Validator.TryValidateObject(rejectedModel, rejectedContext, rejectedResults, validateAllProperties: true),
     "ClaimableUsernameAttribute should reject a configured reserved value.");
+Require(
+    rejectedResults.Count == 1 && rejectedResults[0].ErrorMessage == "UserName is unavailable.",
+    "ClaimableUsernameAttribute should use the configured global validation message.");
 
 var acceptedModel = new SignupModel { UserName = "ordinary-user" };
 var acceptedResults = new List<ValidationResult>();
