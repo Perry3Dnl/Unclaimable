@@ -61,6 +61,7 @@ public sealed class ExpandedDatasetTests
     [InlineData("qatarairways", "brands")]
     [InlineData("centraalbeheer", "brands")]
     [InlineData("fuckboy", "profanity")]
+    [InlineData("fuckboylover", "profanity")]
     [InlineData("fuckwaffle", "profanity")]
     public void ExpandedReservedNamesAreRejected(string value, string category)
     {
