@@ -15,11 +15,11 @@ public sealed class UnclaimablePolicy : IUnclaimablePolicy
     {
     }
 
-    internal UnclaimablePolicy(IEnumerable<string> additionalBlockedCharacters)
+    public UnclaimablePolicy(IEnumerable<string> additionalBlockedCharacters)
     {
         if (additionalBlockedCharacters is null)
         {
-            return;
+            throw new ArgumentNullException(nameof(additionalBlockedCharacters));
         }
 
         foreach (var value in additionalBlockedCharacters)
