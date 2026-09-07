@@ -11,7 +11,7 @@ public sealed class LanguageTests
 
         Assert.Equal(UnclaimableLanguage.Dutch, options.Language);
         Assert.False(options.AllowMultiLanguage);
-        Assert.True(UnclaimableChecker.Default.IsReserved("klantenservice"));
+        Assert.True(UnclaimableChecker.Default.IsReserved("facturatiehulp"));
         Assert.True(UnclaimableChecker.Default.IsClaimable("customersupport"));
     }
 
@@ -25,7 +25,7 @@ public sealed class LanguageTests
 
         Assert.True(checker.IsReserved("customersupport"));
         Assert.True(checker.IsReserved("fuckwaffle"));
-        Assert.True(checker.IsClaimable("klantenservice"));
+        Assert.True(checker.IsClaimable("facturatiehulp"));
         Assert.True(checker.IsClaimable("godverdomme"));
     }
 
@@ -37,7 +37,7 @@ public sealed class LanguageTests
             Language = UnclaimableLanguage.Dutch
         });
 
-        Assert.Equal("support", checker.Check("klantenservice").Category);
+        Assert.Equal("support", checker.Check("facturatiehulp").Category);
         Assert.Equal("roles", checker.Check("systeembeheerder").Category);
         Assert.Equal("system", checker.Check("wachtwoordvergeten").Category);
         Assert.Equal("profanity", checker.Check("godverdomme").Category);
@@ -52,7 +52,7 @@ public sealed class LanguageTests
             AllowMultiLanguage = true
         });
 
-        Assert.True(checker.IsReserved("klantenservice"));
+        Assert.True(checker.IsReserved("facturatiehulp"));
         Assert.True(checker.IsReserved("customersupport"));
         Assert.True(checker.IsReserved("godverdomme"));
         Assert.True(checker.IsReserved("fuckwaffle"));
@@ -70,6 +70,22 @@ public sealed class LanguageTests
 
         Assert.Equal("brands", checker.Check("rituals").Category);
         Assert.Equal("technology", checker.Check("homeassistant").Category);
+    }
+
+    [Fact]
+    public void MixedLanguageValuesStillMatchEnabledProtectedSubstrings()
+    {
+        var checker = new UnclaimableChecker(new UnclaimableOptions
+        {
+            Language = UnclaimableLanguage.English
+        });
+
+        var result = checker.Check("klantenservice");
+
+        Assert.True(result.IsReserved);
+        Assert.Equal("service", result.MatchedValue);
+        Assert.Equal("system", result.Category);
+        Assert.Equal(UnclaimableMatchKind.Partial, result.MatchKind);
     }
 
     [Fact]
