@@ -80,6 +80,14 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             throw new ArgumentNullException(nameof(options));
         }
 
+        if (!Enum.IsDefined(typeof(UnclaimableStrictness), options.Strictness))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(options.Strictness),
+                options.Strictness,
+                "Strictness must be Basic, Standard, or Strict.");
+        }
+
         if (options.PartialMatchMinimumLength < 1)
         {
             throw new ArgumentOutOfRangeException(

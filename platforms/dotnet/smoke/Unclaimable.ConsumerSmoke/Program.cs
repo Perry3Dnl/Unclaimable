@@ -29,6 +29,18 @@ Require(checker.IsClaimable("old-admin"), "Standard strictness should keep parti
 Require(checker.IsClaimable("admin2"), "Standard strictness should keep admin2 claimable.");
 Require(checker.IsClaimable("fuck"), "Profanity matching should remain opt-in.");
 
+var basicOptions = new UnclaimableOptions
+{
+    Strictness = UnclaimableStrictness.Basic
+};
+var basicChecker = new UnclaimableChecker(basicOptions);
+Require(basicChecker.IsReserved("customer-service"), "Basic mode should keep compact matching.");
+Require(basicChecker.IsClaimable("N1k3"), "Basic mode should not apply obfuscation matching.");
+Require(basicChecker.IsClaimable("\u0430pple"), "Basic mode should not apply Unicode-confusable matching.");
+Require(
+    basicOptions.EnabledRules == (UnclaimableRule.Exact | UnclaimableRule.Compact),
+    "Basic mode should expose its effective rules.");
+
 var profanityChecker = new UnclaimableChecker(new UnclaimableOptions
 {
     ProfanityMatching = true
@@ -48,6 +60,13 @@ var strictChecker = new UnclaimableChecker(new UnclaimableOptions
 
 Require(strictChecker.IsReserved("old-admin"), "Strict mode should reject old-admin.");
 Require(strictChecker.IsReserved("admin2"), "Strict mode should reject admin2 when numbers are otherwise allowed.");
+
+var overriddenStrictChecker = new UnclaimableChecker(new UnclaimableOptions
+{
+    Strictness = UnclaimableStrictness.Strict,
+    PartialMatching = false
+});
+Require(overriddenStrictChecker.IsClaimable("old-admin"), "An explicit rule override should win over Strict mode.");
 
 var numberViolation = strictChecker.Check("old-admin2");
 Require(numberViolation.IsReserved, "Numbers should be rejected when AllowNumbers is false.");

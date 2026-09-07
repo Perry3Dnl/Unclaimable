@@ -9,14 +9,16 @@ Initial public NuGet release.
 ### Added
 
 - Runtime-neutral reserved-name datasets for roles, support/trust identities, system names, technology names, and broadly recognizable brands.
-- More than 700 curated always-on reserved values across the shared datasets.
+- 1,467 unique curated always-on reserved values across the shared datasets, plus 191 opt-in profanity values.
 - Opt-in English profanity dataset with separate opt-in partial matching to reduce substring false positives.
 - Exact matching with Unicode NFKC normalization and invariant case normalization.
 - Compact matching for separator and punctuation variants.
 - Bounded leetspeak and symbol-obfuscation matching.
 - Selected Unicode-confusable and diacritic normalization for common impersonation attempts.
 - Opt-in partial matching for embedded reserved values such as `old-admin` and `administrator2`.
-- `UnclaimableStrictness` with `Standard` and `Strict` modes; `Strict` automatically enables embedded reserved-name matching so values such as `admin2`, `old-admin`, and `admin-old` are rejected.
+- `UnclaimableStrictness` with `Basic`, `Standard`, and `Strict` presets; `Strict` enables embedded reserved-name matching so values such as `admin2`, `old-admin`, and `admin-old` are rejected.
+- Explicit matching-rule overrides that take precedence over presets, plus `ResetMatchingRuleOverrides()` to resume preset behavior.
+- Computed `EnabledRules` / `UnclaimableRule` flags for inspecting the final effective policy.
 - Configurable minimum reserved-name length for partial matching.
 - Optional fail-fast number policy through `AllowNumbers`.
 - Optional printable-ASCII-only policy through `AsciiOnly`.
