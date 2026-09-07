@@ -2,11 +2,11 @@
   <PropertyGroup>
     <UnclaimableVersion>0.1.0</UnclaimableVersion>
 
-    <Authors>ImtehQ</Authors>
+    <Authors>Perry3D.nl</Authors>
     <Copyright>Copyright (c) 2026 Perry3D.nl</Copyright>
-    <RepositoryUrl>https://github.com/ImtehQ/Unclaimable</RepositoryUrl>
+    <RepositoryUrl>https://github.com/Perry3Dnl/Unclaimable</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageProjectUrl>https://github.com/ImtehQ/Unclaimable</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/Perry3Dnl/Unclaimable</PackageProjectUrl>
     <PackageLicenseExpression>MPL-2.0</PackageLicenseExpression>
 
     <PublishRepositoryUrl>true</PublishRepositoryUrl>

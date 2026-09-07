@@ -10,6 +10,11 @@
     "category": "roles"
   },
   {
+    "value": "superadmin",
+    "reserved": true,
+    "category": "roles"
+  },
+  {
     "value": "customer-service",
     "reserved": true,
     "category": "support"
@@ -20,7 +25,17 @@
     "category": "support"
   },
   {
+    "value": "account-recovery",
+    "reserved": true,
+    "category": "support"
+  },
+  {
     "value": "no.reply",
+    "reserved": true,
+    "category": "system"
+  },
+  {
+    "value": "service-account",
     "reserved": true,
     "category": "system"
   },
@@ -40,12 +55,27 @@
     "category": "technology"
   },
   {
+    "value": "cloudflare",
+    "reserved": true,
+    "category": "technology"
+  },
+  {
+    "value": "anthropic",
+    "reserved": true,
+    "category": "technology"
+  },
+  {
     "value": "nike",
     "reserved": true,
     "category": "brands"
   },
   {
     "value": "coca-cola",
+    "reserved": true,
+    "category": "brands"
+  },
+  {
+    "value": "american-express",
     "reserved": true,
     "category": "brands"
   },

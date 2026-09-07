@@ -115,7 +115,7 @@ foreach ($package in $packages) {
         Assert-True ($iconNode.InnerText -eq "unclaimable-icon.png") "$id package icon metadata is incorrect."
         Assert-True ($null -ne $repositoryNode) "$id package repository metadata is missing."
         Assert-True ($repositoryNode.GetAttribute("type") -eq "git") "$id package repository type is not git."
-        Assert-True ($repositoryNode.GetAttribute("url") -eq "https://github.com/ImtehQ/Unclaimable") "$id package repository URL is incorrect."
+        Assert-True ($repositoryNode.GetAttribute("url") -eq "https://github.com/Perry3Dnl/Unclaimable") "$id package repository URL is incorrect."
         Assert-True (-not [string]::IsNullOrWhiteSpace($repositoryNode.GetAttribute("commit"))) "$id package repository commit metadata is missing."
 
         $sourceLinkDependency = $nuspec.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='dependencies']//*[local-name()='dependency'][@id='Microsoft.SourceLink.GitHub']")
