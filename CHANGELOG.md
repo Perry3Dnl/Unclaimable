@@ -10,15 +10,18 @@ Initial public NuGet release.
 
 - Strict-by-default validation so `AddUnclaimable()` enables the recommended protection set without additional configuration.
 - `UnclaimableRule` flags and `DisabledRules` for selectively relaxing individual checks while keeping all other protections enabled.
-- Runtime-neutral reserved-name datasets for roles, support/trust identities, system names, technology names, broadly recognizable brands, and English profanity.
-- More than 700 curated protected values across the shared datasets.
+- Localized built-in datasets for Dutch, English, and German across profanity, roles, support/trust identities, and system names.
+- Dutch as the default localized language through `UnclaimableOptions.Language`, with explicit English and German selection through `UnclaimableLanguage`.
+- Opt-in `AllowMultiLanguage` support that loads every supported localized dataset while keeping single-language mode as the lean default.
+- Language-independent global datasets for technology names and broadly recognizable brands.
+- Extensible language-tagged JSON dataset format using ISO-style language codes or `global` scope.
 - Exact matching with Unicode NFKC normalization and invariant case normalization.
 - Compact matching for separator and punctuation variants.
 - Strict embedded/partial reserved-name matching by default, with configurable `PartialMatchMinimumLength`.
 - `UnclaimableStrictness.Standard` as an explicit more-permissive reserved-name mode and `UnclaimableStrictness.Strict` as the default.
 - Bounded leetspeak and symbol-obfuscation matching.
 - Selected Unicode-confusable and diacritic normalization for common impersonation attempts.
-- English profanity matching enabled by default, with separate opt-in `ProfanityPartialMatching` for more aggressive substring filtering.
+- Localized profanity matching enabled by default for the selected language(s), with separate opt-in `ProfanityPartialMatching` for more aggressive substring filtering.
 - Fail-fast minimum and maximum length validation with defaults of 3 and 32 characters.
 - Fail-fast Unicode decimal-digit rejection by default.
 - Whitespace restrictions and a default blocked-character policy for `-` and `_`.
@@ -34,7 +37,7 @@ Initial public NuGet release.
 - `[ClaimableUsername]` model-validation attribute.
 - Application-wide ASP.NET validation-message configuration with attribute-level overrides.
 - Reason-specific ASP.NET validation messages with placeholders for `{FieldName}`, `{MatchedValue}`, `{Category}`, `{Character}`, `{Index}`, `{Length}`, `{MinimumLength}`, and `{MaximumLength}`.
-- xUnit coverage for strict defaults, opt-out behavior, structural validation, runtime policy changes, message precedence/placeholders, profanity interaction, matching behavior, and packaged-consumer behavior.
+- xUnit coverage for strict defaults, language isolation, multi-language behavior, opt-out behavior, structural validation, runtime policy changes, message precedence/placeholders, profanity interaction, matching behavior, and packaged-consumer behavior.
 - `netstandard2.0` dependency-free runtime core.
 - `net8.0` ASP.NET Core integration package.
 - MPL-2.0 licensing under Perry3D.nl.
