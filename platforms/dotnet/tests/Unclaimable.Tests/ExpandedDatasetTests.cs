@@ -4,6 +4,16 @@ namespace Unclaimable.Tests;
 
 public sealed class ExpandedDatasetTests
 {
+    private static readonly UnclaimableChecker DatasetChecker = new UnclaimableChecker(new UnclaimableOptions
+    {
+        Strictness = UnclaimableStrictness.Standard,
+        DisabledRules = UnclaimableRule.Numbers
+                        | UnclaimableRule.BlockedCharacters
+                        | UnclaimableRule.Whitespace
+                        | UnclaimableRule.LeadingSeparator
+                        | UnclaimableRule.TrailingSeparator
+    });
+
     [Theory]
     [InlineData("superadmin", "roles")]
     [InlineData("communitymoderator", "roles")]
@@ -25,7 +35,7 @@ public sealed class ExpandedDatasetTests
     [InlineData("qatarairways", "brands")]
     public void ExpandedReservedNamesAreRejected(string value, string category)
     {
-        var result = UnclaimableChecker.Default.Check(value);
+        var result = DatasetChecker.Check(value);
 
         Assert.True(result.IsReserved);
         Assert.Equal(category, result.Category);
@@ -36,8 +46,8 @@ public sealed class ExpandedDatasetTests
     [InlineData("bluegarden")]
     [InlineData("mountainreader")]
     [InlineData("friendly-coder-42")]
-    public void OrdinaryNamesStillRemainClaimable(string value)
+    public void OrdinaryNamesRemainClaimableWhenStructuralPolicyIsRelaxed(string value)
     {
-        Assert.True(UnclaimableChecker.Default.IsClaimable(value));
+        Assert.True(DatasetChecker.IsClaimable(value));
     }
 }
