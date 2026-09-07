@@ -7,4 +7,6 @@ public interface IUnclaimableChecker
     bool IsClaimable(string? value);
 
     UnclaimableResult Check(string? value);
+
+    UnclaimableDetailedResult CheckDetailed(string? value, bool includeMessages = false);
 }

@@ -23,6 +23,22 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         public string Category { get; }
     }
 
+    private sealed class PartialEntry
+    {
+        public PartialEntry(string exact, string compact, ReservedEntry entry)
+        {
+            Exact = exact;
+            Compact = compact;
+            Entry = entry;
+        }
+
+        public string Exact { get; }
+
+        public string Compact { get; }
+
+        public ReservedEntry Entry { get; }
+    }
+
     [DataContract]
     private sealed class ReservedListDocument
     {
@@ -41,9 +57,13 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
     private readonly Dictionary<string, ReservedEntry> _exact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
     private readonly Dictionary<string, ReservedEntry> _compact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
+    private readonly List<PartialEntry> _partialEntries = new List<PartialEntry>();
     private readonly bool _compactMatching;
+    private readonly bool _partialMatching;
+    private readonly int _partialMatchMinimumLength;
     private readonly bool _obfuscationMatching;
     private readonly bool _unicodeConfusableMatching;
+    private readonly bool _allowNumbers;
     private readonly bool _asciiOnly;
 
     public static UnclaimableChecker Default { get; } = new UnclaimableChecker();
@@ -60,9 +80,19 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             throw new ArgumentNullException(nameof(options));
         }
 
+        if (options.PartialMatchMinimumLength < 1)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(options.PartialMatchMinimumLength),
+                "PartialMatchMinimumLength must be at least 1.");
+        }
+
         _compactMatching = options.CompactMatching;
+        _partialMatching = options.PartialMatching;
+        _partialMatchMinimumLength = options.PartialMatchMinimumLength;
         _obfuscationMatching = options.ObfuscationMatching;
         _unicodeConfusableMatching = options.UnicodeConfusableMatching;
+        _allowNumbers = options.AllowNumbers;
         _asciiOnly = options.AsciiOnly;
 
         foreach (var entry in BuiltInEntries.Value)
@@ -74,19 +104,41 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         {
             Add(new ReservedEntry(value, "custom"));
         }
+
+        _partialEntries.Sort((left, right) => right.Compact.Length.CompareTo(left.Compact.Length));
     }
 
     public bool IsReserved(string? value) => Check(value).IsReserved;
 
-    public bool IsClaimable(string? value) => !IsReserved(value);
+    public bool IsClaimable(string? value) => !Check(value).IsReserved;
 
     public UnclaimableResult Check(string? value)
     {
-        if (_asciiOnly && value is not null && !ContainsOnlyPrintableAscii(value))
+        UnclaimableResult? policyViolation;
+        if (TryFindFirstPolicyViolation(value, out policyViolation))
         {
-            return UnclaimableResult.InvalidCharacters(value);
+            return policyViolation!;
         }
 
+        return CheckReservedName(value);
+    }
+
+    public UnclaimableDetailedResult CheckDetailed(string? value, bool includeMessages = false)
+    {
+        var diagnostics = new List<UnclaimableDiagnostic>();
+        CollectPolicyDiagnostics(value, includeMessages, diagnostics);
+
+        var reservedResult = CheckReservedName(value);
+        if (reservedResult.IsReserved)
+        {
+            diagnostics.Add(ToDiagnostic(reservedResult, includeMessages));
+        }
+
+        return new UnclaimableDetailedResult(value, diagnostics);
+    }
+
+    private UnclaimableResult CheckReservedName(string? value)
+    {
         var exact = NormalizeExact(value);
         if (exact is null)
         {
@@ -96,34 +148,86 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         ReservedEntry? exactMatch;
         if (_exact.TryGetValue(exact, out exactMatch))
         {
-            return CreateReservedResult(value, exactMatch, UnclaimableMatchKind.Exact);
+            return CreateReservedResult(
+                value,
+                exactMatch,
+                UnclaimableMatchKind.Exact,
+                0,
+                exact.Length);
         }
 
+        var compact = NormalizeCompact(exact);
         if (_compactMatching)
         {
-            var compact = NormalizeCompact(exact);
             ReservedEntry? compactMatch;
             if (compact.Length > 0 && _compact.TryGetValue(compact, out compactMatch))
             {
-                return CreateReservedResult(value, compactMatch, UnclaimableMatchKind.Compact);
+                return CreateReservedResult(
+                    value,
+                    compactMatch,
+                    UnclaimableMatchKind.Compact,
+                    0,
+                    compact.Length);
+            }
+        }
+
+        if (_partialMatching)
+        {
+            ReservedEntry? partialMatch;
+            int partialStart;
+            int partialLength;
+            if (TryMatchPartial(exact, compact, out partialMatch, out partialStart, out partialLength))
+            {
+                return CreateReservedResult(
+                    value,
+                    partialMatch!,
+                    UnclaimableMatchKind.Partial,
+                    partialStart,
+                    partialLength);
             }
         }
 
         if (_unicodeConfusableMatching)
         {
             ReservedEntry? confusableMatch;
-            if (TryMatchUnicodeConfusable(exact, out confusableMatch))
+            UnclaimableMatchKind confusableKind;
+            int? confusableStart;
+            int? confusableLength;
+            if (TryMatchUnicodeConfusable(
+                    exact,
+                    out confusableMatch,
+                    out confusableKind,
+                    out confusableStart,
+                    out confusableLength))
             {
-                return CreateReservedResult(value, confusableMatch!, UnclaimableMatchKind.UnicodeConfusable);
+                return CreateReservedResult(
+                    value,
+                    confusableMatch!,
+                    confusableKind,
+                    confusableStart,
+                    confusableLength);
             }
         }
 
         if (_obfuscationMatching)
         {
             ReservedEntry? obfuscatedMatch;
-            if (TryMatchObfuscated(exact, out obfuscatedMatch))
+            UnclaimableMatchKind obfuscatedKind;
+            int? obfuscatedStart;
+            int? obfuscatedLength;
+            if (TryMatchObfuscated(
+                    exact,
+                    out obfuscatedMatch,
+                    out obfuscatedKind,
+                    out obfuscatedStart,
+                    out obfuscatedLength))
             {
-                return CreateReservedResult(value, obfuscatedMatch!, UnclaimableMatchKind.Obfuscated);
+                return CreateReservedResult(
+                    value,
+                    obfuscatedMatch!,
+                    obfuscatedKind,
+                    obfuscatedStart,
+                    obfuscatedLength);
             }
         }
 
@@ -133,14 +237,20 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
     private static UnclaimableResult CreateReservedResult(
         string? input,
         ReservedEntry match,
-        UnclaimableMatchKind matchKind)
+        UnclaimableMatchKind matchKind,
+        int? matchStartIndex = null,
+        int? matchLength = null)
     {
         return new UnclaimableResult(
             true,
             input,
             match.Value,
             match.Category,
-            matchKind);
+            matchKind,
+            null,
+            null,
+            matchStartIndex,
+            matchLength);
     }
 
     private void Add(ReservedEntry entry)
@@ -161,42 +271,124 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         {
             _compact.Add(compact, entry);
         }
+
+        if (compact.Length >= _partialMatchMinimumLength)
+        {
+            _partialEntries.Add(new PartialEntry(exact, compact, entry));
+        }
     }
 
-    private bool TryMatchUnicodeConfusable(string value, out ReservedEntry? match)
+    private bool TryMatchPartial(
+        string exact,
+        string compact,
+        out ReservedEntry? match,
+        out int startIndex,
+        out int matchLength)
+    {
+        foreach (var partial in _partialEntries)
+        {
+            var exactIndex = exact.IndexOf(partial.Exact, StringComparison.Ordinal);
+            if (exactIndex >= 0 && exact.Length > partial.Exact.Length)
+            {
+                match = partial.Entry;
+                startIndex = exactIndex;
+                matchLength = partial.Exact.Length;
+                return true;
+            }
+
+            if (compact.Length > partial.Compact.Length)
+            {
+                var compactIndex = compact.IndexOf(partial.Compact, StringComparison.Ordinal);
+                if (compactIndex >= 0)
+                {
+                    match = partial.Entry;
+                    startIndex = compactIndex;
+                    matchLength = partial.Compact.Length;
+                    return true;
+                }
+            }
+        }
+
+        match = null;
+        startIndex = -1;
+        matchLength = 0;
+        return false;
+    }
+
+    private bool TryMatchUnicodeConfusable(
+        string value,
+        out ReservedEntry? match,
+        out UnclaimableMatchKind matchKind,
+        out int? matchStartIndex,
+        out int? matchLength)
     {
         bool changed;
         var skeleton = NormalizeUnicodeConfusables(value, out changed);
         if (!changed)
         {
             match = null;
+            matchKind = UnclaimableMatchKind.None;
+            matchStartIndex = null;
+            matchLength = null;
             return false;
         }
 
         if (_exact.TryGetValue(skeleton, out match))
         {
+            matchKind = UnclaimableMatchKind.UnicodeConfusable;
+            matchStartIndex = 0;
+            matchLength = skeleton.Length;
             return true;
         }
 
-        if (_compactMatching)
+        var compact = NormalizeCompact(skeleton);
+        if (_compactMatching && compact.Length > 0 && _compact.TryGetValue(compact, out match))
         {
-            var compact = NormalizeCompact(skeleton);
-            if (compact.Length > 0 && _compact.TryGetValue(compact, out match))
+            matchKind = UnclaimableMatchKind.UnicodeConfusable;
+            matchStartIndex = 0;
+            matchLength = compact.Length;
+            return true;
+        }
+
+        if (_partialMatching)
+        {
+            int partialStart;
+            int partialLength;
+            if (TryMatchPartial(skeleton, compact, out match, out partialStart, out partialLength))
+            {
+                matchKind = UnclaimableMatchKind.Partial;
+                matchStartIndex = partialStart;
+                matchLength = partialLength;
+                return true;
+            }
+        }
+
+        if (_obfuscationMatching)
+        {
+            if (TryMatchObfuscated(
+                    skeleton,
+                    out match,
+                    out matchKind,
+                    out matchStartIndex,
+                    out matchLength))
             {
                 return true;
             }
         }
 
-        if (_obfuscationMatching && TryMatchObfuscated(skeleton, out match))
-        {
-            return true;
-        }
-
         match = null;
+        matchKind = UnclaimableMatchKind.None;
+        matchStartIndex = null;
+        matchLength = null;
         return false;
     }
 
-    private bool TryMatchObfuscated(string value, out ReservedEntry? match)
+    private bool TryMatchObfuscated(
+        string value,
+        out ReservedEntry? match,
+        out UnclaimableMatchKind matchKind,
+        out int? matchStartIndex,
+        out int? matchLength)
     {
         var candidates = new List<string> { string.Empty };
         var usedSubstitution = false;
@@ -236,6 +428,9 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         if (!usedSubstitution)
         {
             match = null;
+            matchKind = UnclaimableMatchKind.None;
+            matchStartIndex = null;
+            matchLength = null;
             return false;
         }
 
@@ -243,12 +438,169 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         {
             if (candidate.Length > 0 && _compact.TryGetValue(candidate, out match))
             {
+                matchKind = UnclaimableMatchKind.Obfuscated;
+                matchStartIndex = 0;
+                matchLength = candidate.Length;
                 return true;
+            }
+
+            if (_partialMatching)
+            {
+                foreach (var partial in _partialEntries)
+                {
+                    if (candidate.Length <= partial.Compact.Length)
+                    {
+                        continue;
+                    }
+
+                    var partialIndex = candidate.IndexOf(partial.Compact, StringComparison.Ordinal);
+                    if (partialIndex >= 0)
+                    {
+                        match = partial.Entry;
+                        matchKind = UnclaimableMatchKind.Partial;
+                        matchStartIndex = partialIndex;
+                        matchLength = partial.Compact.Length;
+                        return true;
+                    }
+                }
             }
         }
 
         match = null;
+        matchKind = UnclaimableMatchKind.None;
+        matchStartIndex = null;
+        matchLength = null;
         return false;
+    }
+
+    private bool TryFindFirstPolicyViolation(string? value, out UnclaimableResult? violation)
+    {
+        violation = null;
+        if (string.IsNullOrEmpty(value) || (_allowNumbers && !_asciiOnly))
+        {
+            return false;
+        }
+
+        for (var index = 0; index < value.Length; index++)
+        {
+            var character = value[index];
+            var characterText = character.ToString();
+            var category = CharUnicodeInfo.GetUnicodeCategory(value, index);
+
+            if (char.IsHighSurrogate(character)
+                && index + 1 < value.Length
+                && char.IsLowSurrogate(value[index + 1]))
+            {
+                characterText = new string(new[] { character, value[index + 1] });
+            }
+
+            if (!_allowNumbers && category == UnicodeCategory.DecimalDigitNumber)
+            {
+                violation = UnclaimableResult.NumbersNotAllowed(value, index, characterText);
+                return true;
+            }
+
+            if (_asciiOnly && (character < '\u0020' || character > '\u007E'))
+            {
+                violation = UnclaimableResult.InvalidCharacters(value, index, characterText);
+                return true;
+            }
+
+            if (characterText.Length == 2)
+            {
+                index++;
+            }
+        }
+
+        return false;
+    }
+
+    private void CollectPolicyDiagnostics(
+        string? value,
+        bool includeMessages,
+        List<UnclaimableDiagnostic> diagnostics)
+    {
+        if (string.IsNullOrEmpty(value) || (_allowNumbers && !_asciiOnly))
+        {
+            return;
+        }
+
+        for (var index = 0; index < value.Length; index++)
+        {
+            var character = value[index];
+            var characterText = character.ToString();
+            var category = CharUnicodeInfo.GetUnicodeCategory(value, index);
+
+            if (char.IsHighSurrogate(character)
+                && index + 1 < value.Length
+                && char.IsLowSurrogate(value[index + 1]))
+            {
+                characterText = new string(new[] { character, value[index + 1] });
+            }
+
+            if (!_allowNumbers && category == UnicodeCategory.DecimalDigitNumber)
+            {
+                diagnostics.Add(new UnclaimableDiagnostic(
+                    UnclaimableMatchKind.NumbersNotAllowed,
+                    offendingCharacterIndex: index,
+                    offendingCharacter: characterText,
+                    message: includeMessages
+                        ? $"Numbers are not allowed; '{characterText}' at index {index} is not permitted."
+                        : null));
+            }
+
+            if (_asciiOnly && (character < '\u0020' || character > '\u007E'))
+            {
+                diagnostics.Add(new UnclaimableDiagnostic(
+                    UnclaimableMatchKind.InvalidCharacters,
+                    offendingCharacterIndex: index,
+                    offendingCharacter: characterText,
+                    message: includeMessages
+                        ? $"Character '{characterText}' at index {index} is not allowed by the ASCII-only policy."
+                        : null));
+            }
+
+            if (characterText.Length == 2)
+            {
+                index++;
+            }
+        }
+    }
+
+    private static UnclaimableDiagnostic ToDiagnostic(UnclaimableResult result, bool includeMessage)
+    {
+        return new UnclaimableDiagnostic(
+            result.MatchKind,
+            result.MatchedValue,
+            result.Category,
+            result.OffendingCharacterIndex,
+            result.OffendingCharacter,
+            result.MatchStartIndex,
+            result.MatchLength,
+            includeMessage ? BuildMessage(result) : null);
+    }
+
+    private static string BuildMessage(UnclaimableResult result)
+    {
+        switch (result.MatchKind)
+        {
+            case UnclaimableMatchKind.Exact:
+                return $"'{result.MatchedValue}' is reserved and cannot be claimed.";
+            case UnclaimableMatchKind.Compact:
+                return $"This username resolves to the reserved value '{result.MatchedValue}' after separators or punctuation are ignored.";
+            case UnclaimableMatchKind.Partial:
+                return $"This username contains the reserved value '{result.MatchedValue}'.";
+            case UnclaimableMatchKind.Obfuscated:
+                return $"This username appears to obfuscate the reserved value '{result.MatchedValue}'.";
+            case UnclaimableMatchKind.UnicodeConfusable:
+                return $"This username contains Unicode lookalikes that resolve to the reserved value '{result.MatchedValue}'.";
+            case UnclaimableMatchKind.NumbersNotAllowed:
+                return $"Numbers are not allowed; '{result.OffendingCharacter}' at index {result.OffendingCharacterIndex} is not permitted.";
+            case UnclaimableMatchKind.InvalidCharacters:
+                return $"Character '{result.OffendingCharacter}' at index {result.OffendingCharacterIndex} is not allowed.";
+            default:
+                return "This username is not allowed.";
+        }
     }
 
     private static string NormalizeUnicodeConfusables(string value, out bool changed)
@@ -418,20 +770,6 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
                 substitutions = null;
                 return false;
         }
-    }
-
-    private static bool ContainsOnlyPrintableAscii(string value)
-    {
-        for (var index = 0; index < value.Length; index++)
-        {
-            var character = value[index];
-            if (character < '\u0020' || character > '\u007E')
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private static string? NormalizeExact(string? value)
