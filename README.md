@@ -12,13 +12,15 @@
 
 Unclaimable answers one question: **should this identifier be claimable?**
 
-It combines curated reserved-name datasets with structural identifier rules, strict impersonation matching, bounded obfuscation detection, Unicode lookalike handling, profanity filtering, application-specific blocked values, and ASP.NET Core integration.
+It combines curated reserved-name datasets with structural identifier rules, strict impersonation matching, bounded obfuscation detection, Unicode lookalike handling, localized profanity and trusted-role filtering, application-specific blocked values, and ASP.NET Core integration.
 
 The default policy is intentionally strict. For most applications, configuration is optional:
 
 ```csharp
 builder.Services.AddUnclaimable();
 ```
+
+The default localized dataset is **Dutch**. English can be selected explicitly, and applications can opt into checking both Dutch and English.
 
 ## Packages
 
@@ -46,12 +48,15 @@ Unclaimable provides a strict baseline for usernames, handles, slugs, account na
 The default policy includes:
 
 - reserved and protected names;
+- localized Dutch datasets by default;
+- optional English localized datasets;
+- optional Dutch + English multi-language checking;
+- global brand and technology impersonation datasets regardless of selected language;
 - strict embedded/partial reserved-name matching;
-- common impersonation patterns;
 - separator and punctuation normalization for reserved-name matching;
 - common leetspeak and symbol substitutions;
 - selected Unicode-confusable and lookalike detection;
-- an English profanity baseline;
+- localized profanity filtering;
 - minimum and maximum length rules;
 - numeric-character restrictions;
 - whitespace restrictions;
@@ -72,12 +77,14 @@ The default policy includes:
 
 | Rule | Default |
 | --- | --- |
+| Selected localized language | `Dutch` |
+| Multi-language checking | disabled |
 | Strict reserved-name matching | enabled |
 | Compact matching | enabled |
 | Partial matching | enabled through strict mode |
 | Obfuscation / leetspeak matching | enabled |
 | Unicode-confusable matching | enabled |
-| Profanity dataset | enabled |
+| Profanity dataset | enabled for selected language(s) |
 | Minimum length | `3` |
 | Maximum length | `32` |
 | Numbers | rejected |
@@ -99,6 +106,53 @@ builder.Services.AddUnclaimable(options =>
 ```
 
 This keeps every other Unclaimable rule active.
+
+## Language support
+
+Localized datasets currently support:
+
+- `UnclaimableLanguage.Dutch` — default;
+- `UnclaimableLanguage.English`.
+
+Global datasets such as `brands` and `technology` are always active. Selecting Dutch therefore does not make names such as `paypal`, `github`, or `nike` claimable.
+
+### Dutch only — default
+
+```csharp
+builder.Services.AddUnclaimable(options =>
+{
+    options.Language = UnclaimableLanguage.Dutch;
+});
+```
+
+The explicit assignment is optional because Dutch is the default.
+
+### English only
+
+```csharp
+builder.Services.AddUnclaimable(options =>
+{
+    options.Language = UnclaimableLanguage.English;
+});
+```
+
+### Dutch and English
+
+```csharp
+builder.Services.AddUnclaimable(options =>
+{
+    options.Language = UnclaimableLanguage.Dutch;
+    options.AllowMultiLanguage = true;
+});
+```
+
+When `AllowMultiLanguage` is enabled, Unclaimable loads every supported localized dataset rather than only `Language`.
+
+The additional language data is merged into the checker's indexes when the checker is constructed. Exact and compact checks remain dictionary lookups, but multi-language mode uses more memory and increases the amount of work performed by strict partial, Unicode-confusable, and obfuscation matching. For applications that only need one language, leaving multi-language mode disabled is the leaner option.
+
+Language selection controls **which built-in datasets are loaded**, not which language the submitted identifier is allowed to contain. For example, an English-only checker can still reject a mixed-language value if it literally contains an enabled English protected token.
+
+The dataset format is designed for more languages later. Localized files carry a language code, while language-independent datasets are tagged `global`.
 
 ## Rule controls
 
@@ -225,7 +279,7 @@ Existing injected `IUnclaimableChecker` instances immediately observe those chan
 
 Runtime policy changes are process-local. Applications are free to load their desired policy from their own configuration source during startup or while the application is running.
 
-The core package also supports the same pattern directly:
+The core package supports the same pattern directly:
 
 ```csharp
 var options = new UnclaimableOptions();
@@ -243,38 +297,34 @@ checker.IsClaimable("normal^name"); // false
 
 Reserved names are normalized for casing and surrounding whitespace during the reserved-name pipeline.
 
+For a Dutch checker:
+
 ```text
-admin
-ADMIN
+systeembeheerder
+SYSTEEMBEHEERDER
 ```
 
-both resolve to the protected value `admin`.
+both resolve to the same protected value.
 
 ### Compact matching
 
 Compact matching is enabled by default. Separators and punctuation can be ignored when resolving a value against the reserved-name dataset.
 
-When structural character restrictions are relaxed, values such as:
-
-```text
-customer-service
-customer_service
-customer.service
-```
-
-can still resolve to the protected value `customer service`.
+When structural character restrictions are relaxed, localized or global protected values can still be detected after punctuation is removed.
 
 ### Strict partial matching
 
-Strict mode is the default.
+Strict mode is the default. It catches protected names embedded inside larger values.
 
-It catches protected names embedded inside a larger value:
+For example, with English selected:
 
 ```text
 supportive -> support
 apples     -> apple
 nikee      -> nike
 ```
+
+With Dutch selected, localized protected terms participate in the same matching pipeline.
 
 `PartialMatchMinimumLength` defaults to `4`, which keeps very short reserved values from participating in ordinary substring matching.
 
@@ -310,7 +360,6 @@ If the numeric structural rule is relaxed, examples include:
 ```text
 N1k3   -> nike
 G00gle -> google
-r00t   -> root
 ```
 
 Candidate expansion is bounded so ambiguous substitutions cannot grow without limit.
@@ -326,13 +375,31 @@ For example:
 ^ Cyrillic U+0430
 ```
 
-resolves to protected `apple`.
+resolves to protected `apple` because technology and brand-style impersonation datasets are global.
 
 ## Profanity matching
 
-The English profanity dataset participates in matching by default.
+Profanity from the selected localized dataset participates in matching by default.
 
-It uses the same exact, compact, obfuscation, and Unicode-aware pipeline as the other datasets.
+Dutch is used by default:
+
+```text
+godverdomme -> profanity
+```
+
+Select English when the application primarily serves English-speaking users:
+
+```csharp
+options.Language = UnclaimableLanguage.English;
+```
+
+Or enable both localized profanity datasets:
+
+```csharp
+options.AllowMultiLanguage = true;
+```
+
+Profanity uses the same exact, compact, obfuscation, and Unicode-aware pipeline as the other datasets.
 
 Applications can disable it independently:
 
@@ -361,7 +428,7 @@ builder.Services.AddUnclaimable(options =>
 });
 ```
 
-Application-specific values participate in the same normalization and strict matching pipeline as the built-in datasets.
+Application-specific values are language-independent and participate in the same normalization and strict matching pipeline as the built-in datasets.
 
 ## Core .NET API
 
@@ -372,8 +439,17 @@ using Unclaimable;
 
 if (UnclaimableChecker.Default.IsClaimable(userName))
 {
-    // Identifier passed the strict default policy.
+    // Identifier passed the strict Dutch default policy plus global datasets.
 }
+```
+
+English checker:
+
+```csharp
+var checker = new UnclaimableChecker(new UnclaimableOptions
+{
+    Language = UnclaimableLanguage.English
+});
 ```
 
 Public checker contract:
@@ -425,7 +501,7 @@ Use `CheckDetailed(...)` when UI, logging, or diagnostics benefit from seeing mu
 
 ```csharp
 var result = UnclaimableChecker.Default.CheckDetailed(
-    "admin2",
+    "systeembeheerder2",
     includeMessages: true);
 
 foreach (var diagnostic in result.Diagnostics)
@@ -434,7 +510,7 @@ foreach (var diagnostic in result.Diagnostics)
 }
 ```
 
-A detailed check can report both the numeric-policy violation and the embedded protected name.
+A detailed check can report both a structural-policy violation and a protected-name match.
 
 ## ASP.NET Core
 
@@ -449,6 +525,9 @@ Or customize the policy:
 ```csharp
 builder.Services.AddUnclaimable(options =>
 {
+    options.Language = UnclaimableLanguage.English;
+    options.AllowMultiLanguage = false;
+
     options.MinimumLength = 4;
     options.MaximumLength = 24;
 
@@ -542,18 +621,37 @@ Message precedence is:
 
 ## Datasets
 
-Reserved values are stored as human-reviewable JSON under `data/<category>/reserved.json`.
+Reserved values are stored as human-reviewable JSON below `data/` and embedded into the core package.
 
-| Category | Purpose |
-| --- | --- |
-| `roles` | privileged or trusted identities |
-| `support` | support, trust, billing, and official-channel identities |
-| `system` | application, protocol, and system-owned identities |
-| `technology` | broadly recognizable technology names |
-| `brands` | broadly recognizable consumer/commercial brands |
-| `profanity` | practical English profanity baseline |
+Current scopes:
 
-The datasets are embedded into the core package and indexed once for fast lookups.
+| Scope | Categories | Behavior |
+| --- | --- | --- |
+| `nl` | profanity, roles, support, system | loaded when Dutch is selected |
+| `en` | profanity, roles, support, system | loaded when English is selected |
+| `global` | brands, technology | always loaded |
+
+The repository also contains the original top-level datasets. For compatibility, legacy top-level `brands` and `technology` data is treated as global, while the other legacy top-level datasets are treated as English.
+
+Localized dataset documents can declare:
+
+```json
+{
+  "schema": 1,
+  "category": "support",
+  "language": "nl",
+  "description": "...",
+  "values": ["..."]
+}
+```
+
+Language-independent data uses:
+
+```json
+"language": "global"
+```
+
+This keeps the format extensible: a future language can receive its own localized datasets without changing the matching model.
 
 ## Matching pipeline
 
@@ -568,7 +666,7 @@ The datasets are embedded into the core package and indexed once for fast lookup
 7. Unicode-confusable matching;
 8. bounded obfuscation / leetspeak matching.
 
-Built-in protected values are loaded once and indexed into dictionaries, so normal exact and compact lookups use hashed lookup rather than repeatedly scanning the full dataset.
+Built-in protected values for the selected language scope are indexed when the checker is constructed. Normal exact and compact lookups use hashed dictionaries rather than repeatedly scanning the full dataset.
 
 ## Repository layout
 
@@ -577,6 +675,9 @@ Built-in protected values are loaded once and indexed into dictionaries, so norm
 assets/
 conformance/
 data/
+  en/
+  nl/
+  global/
 platforms/dotnet/src/Unclaimable/
 platforms/dotnet/src/Unclaimable.AspNetCore/
 platforms/dotnet/tests/Unclaimable.Tests/
