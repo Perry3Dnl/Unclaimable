@@ -6,6 +6,11 @@ namespace Unclaimable.Tests;
 
 public sealed class ConformanceTests
 {
+    private static readonly UnclaimableChecker EnglishChecker = new UnclaimableChecker(new UnclaimableOptions
+    {
+        Language = UnclaimableLanguage.English
+    });
+
     private sealed class ConformanceCase
     {
         [JsonPropertyName("value")]
@@ -37,7 +42,7 @@ public sealed class ConformanceTests
     [MemberData(nameof(Cases))]
     public void DotNetAdapterMatchesSharedConformanceCases(string value, bool reserved, string? category)
     {
-        var result = UnclaimableChecker.Default.Check(value);
+        var result = EnglishChecker.Check(value);
 
         Assert.Equal(reserved, result.IsReserved);
         Assert.Equal(category, result.Category);

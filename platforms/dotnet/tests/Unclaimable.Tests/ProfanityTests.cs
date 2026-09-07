@@ -4,10 +4,15 @@ namespace Unclaimable.Tests;
 
 public sealed class ProfanityTests
 {
+    private static readonly UnclaimableChecker EnglishChecker = new UnclaimableChecker(new UnclaimableOptions
+    {
+        Language = UnclaimableLanguage.English
+    });
+
     [Fact]
     public void ProfanityIsEnabledByDefault()
     {
-        var result = UnclaimableChecker.Default.Check("fuck");
+        var result = EnglishChecker.Check("fuck");
 
         Assert.True(result.IsReserved);
         Assert.Equal("fuck", result.MatchedValue);
@@ -20,6 +25,7 @@ public sealed class ProfanityTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
+            Language = UnclaimableLanguage.English,
             Strictness = UnclaimableStrictness.Standard,
             DisabledRules = UnclaimableRule.Profanity
         });
@@ -32,6 +38,7 @@ public sealed class ProfanityTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
+            Language = UnclaimableLanguage.English,
             DisabledRules = UnclaimableRule.Numbers
                             | UnclaimableRule.BlockedCharacters
                             | UnclaimableRule.Whitespace
@@ -54,9 +61,7 @@ public sealed class ProfanityTests
     [Fact]
     public void GenericPartialMatchingDoesNotAutomaticallyApplyToProfanity()
     {
-        var checker = new UnclaimableChecker();
-
-        Assert.True(checker.IsClaimable("cocktail"));
+        Assert.True(EnglishChecker.IsClaimable("cocktail"));
     }
 
     [Fact]
@@ -64,6 +69,7 @@ public sealed class ProfanityTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
+            Language = UnclaimableLanguage.English,
             ProfanityPartialMatching = true
         });
 
@@ -80,6 +86,7 @@ public sealed class ProfanityTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
+            Language = UnclaimableLanguage.English,
             DisabledRules = UnclaimableRule.Numbers
         });
 

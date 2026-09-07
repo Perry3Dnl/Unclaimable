@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/ImtehQ/Unclaimable/data/schema.json",
+  "$id": "https://github.com/Perry3Dnl/Unclaimable/data/schema.json",
   "title": "Unclaimable reserved-name list",
   "type": "object",
   "additionalProperties": false,
@@ -12,6 +12,11 @@
     "category": {
       "type": "string",
       "minLength": 1
+    },
+    "language": {
+      "type": "string",
+      "description": "ISO-style language code for localized data, or 'global' for language-independent data. Omitted legacy datasets are treated as English except brands and technology, which are global.",
+      "pattern": "^(global|[a-z]{2,3})$"
     },
     "description": {
       "type": "string",

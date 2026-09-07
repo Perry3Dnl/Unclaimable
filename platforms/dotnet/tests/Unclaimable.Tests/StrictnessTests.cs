@@ -12,6 +12,7 @@ public sealed class StrictnessTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
+            Language = UnclaimableLanguage.English,
             Strictness = UnclaimableStrictness.Standard
         });
 
@@ -26,6 +27,7 @@ public sealed class StrictnessTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
+            Language = UnclaimableLanguage.English,
             Strictness = UnclaimableStrictness.Strict
         });
 
@@ -39,7 +41,10 @@ public sealed class StrictnessTests
     [Fact]
     public void StrictIsTheDefault()
     {
-        var options = new UnclaimableOptions();
+        var options = new UnclaimableOptions
+        {
+            Language = UnclaimableLanguage.English
+        };
 
         Assert.Equal(UnclaimableStrictness.Strict, options.Strictness);
         Assert.True(new UnclaimableChecker(options).IsReserved("supportive"));
@@ -63,7 +68,10 @@ public sealed class StrictnessTests
     [Fact]
     public void StrictStrictnessStillHonorsPartialMinimumLength()
     {
-        var checker = new UnclaimableChecker();
+        var checker = new UnclaimableChecker(new UnclaimableOptions
+        {
+            Language = UnclaimableLanguage.English
+        });
 
         Assert.True(checker.IsReserved("api"));
         Assert.True(checker.IsClaimable("rapid"));
@@ -72,7 +80,10 @@ public sealed class StrictnessTests
     [Fact]
     public void StrictStrictnessDoesNotImplicitlyEnableProfanityPartialMatching()
     {
-        var checker = new UnclaimableChecker();
+        var checker = new UnclaimableChecker(new UnclaimableOptions
+        {
+            Language = UnclaimableLanguage.English
+        });
 
         Assert.True(checker.IsReserved("cock"));
         Assert.True(checker.IsClaimable("cocktail"));
@@ -83,6 +94,7 @@ public sealed class StrictnessTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
+            Language = UnclaimableLanguage.English,
             ProfanityPartialMatching = true
         });
 

@@ -6,6 +6,7 @@ public sealed class ExpandedDatasetTests
 {
     private static readonly UnclaimableChecker DatasetChecker = new UnclaimableChecker(new UnclaimableOptions
     {
+        Language = UnclaimableLanguage.English,
         Strictness = UnclaimableStrictness.Standard,
         DisabledRules = UnclaimableRule.Numbers
                         | UnclaimableRule.BlockedCharacters
@@ -18,27 +19,28 @@ public sealed class ExpandedDatasetTests
     [InlineData("superadmin", "roles")]
     [InlineData("communitymoderator", "roles")]
     [InlineData("sysadmin", "roles")]
-    [InlineData("headmoderator", "roles")]
+    [InlineData("workspaceadministrator", "roles")]
     [InlineData("trust and safety", "support")]
     [InlineData("account recovery", "support")]
     [InlineData("fraudprevention", "support")]
-    [InlineData("verifiedsupport", "support")]
+    [InlineData("identityverification", "support")]
     [InlineData("serviceaccount", "system")]
     [InlineData("webhook", "system")]
     [InlineData("localhost", "system")]
-    [InlineData("workspace", "system")]
+    [InlineData("featureflags", "system")]
     [InlineData("cloudflare", "technology")]
     [InlineData("anthropic", "technology")]
     [InlineData("postgresql", "technology")]
     [InlineData("atlassian", "technology")]
-    [InlineData("deepseek", "technology")]
+    [InlineData("homeassistant", "technology")]
     [InlineData("americanexpress", "brands")]
     [InlineData("postnl", "brands")]
     [InlineData("lamborghini", "brands")]
     [InlineData("underarmour", "brands")]
     [InlineData("qatarairways", "brands")]
-    [InlineData("coolblue", "brands")]
+    [InlineData("centraalbeheer", "brands")]
     [InlineData("fuckboy", "profanity")]
+    [InlineData("fuckwaffle", "profanity")]
     public void ExpandedReservedNamesAreRejected(string value, string category)
     {
         var result = DatasetChecker.Check(value);

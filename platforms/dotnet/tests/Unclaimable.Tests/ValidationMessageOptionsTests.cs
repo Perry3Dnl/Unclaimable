@@ -27,6 +27,7 @@ public sealed class ValidationMessageOptionsTests
         using var provider = new ServiceCollection()
             .AddUnclaimable(options =>
             {
+                options.Language = UnclaimableLanguage.English;
                 options.ValidationMessage = "Global fallback.";
                 options.Messages.Reserved = "{FieldName} '{MatchedValue}' is reserved ({Category}).";
             })
@@ -43,6 +44,7 @@ public sealed class ValidationMessageOptionsTests
         using var provider = new ServiceCollection()
             .AddUnclaimable(options =>
             {
+                options.Language = UnclaimableLanguage.English;
                 options.Messages.Partial = "{FieldName} contains protected value '{MatchedValue}'.";
             })
             .BuildServiceProvider();
@@ -73,6 +75,7 @@ public sealed class ValidationMessageOptionsTests
         using var provider = new ServiceCollection()
             .AddUnclaimable(options =>
             {
+                options.Language = UnclaimableLanguage.English;
                 options.Messages.Reserved = "Reserved fallback.";
                 options.Messages.Profanity = "{FieldName} contains blocked language.";
             })
@@ -89,6 +92,7 @@ public sealed class ValidationMessageOptionsTests
         using var provider = new ServiceCollection()
             .AddUnclaimable(options =>
             {
+                options.Language = UnclaimableLanguage.English;
                 options.ValidationMessage = "{FieldName} is unavailable.";
             })
             .BuildServiceProvider();
@@ -102,7 +106,7 @@ public sealed class ValidationMessageOptionsTests
     public void BuiltInReasonMessageIsUsedWhenDeveloperConfiguresNothing()
     {
         using var provider = new ServiceCollection()
-            .AddUnclaimable()
+            .AddUnclaimable(options => options.Language = UnclaimableLanguage.English)
             .BuildServiceProvider();
 
         var error = Validate("supportive", provider);
@@ -132,6 +136,7 @@ public sealed class ValidationMessageOptionsTests
         using var provider = new ServiceCollection()
             .AddUnclaimable(options =>
             {
+                options.Language = UnclaimableLanguage.English;
                 options.Messages.Reserved = "Reason-specific message.";
                 options.ValidationMessage = "Global message.";
             })

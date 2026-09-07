@@ -16,6 +16,19 @@ public sealed class UnclaimableOptions
     /// </summary>
     public UnclaimableRule DisabledRules { get; set; } = UnclaimableRule.None;
 
+    /// <summary>
+    /// Localized built-in dataset to use. Dutch is the default.
+    /// Global datasets such as brands and technology are always included.
+    /// </summary>
+    public UnclaimableLanguage Language { get; set; } = UnclaimableLanguage.Dutch;
+
+    /// <summary>
+    /// Include every supported localized dataset instead of only <see cref="Language"/>.
+    /// Disabled by default because it increases checker construction cost, memory usage,
+    /// and the amount of work required by partial and obfuscation matching.
+    /// </summary>
+    public bool AllowMultiLanguage { get; set; }
+
     /// <summary>Minimum accepted identifier length. Defaults to 3.</summary>
     public int MinimumLength { get; set; } = 3;
 
@@ -43,7 +56,7 @@ public sealed class UnclaimableOptions
     public int PartialMatchMinimumLength { get; set; } = 4;
 
     /// <summary>
-    /// Include the built-in English profanity dataset. Enabled by default.
+    /// Include profanity from the enabled localized dataset or datasets. Enabled by default.
     /// Kept for compatibility; prefer disabling UnclaimableRule.Profanity.
     /// </summary>
     public bool ProfanityMatching { get; set; } = true;

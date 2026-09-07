@@ -12,14 +12,16 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
     private sealed class ReservedEntry
     {
-        public ReservedEntry(string value, string category)
+        public ReservedEntry(string value, string category, UnclaimableLanguage? language = null)
         {
             Value = value;
             Category = category;
+            Language = language;
         }
 
         public string Value { get; }
         public string Category { get; }
+        public UnclaimableLanguage? Language { get; }
     }
 
     private sealed class PartialEntry
@@ -44,6 +46,9 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
         [DataMember(Name = "category")]
         public string Category { get; set; } = string.Empty;
+
+        [DataMember(Name = "language")]
+        public string? Language { get; set; }
 
         [DataMember(Name = "values")]
         public string[] Values { get; set; } = Array.Empty<string>();
@@ -96,6 +101,11 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             throw new ArgumentNullException(nameof(policy));
         }
 
+        if (!Enum.IsDefined(typeof(UnclaimableLanguage), options.Language))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.Language), "Language must be a supported UnclaimableLanguage value.");
+        }
+
         if (options.MinimumLength < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(options.MinimumLength), "MinimumLength cannot be negative.");
@@ -139,6 +149,13 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
         foreach (var entry in BuiltInEntries.Value)
         {
+            if (entry.Language.HasValue
+                && !options.AllowMultiLanguage
+                && entry.Language.Value != options.Language)
+            {
+                continue;
+            }
+
             var isProfanity = string.Equals(entry.Category, "profanity", StringComparison.Ordinal);
             if (isProfanity && !profanityMatching)
             {
@@ -951,12 +968,46 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
                     throw new InvalidOperationException($"Embedded dataset '{resourceName}' has an unsupported schema.");
                 }
 
+                var language = ResolveDatasetLanguage(document, resourceName);
                 entries.AddRange(document.Values
                     .Where(value => !string.IsNullOrWhiteSpace(value))
-                    .Select(value => new ReservedEntry(value, document.Category)));
+                    .Select(value => new ReservedEntry(value, document.Category, language)));
             }
         }
 
         return entries;
+    }
+
+    private static UnclaimableLanguage? ResolveDatasetLanguage(ReservedListDocument document, string resourceName)
+    {
+        var language = document.Language?.Trim().ToLowerInvariant();
+
+        if (string.IsNullOrEmpty(language))
+        {
+            if (string.Equals(document.Category, "brands", StringComparison.Ordinal)
+                || string.Equals(document.Category, "technology", StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            return UnclaimableLanguage.English;
+        }
+
+        switch (language)
+        {
+            case "global":
+                return null;
+            case "en":
+            case "eng":
+            case "english":
+                return UnclaimableLanguage.English;
+            case "nl":
+            case "nld":
+            case "dutch":
+                return UnclaimableLanguage.Dutch;
+            default:
+                throw new InvalidOperationException(
+                    $"Embedded dataset '{resourceName}' declares unsupported language '{document.Language}'.");
+        }
     }
 }

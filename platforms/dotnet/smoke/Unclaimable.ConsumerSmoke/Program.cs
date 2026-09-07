@@ -13,15 +13,30 @@ static void Require(bool condition, string message)
 
 var checker = UnclaimableChecker.Default;
 
-Require(checker.Check("admin").Category == "roles", "admin should be reserved.");
-Require(checker.Check("supportive").MatchKind == UnclaimableMatchKind.Partial, "Strict partial matching should be enabled by default.");
+Require(checker.Check("systeembeheerder").Category == "roles", "Dutch role names should be reserved by default.");
+Require(checker.Check("klantenserviceportaal").MatchKind == UnclaimableMatchKind.Partial, "Strict partial matching should be enabled for Dutch data by default.");
 Require(checker.Check("ordinary2").MatchKind == UnclaimableMatchKind.NumbersNotAllowed, "Numbers should be blocked by default.");
 Require(checker.Check("ordinary-user").MatchKind == UnclaimableMatchKind.BlockedCharacter, "Hyphens should be blocked by default.");
 Require(checker.Check("ordinary_user").MatchKind == UnclaimableMatchKind.BlockedCharacter, "Underscores should be blocked by default.");
 Require(checker.Check("ordinary user").MatchKind == UnclaimableMatchKind.BlockedCharacter, "Whitespace should be blocked by default.");
 Require(checker.Check("ab").MatchKind == UnclaimableMatchKind.TooShort, "Minimum length should be enforced by default.");
 Require(checker.Check(new string('a', 33)).MatchKind == UnclaimableMatchKind.TooLong, "Maximum length should be enforced by default.");
-Require(checker.Check("fuck").Category == "profanity", "Profanity should participate by default.");
+Require(checker.Check("godverdomme").Category == "profanity", "Dutch profanity should participate by default.");
+Require(checker.IsClaimable("customersupport"), "English localized support data should not load in Dutch-only mode.");
+
+var englishChecker = new UnclaimableChecker(new UnclaimableOptions
+{
+    Language = UnclaimableLanguage.English
+});
+Require(englishChecker.Check("customersupport").Category == "support", "English should be selectable explicitly.");
+Require(englishChecker.IsClaimable("klantenservice"), "Dutch localized support data should not load in English-only mode.");
+
+var multiLanguageChecker = new UnclaimableChecker(new UnclaimableOptions
+{
+    AllowMultiLanguage = true
+});
+Require(multiLanguageChecker.IsReserved("klantenservice"), "Multi-language mode should include Dutch data.");
+Require(multiLanguageChecker.IsReserved("customersupport"), "Multi-language mode should include English data.");
 
 var relaxed = new UnclaimableChecker(new UnclaimableOptions
 {

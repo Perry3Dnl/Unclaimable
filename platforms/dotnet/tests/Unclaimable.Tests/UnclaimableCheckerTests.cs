@@ -4,6 +4,11 @@ namespace Unclaimable.Tests;
 
 public sealed class UnclaimableCheckerTests
 {
+    private static readonly UnclaimableChecker EnglishChecker = new UnclaimableChecker(new UnclaimableOptions
+    {
+        Language = UnclaimableLanguage.English
+    });
+
     [Theory]
     [InlineData("admin")]
     [InlineData("moderator")]
@@ -13,8 +18,8 @@ public sealed class UnclaimableCheckerTests
     [InlineData("nike")]
     public void BuiltInReservedNamesAreRejected(string value)
     {
-        Assert.True(UnclaimableChecker.Default.IsReserved(value));
-        Assert.False(UnclaimableChecker.Default.IsClaimable(value));
+        Assert.True(EnglishChecker.IsReserved(value));
+        Assert.False(EnglishChecker.IsClaimable(value));
     }
 
     [Theory]
@@ -24,7 +29,7 @@ public sealed class UnclaimableCheckerTests
     [InlineData("nikee", "nike")]
     public void StrictPartialMatchingIsEnabledByDefault(string value, string expectedMatch)
     {
-        var result = UnclaimableChecker.Default.Check(value);
+        var result = EnglishChecker.Check(value);
 
         Assert.True(result.IsReserved);
         Assert.Equal(UnclaimableMatchKind.Partial, result.MatchKind);
@@ -136,6 +141,7 @@ public sealed class UnclaimableCheckerTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
+            Language = UnclaimableLanguage.English,
             DisabledRules = UnclaimableRule.Numbers
         });
 
@@ -152,6 +158,7 @@ public sealed class UnclaimableCheckerTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
+            Language = UnclaimableLanguage.English,
             DisabledRules = UnclaimableRule.BlockedCharacters
                             | UnclaimableRule.Whitespace
         });
@@ -179,7 +186,10 @@ public sealed class UnclaimableCheckerTests
     [Fact]
     public void DetailedCheckCollectsPolicyAndReservedNameDiagnostics()
     {
-        var checker = new UnclaimableChecker();
+        var checker = new UnclaimableChecker(new UnclaimableOptions
+        {
+            Language = UnclaimableLanguage.English
+        });
         var result = checker.CheckDetailed("admin2", includeMessages: true);
 
         Assert.True(result.IsReserved);
