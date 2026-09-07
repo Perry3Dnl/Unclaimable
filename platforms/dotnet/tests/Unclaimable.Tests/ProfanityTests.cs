@@ -5,23 +5,9 @@ namespace Unclaimable.Tests;
 public sealed class ProfanityTests
 {
     [Fact]
-    public void ProfanityIsDisabledByDefault()
+    public void ProfanityIsEnabledByDefault()
     {
-        var checker = new UnclaimableChecker();
-
-        Assert.True(checker.IsClaimable("fuck"));
-        Assert.True(checker.IsClaimable("sh1t"));
-    }
-
-    [Fact]
-    public void ProfanityCanBeEnabledExplicitly()
-    {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
-        {
-            ProfanityMatching = true
-        });
-
-        var result = checker.Check("fuck");
+        var result = UnclaimableChecker.Default.Check("fuck");
 
         Assert.True(result.IsReserved);
         Assert.Equal("fuck", result.MatchedValue);
@@ -30,11 +16,25 @@ public sealed class ProfanityTests
     }
 
     [Fact]
-    public void ProfanityUsesCompactAndObfuscationMatching()
+    public void ProfanityCanBeDisabledExplicitly()
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
-            ProfanityMatching = true
+            Strictness = UnclaimableStrictness.Standard,
+            DisabledRules = UnclaimableRule.Profanity
+        });
+
+        Assert.True(checker.IsClaimable("fuck"));
+    }
+
+    [Fact]
+    public void ProfanityUsesCompactAndObfuscationMatchingWhenStructuralRulesAreRelaxed()
+    {
+        var checker = new UnclaimableChecker(new UnclaimableOptions
+        {
+            DisabledRules = UnclaimableRule.Numbers
+                            | UnclaimableRule.BlockedCharacters
+                            | UnclaimableRule.Whitespace
         });
 
         var compact = checker.Check("f-u-c-k");
@@ -54,22 +54,16 @@ public sealed class ProfanityTests
     [Fact]
     public void GenericPartialMatchingDoesNotAutomaticallyApplyToProfanity()
     {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
-        {
-            PartialMatching = true,
-            ProfanityMatching = true
-        });
+        var checker = new UnclaimableChecker();
 
         Assert.True(checker.IsClaimable("cocktail"));
     }
 
     [Fact]
-    public void ProfanityPartialMatchingRequiresItsOwnExplicitOptIn()
+    public void ProfanityPartialMatchingCanBeEnabledExplicitly()
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
-            PartialMatching = true,
-            ProfanityMatching = true,
             ProfanityPartialMatching = true
         });
 
@@ -86,7 +80,7 @@ public sealed class ProfanityTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
-            ProfanityMatching = true
+            DisabledRules = UnclaimableRule.Numbers
         });
 
         var result = checker.CheckDetailed("sh1t", includeMessages: true);
