@@ -1005,9 +1005,15 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             case "nld":
             case "dutch":
                 return UnclaimableLanguage.Dutch;
+            case "de":
+            case "deu":
+            case "ger":
+            case "german":
+            case "deutsch":
+                return UnclaimableLanguage.German;
             default:
                 throw new InvalidOperationException(
-                    $"Embedded dataset '{resourceName}' declares unsupported language '{document.Language}'.");
+                    $"Embedded dataset '{resourceName}' declares unsupported language '{language}'.");
         }
     }
 }
