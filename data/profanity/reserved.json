@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "category": "profanity",
-  "description": "Common English profanity and vulgar insults. This category is opt-in and intentionally excludes identity-targeting slurs.",
+  "description": "Common English profanity and vulgar insults. Intentionally excludes identity-targeting slurs.",
   "values": [
     "arse",
     "arseface",
