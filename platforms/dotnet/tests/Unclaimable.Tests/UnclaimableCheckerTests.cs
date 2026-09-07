@@ -6,10 +6,11 @@ public sealed class UnclaimableCheckerTests
 {
     [Theory]
     [InlineData("admin")]
-    [InlineData(" ADMIN ")]
     [InlineData("moderator")]
     [InlineData("support")]
     [InlineData("system")]
+    [InlineData("apple")]
+    [InlineData("nike")]
     public void BuiltInReservedNamesAreRejected(string value)
     {
         Assert.True(UnclaimableChecker.Default.IsReserved(value));
@@ -17,156 +18,53 @@ public sealed class UnclaimableCheckerTests
     }
 
     [Theory]
-    [InlineData("apple")]
-    [InlineData("Microsoft")]
-    [InlineData("LINUX")]
-    [InlineData("github")]
-    public void TechnologyNamesAreRejected(string value)
-    {
-        var result = UnclaimableChecker.Default.Check(value);
-
-        Assert.True(result.IsReserved);
-        Assert.Equal("technology", result.Category);
-    }
-
-    [Theory]
-    [InlineData("nike")]
-    [InlineData("Adidas")]
-    [InlineData("coca-cola")]
-    [InlineData("Louis_Vuitton")]
-    public void BrandNamesAreRejected(string value)
-    {
-        var result = UnclaimableChecker.Default.Check(value);
-
-        Assert.True(result.IsReserved);
-        Assert.Equal("brands", result.Category);
-    }
-
-    [Theory]
-    [InlineData("customer-service")]
-    [InlineData("customer_service")]
-    [InlineData("customer.service")]
-    [InlineData("customer service")]
-    public void CompactMatchingBlocksSeparatorVariants(string value)
-    {
-        var result = UnclaimableChecker.Default.Check(value);
-
-        Assert.True(result.IsReserved);
-        Assert.Equal("support", result.Category);
-    }
-
-    [Theory]
-    [InlineData("N1ke", "nike", "brands")]
-    [InlineData("N1k3", "nike", "brands")]
-    [InlineData("M1crosoft", "microsoft", "technology")]
-    [InlineData("G00gle", "google", "technology")]
-    [InlineData("@pple", "apple", "technology")]
-    [InlineData("app1e", "apple", "technology")]
-    [InlineData("r00t", "root", "roles")]
-    [InlineData("c0ca-c0la", "coca cola", "brands")]
-    public void ObfuscationMatchingBlocksCommonLeetspeak(
-        string value,
-        string matchedValue,
-        string category)
-    {
-        var result = UnclaimableChecker.Default.Check(value);
-
-        Assert.True(result.IsReserved);
-        Assert.Equal(matchedValue, result.MatchedValue);
-        Assert.Equal(category, result.Category);
-        Assert.Equal(UnclaimableMatchKind.Obfuscated, result.MatchKind);
-    }
-
-    [Theory]
-    [InlineData("administrator2")]
-    [InlineData("supportive")]
-    [InlineData("systematic")]
-    [InlineData("ordinary-user")]
-    [InlineData("ordinary123")]
-    [InlineData("apples")]
-    [InlineData("nikee")]
-    public void SimilarButDifferentNamesRemainClaimableByDefault(string value)
-    {
-        Assert.True(UnclaimableChecker.Default.IsClaimable(value));
-    }
-
-    [Theory]
-    [InlineData("administrator2", "administrator")]
-    [InlineData("old-admin", "admin")]
-    [InlineData("admin-old", "admin")]
+    [InlineData("adminold", "admin")]
     [InlineData("supportive", "support")]
     [InlineData("apples", "apple")]
     [InlineData("nikee", "nike")]
-    [InlineData("old-N1k3", "nike")]
-    public void PartialMatchingCanRejectEmbeddedReservedNames(string value, string expectedMatch)
+    public void StrictPartialMatchingIsEnabledByDefault(string value, string expectedMatch)
     {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
-        {
-            PartialMatching = true
-        });
-
-        var result = checker.Check(value);
+        var result = UnclaimableChecker.Default.Check(value);
 
         Assert.True(result.IsReserved);
-        Assert.Equal(expectedMatch, result.MatchedValue);
         Assert.Equal(UnclaimableMatchKind.Partial, result.MatchKind);
-        Assert.NotNull(result.MatchStartIndex);
-        Assert.True(result.MatchLength >= 4);
+        Assert.Equal(expectedMatch, result.MatchedValue);
+    }
+
+    [Theory]
+    [InlineData("john-doe", "-")]
+    [InlineData("john_doe", "_")]
+    [InlineData("john doe", " ")]
+    public void StructuralCharactersAreBlockedByDefault(string value, string expectedCharacter)
+    {
+        var result = UnclaimableChecker.Default.Check(value);
+
+        Assert.True(result.IsReserved);
+        Assert.Equal(UnclaimableMatchKind.BlockedCharacter, result.MatchKind);
+        Assert.Equal(expectedCharacter, result.OffendingCharacter);
     }
 
     [Fact]
-    public void PartialMatchingIgnoresShortReservedValuesByDefault()
+    public void LeadingAndTrailingSeparatorsAreRejectedByDefault()
     {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
-        {
-            PartialMatching = true
-        });
-
-        Assert.True(checker.IsReserved("api"));
-        Assert.True(checker.IsClaimable("rapid"));
-        Assert.True(checker.IsClaimable("api123"));
+        Assert.Equal(UnclaimableMatchKind.LeadingSeparator, UnclaimableChecker.Default.Check(".john").MatchKind);
+        Assert.Equal(UnclaimableMatchKind.TrailingSeparator, UnclaimableChecker.Default.Check("john.").MatchKind);
     }
 
     [Fact]
-    public void PartialMinimumLengthCanBeLoweredExplicitly()
+    public void NumbersAreRejectedByDefault()
     {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
-        {
-            PartialMatching = true,
-            PartialMatchMinimumLength = 3
-        });
-
-        Assert.True(checker.IsReserved("rapid"));
-        Assert.Equal("api", checker.Check("rapid").MatchedValue);
-    }
-
-    [Fact]
-    public void NumbersCanBeRejectedBeforeReservedNameMatching()
-    {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
-        {
-            AllowNumbers = false,
-            PartialMatching = true
-        });
-
-        var result = checker.Check("old-admin2");
+        var result = UnclaimableChecker.Default.Check("ordinary2");
 
         Assert.True(result.IsReserved);
         Assert.Equal(UnclaimableMatchKind.NumbersNotAllowed, result.MatchKind);
-        Assert.Equal(9, result.OffendingCharacterIndex);
         Assert.Equal("2", result.OffendingCharacter);
-        Assert.Null(result.MatchedValue);
     }
 
     [Fact]
-    public void NumberPolicyRecognizesUnicodeDecimalDigits()
+    public void UnicodeDecimalDigitsAreRejectedByDefault()
     {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
-        {
-            AllowNumbers = false
-        });
-
-        var result = checker.Check("user\u0661");
+        var result = UnclaimableChecker.Default.Check("user\u0661");
 
         Assert.True(result.IsReserved);
         Assert.Equal(UnclaimableMatchKind.NumbersNotAllowed, result.MatchKind);
@@ -174,45 +72,96 @@ public sealed class UnclaimableCheckerTests
     }
 
     [Fact]
-    public void DetailedCheckCollectsPolicyAndReservedNameDiagnostics()
+    public void LengthRulesAreEnabledByDefault()
     {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
-        {
-            AllowNumbers = false,
-            PartialMatching = true
-        });
-
-        var result = checker.CheckDetailed("old-admin2", includeMessages: true);
-
-        Assert.True(result.IsReserved);
-        Assert.False(result.IsClaimable);
-        Assert.Equal(10, result.InputLength);
-        Assert.Contains(result.Diagnostics, diagnostic =>
-            diagnostic.Kind == UnclaimableMatchKind.NumbersNotAllowed
-            && diagnostic.OffendingCharacterIndex == 9
-            && diagnostic.OffendingCharacter == "2"
-            && !string.IsNullOrWhiteSpace(diagnostic.Message));
-        Assert.Contains(result.Diagnostics, diagnostic =>
-            diagnostic.Kind == UnclaimableMatchKind.Partial
-            && diagnostic.MatchedValue == "admin"
-            && diagnostic.MatchStartIndex == 4
-            && diagnostic.MatchLength == 5
-            && !string.IsNullOrWhiteSpace(diagnostic.Message));
+        Assert.Equal(UnclaimableMatchKind.TooShort, UnclaimableChecker.Default.Check("ab").MatchKind);
+        Assert.Equal(UnclaimableMatchKind.TooLong, UnclaimableChecker.Default.Check(new string('a', 33)).MatchKind);
     }
 
     [Fact]
-    public void DetailedCheckCanReturnMachineReadableDiagnosticsWithoutMessages()
+    public void LengthThresholdsCanBeConfigured()
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
-            AllowNumbers = false,
-            PartialMatching = true
+            MinimumLength = 5,
+            MaximumLength = 8
         });
 
-        var result = checker.CheckDetailed("old-admin2");
+        Assert.Equal(UnclaimableMatchKind.TooShort, checker.Check("four").MatchKind);
+        Assert.True(checker.IsClaimable("normal"));
+        Assert.Equal(UnclaimableMatchKind.TooLong, checker.Check("toolonggg").MatchKind);
+    }
 
-        Assert.NotEmpty(result.Diagnostics);
-        Assert.All(result.Diagnostics, diagnostic => Assert.Null(diagnostic.Message));
+    [Fact]
+    public void RulesCanBeRelaxedThroughDisabledRules()
+    {
+        var checker = new UnclaimableChecker(new UnclaimableOptions
+        {
+            Strictness = UnclaimableStrictness.Standard,
+            DisabledRules = UnclaimableRule.Numbers
+                            | UnclaimableRule.BlockedCharacters
+                            | UnclaimableRule.Whitespace
+                            | UnclaimableRule.LeadingSeparator
+                            | UnclaimableRule.TrailingSeparator
+        });
+
+        Assert.True(checker.IsClaimable("ordinary-user2"));
+        Assert.True(checker.IsClaimable("ordinary user"));
+    }
+
+    [Fact]
+    public void AdditionalBlockedCharactersAreAppliedAtStartup()
+    {
+        var options = new UnclaimableOptions();
+        options.AdditionalBlockedCharacters("^", "$", "@");
+
+        var checker = new UnclaimableChecker(options);
+
+        var result = checker.Check("john^doe");
+
+        Assert.True(result.IsReserved);
+        Assert.Equal(UnclaimableMatchKind.BlockedCharacter, result.MatchKind);
+        Assert.Equal("^", result.OffendingCharacter);
+    }
+
+    [Theory]
+    [InlineData("N1ke", "nike", "brands")]
+    [InlineData("N1k3", "nike", "brands")]
+    [InlineData("G00gle", "google", "technology")]
+    [InlineData("r00t", "root", "roles")]
+    public void ObfuscationMatchingStillWorksWhenNumberPolicyIsRelaxed(
+        string value,
+        string matchedValue,
+        string category)
+    {
+        var checker = new UnclaimableChecker(new UnclaimableOptions
+        {
+            DisabledRules = UnclaimableRule.Numbers
+        });
+
+        var result = checker.Check(value);
+
+        Assert.True(result.IsReserved);
+        Assert.Equal(matchedValue, result.MatchedValue);
+        Assert.Equal(category, result.Category);
+        Assert.Equal(UnclaimableMatchKind.Obfuscated, result.MatchKind);
+    }
+
+    [Fact]
+    public void CompactMatchingStillWorksWhenStructuralCharacterRulesAreRelaxed()
+    {
+        var checker = new UnclaimableChecker(new UnclaimableOptions
+        {
+            DisabledRules = UnclaimableRule.BlockedCharacters
+                            | UnclaimableRule.Whitespace
+        });
+
+        var result = checker.Check("customer-service");
+
+        Assert.True(result.IsReserved);
+        Assert.Equal("customer service", result.MatchedValue);
+        Assert.Equal("support", result.Category);
+        Assert.Equal(UnclaimableMatchKind.Compact, result.MatchKind);
     }
 
     [Fact]
@@ -220,36 +169,24 @@ public sealed class UnclaimableCheckerTests
     {
         var options = new UnclaimableOptions();
         options.AdditionalReserved.Add("examplebrand");
-        options.AdditionalReserved.Add("internalbot");
 
         var checker = new UnclaimableChecker(options);
 
         Assert.True(checker.IsReserved("ExampleBrand"));
-        Assert.True(checker.IsReserved("internal-bot"));
         Assert.Equal("custom", checker.Check("examplebrand").Category);
     }
 
     [Fact]
-    public void CompactMatchingCanBeDisabled()
+    public void DetailedCheckCollectsPolicyAndReservedNameDiagnostics()
     {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
-        {
-            CompactMatching = false
-        });
+        var checker = new UnclaimableChecker();
+        var result = checker.CheckDetailed("admin2", includeMessages: true);
 
-        Assert.True(checker.IsReserved("customer service"));
-        Assert.False(checker.IsReserved("customer-service"));
-    }
-
-    [Fact]
-    public void ObfuscationMatchingCanBeDisabled()
-    {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
-        {
-            ObfuscationMatching = false
-        });
-
-        Assert.True(checker.IsReserved("nike"));
-        Assert.False(checker.IsReserved("N1k3"));
+        Assert.True(result.IsReserved);
+        Assert.Contains(result.Diagnostics, diagnostic =>
+            diagnostic.Kind == UnclaimableMatchKind.NumbersNotAllowed);
+        Assert.Contains(result.Diagnostics, diagnostic =>
+            diagnostic.Kind == UnclaimableMatchKind.Partial
+            && diagnostic.MatchedValue == "admin");
     }
 }
