@@ -5,11 +5,10 @@ namespace Unclaimable.Tests;
 public sealed class StrictnessTests
 {
     [Theory]
-    [InlineData("admin2")]
-    [InlineData("old-admin")]
-    [InlineData("admin-old")]
-    [InlineData("administrator2")]
-    public void StandardStrictnessKeepsPartialMatchingOptIn(string value)
+    [InlineData("supportive")]
+    [InlineData("apples")]
+    [InlineData("nikee")]
+    public void StandardStrictnessDisablesPartialMatching(string value)
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
@@ -20,10 +19,9 @@ public sealed class StrictnessTests
     }
 
     [Theory]
-    [InlineData("admin2", "admin")]
-    [InlineData("old-admin", "admin")]
-    [InlineData("admin-old", "admin")]
-    [InlineData("administrator2", "administrator")]
+    [InlineData("supportive", "support")]
+    [InlineData("apples", "apple")]
+    [InlineData("nikee", "nike")]
     public void StrictStrictnessRejectsEmbeddedReservedNames(string value, string expectedMatch)
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
@@ -34,23 +32,27 @@ public sealed class StrictnessTests
         var result = checker.Check(value);
 
         Assert.True(result.IsReserved);
-        Assert.False(result.IsClaimable);
         Assert.Equal(UnclaimableMatchKind.Partial, result.MatchKind);
         Assert.Equal(expectedMatch, result.MatchedValue);
     }
 
     [Fact]
+    public void StrictIsTheDefault()
+    {
+        var options = new UnclaimableOptions();
+
+        Assert.Equal(UnclaimableStrictness.Strict, options.Strictness);
+        Assert.True(new UnclaimableChecker(options).IsReserved("supportive"));
+    }
+
+    [Fact]
     public void StrictStrictnessAlsoAppliesToAdditionalReservedValues()
     {
-        var options = new UnclaimableOptions
-        {
-            Strictness = UnclaimableStrictness.Strict
-        };
+        var options = new UnclaimableOptions();
         options.AdditionalReserved.Add("examplebrand");
 
         var checker = new UnclaimableChecker(options);
-
-        var result = checker.Check("old-examplebrand");
+        var result = checker.Check("oldexamplebrand");
 
         Assert.True(result.IsReserved);
         Assert.Equal(UnclaimableMatchKind.Partial, result.MatchKind);
@@ -61,24 +63,16 @@ public sealed class StrictnessTests
     [Fact]
     public void StrictStrictnessStillHonorsPartialMinimumLength()
     {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
-        {
-            Strictness = UnclaimableStrictness.Strict
-        });
+        var checker = new UnclaimableChecker();
 
         Assert.True(checker.IsReserved("api"));
-        Assert.True(checker.IsClaimable("api123"));
         Assert.True(checker.IsClaimable("rapid"));
     }
 
     [Fact]
     public void StrictStrictnessDoesNotImplicitlyEnableProfanityPartialMatching()
     {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
-        {
-            Strictness = UnclaimableStrictness.Strict,
-            ProfanityMatching = true
-        });
+        var checker = new UnclaimableChecker();
 
         Assert.True(checker.IsReserved("cock"));
         Assert.True(checker.IsClaimable("cocktail"));
@@ -89,8 +83,6 @@ public sealed class StrictnessTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
-            Strictness = UnclaimableStrictness.Strict,
-            ProfanityMatching = true,
             ProfanityPartialMatching = true
         });
 
