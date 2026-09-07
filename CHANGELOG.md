@@ -16,6 +16,7 @@ Initial public NuGet release.
 - Bounded leetspeak and symbol-obfuscation matching.
 - Selected Unicode-confusable and diacritic normalization for common impersonation attempts.
 - Opt-in partial matching for embedded reserved values such as `old-admin` and `administrator2`.
+- `UnclaimableStrictness` with `Standard` and `Strict` modes; `Strict` automatically enables embedded reserved-name matching so values such as `admin2`, `old-admin`, and `admin-old` are rejected.
 - Configurable minimum reserved-name length for partial matching.
 - Optional fail-fast number policy through `AllowNumbers`.
 - Optional printable-ASCII-only policy through `AsciiOnly`.
@@ -26,6 +27,8 @@ Initial public NuGet release.
 - ASP.NET Core dependency-injection integration.
 - `[ClaimableUsername]` model-validation attribute.
 - Application-wide ASP.NET validation-message configuration with `{FieldName}` support and attribute-level overrides.
+- Reason-specific ASP.NET validation messages through `options.Messages`, with placeholders for `{FieldName}`, `{MatchedValue}`, `{Category}`, `{Character}`, and `{Index}` plus built-in fallbacks for every rejection reason.
+- xUnit coverage for strictness behavior, message precedence/placeholders, profanity interaction, character policies, and packaged-consumer behavior.
 - `netstandard2.0` dependency-free runtime core.
 - `net8.0` ASP.NET Core integration package.
 - MPL-2.0 licensing under Perry3D.nl.
