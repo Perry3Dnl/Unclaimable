@@ -126,8 +126,7 @@ jobs:
         run: |
           TAG="v${VERSION}"
 
-          EXISTING_SHA="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${TAG}" --jq '.object.sha' 2>/dev/null || true)"
-          if [ -n "$EXISTING_SHA" ]; then
+          if EXISTING_SHA="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${TAG}" --jq '.object.sha' 2>/dev/null)"; then
             if [ "$EXISTING_SHA" != "$GITHUB_SHA" ]; then
               echo "::error::Tag ${TAG} already exists at ${EXISTING_SHA}, expected ${GITHUB_SHA}."
               exit 1
