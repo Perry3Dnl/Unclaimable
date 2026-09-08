@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "operations",
+  "language": "global",
+  "description": "Service operations, incident management, reliability, maintenance and coordination identities.",
+  "combinations": [
+    {
+      "roots": ["operations","operation","serviceoperations","platformoperations","siteoperations","appoperations","businessoperations","customeroperations","supportoperations","securityoperations","networkoperations","cloudoperations","dataoperations","incidentoperations","incidentresponse","incidentmanagement","problemmanagement","changemanagement","servicemanagement","maintenance","maintenanceops","servicehealth","platformhealth","systemhealth","statusoperations","uptime","availability","reliability","sre","sitereliability","commandcenter","controlroom","runbook","runbooks","oncall","escalation","escalations","servicecontrol","operationscontrol","workforceops","backoffice","frontoffice","fulfillment","servicecoordination","operationsdesk"],
+      "suffixes": ["team","desk","service","admin","manager","portal","operations","support","office","center"]
+    }
+  ]
+}
