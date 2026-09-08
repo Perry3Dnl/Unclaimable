@@ -5,7 +5,7 @@
   "description": "Variante românești pentru cont, profil și identitate.",
   "combinations": [
     {
-      "roots": ["identitatecont","identitateprofil","profilutilizator","profilmemb ru","profilclient","profilabonat","profilînregistrare"],
+      "roots": ["identitatecont","identitateprofil","profilutilizator","profilmembre","profilclient","profilabonat","profilînregistrare"],
       "suffixes": ["echipă","birou","serviciu","administrare","manager","portal","operațiuni","suport","oficiu","centru"]
     }
   ]
