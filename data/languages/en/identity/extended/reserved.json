@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "identity",
+  "language": "en",
+  "description": "English account and profile identity variants.",
+  "combinations": [
+    {
+      "roots": ["accountidentity","profileidentity","userprofile","memberprofile","customerprofile","subscriberprofile","registrantprofile"],
+      "suffixes": ["team","desk","service","admin","manager","portal","operations","support","office","center"]
+    }
+  ]
+}
