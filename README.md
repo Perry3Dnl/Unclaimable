@@ -132,7 +132,7 @@ Global datasets contain language-independent proper names such as brands, compan
 builder.Services.AddUnclaimable();
 ```
 
-No language configuration is required because English is already present in `options.Languages`.
+No language configuration is required because English is enabled by default.
 
 ### English + Dutch
 
@@ -166,32 +166,27 @@ builder.Services.AddUnclaimable(options =>
 });
 ```
 
-There is no separate multi-language mode. The enabled language set is always additive.
-
-You can also manage the set directly:
-
-```csharp
-options.Languages.Add(UnclaimableLanguage.Spanish);
-options.Languages.Remove(UnclaimableLanguage.English);
-```
-
-An empty localized-language set is valid:
-
-```csharp
-options.Languages.Clear();
-```
-
-In that configuration only global datasets and application-specific reservations are loaded.
+There is no separate multi-language mode. The enabled language set is additive. `options.Languages` is read-only; use `AddLanguage(...)` and `RemoveLanguage(...)` to configure runtime selection.
 
 The additional language data is merged into the checker's indexes when the checker is constructed. Exact and compact checks remain dictionary lookups, while enabling more languages increases memory use and the amount of work performed by strict partial, Unicode-confusable, and obfuscation matching.
 
 Language configuration controls **which built-in localized datasets are loaded**, not which language the submitted identifier is allowed to contain.
 
-### Optional source language packs
+### Removing source language packs
 
-The repository keeps localized datasets below `data/languages/<code>/`. Dataset discovery is wildcard-based and metadata-driven; the core project does not reference Dutch, German, French, Spanish, Italian, Portuguese, or English files by a fixed path.
+Language folders are deliberately optional source data. They live below `data/languages/<code>/` and are included through a wildcard rather than fixed file references.
 
-This means a source consumer or fork may remove unused language-pack folders before building without causing a compile failure. For example, deleting `data/languages/de/` simply means German contributes no embedded localized entries in that build. The `UnclaimableLanguage.German` enum value still exists so application source does not have to change between full and trimmed builds.
+If a source checkout or fork does not need Dutch, it can simply delete:
+
+```text
+data/languages/nl/
+```
+
+The project still compiles. The same applies to German, French, Spanish, Italian, Portuguese, and even English. A missing folder contributes no embedded localized entries; it does not create a compile-time dependency or require a code change.
+
+This is separate from `AddLanguage(...)` / `RemoveLanguage(...)`: those methods select from language data that exists in the build. Physically deleting a language folder trims that language data from the build itself. If application code enables a language whose folder was removed, that language simply contributes no built-in entries.
+
+CI explicitly builds the core and ASP.NET Core projects from a temporary checkout with the entire `data/languages/` directory removed, so the removable-pack behavior is continuously verified.
 
 ## Rule controls
 
@@ -669,13 +664,13 @@ Current scopes:
 
 | Scope | Categories | Behavior |
 | --- | --- | --- |
-| `languages/en` | profanity, roles, support, system | enabled by default |
-| `languages/nl` | profanity, roles, support, system | optional, additive |
-| `languages/de` | profanity, roles, support, system | optional, additive |
-| `languages/fr` | profanity, roles, support, system | optional, additive |
-| `languages/es` | profanity, roles, support, system | optional, additive |
-| `languages/it` | profanity, roles, support, system | optional, additive |
-| `languages/pt` | profanity, roles, support, system | optional, additive |
+| `languages/en` | profanity, roles, support, system | enabled by default; folder may be removed from source builds |
+| `languages/nl` | profanity, roles, support, system | optional, additive; folder may be removed |
+| `languages/de` | profanity, roles, support, system | optional, additive; folder may be removed |
+| `languages/fr` | profanity, roles, support, system | optional, additive; folder may be removed |
+| `languages/es` | profanity, roles, support, system | optional, additive; folder may be removed |
+| `languages/it` | profanity, roles, support, system | optional, additive; folder may be removed |
+| `languages/pt` | profanity, roles, support, system | optional, additive; folder may be removed |
 | `global` | brands, technology | always loaded |
 
 Localized dataset documents declare their language explicitly where possible:
@@ -696,7 +691,7 @@ Language-independent data uses:
 "language": "global"
 ```
 
-The loader uses document metadata rather than hard-coded language-pack paths. This keeps language folders removable in source builds and makes adding another localized pack a data-and-enum change rather than a matching-engine redesign.
+The loader uses document metadata rather than hard-coded language-pack paths. The project file embeds `data/**/reserved.json`, so only files that actually exist are compiled into a build.
 
 ## Matching pipeline
 
