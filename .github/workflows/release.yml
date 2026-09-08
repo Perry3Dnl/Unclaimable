@@ -2,14 +2,20 @@ name: NuGet Release
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*"
+    paths:
+      - ".github/workflows/release.yml"
+      - "Directory.Build.props"
   pull_request:
     paths:
       - ".github/workflows/release.yml"
       - "Directory.Build.props"
       - "LICENSE"
       - "README.md"
+      - "README.NUGET.md"
       - "CHANGELOG.md"
       - "assets/**"
       - "data/**"
@@ -104,12 +110,12 @@ jobs:
 
   publish:
     name: Publish to NuGet.org
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags/v') || (github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'Release v')))
     needs: build-and-validate
     runs-on: ubuntu-latest
     environment: release
     permissions:
-      contents: read
+      contents: write
       id-token: write
 
     steps:
@@ -173,3 +179,35 @@ jobs:
             --api-key "$NUGET_API_KEY" \
             --source https://api.nuget.org/v3/index.json \
             $EXTRA_ARGS
+
+      - name: Tag and create GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build-and-validate.outputs.version }}
+        run: |
+          TAG="v${VERSION}"
+
+          EXISTING_SHA="$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${TAG}" --jq '.object.sha' 2>/dev/null || true)"
+          if [ -n "$EXISTING_SHA" ]; then
+            if [ "$EXISTING_SHA" != "$GITHUB_SHA" ]; then
+              echo "::error::Tag ${TAG} already exists at ${EXISTING_SHA}, expected ${GITHUB_SHA}."
+              exit 1
+            fi
+            echo "Tag ${TAG} already points at this release commit."
+          else
+            gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" \
+              -f ref="refs/tags/${TAG}" \
+              -f sha="${GITHUB_SHA}" >/dev/null
+            echo "Created tag ${TAG}."
+          fi
+
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "GitHub release ${TAG} already exists."
+          else
+            gh release create "$TAG" \
+              --repo "$GITHUB_REPOSITORY" \
+              --title "Unclaimable ${VERSION}" \
+              --generate-notes \
+              --verify-tag
+          fi
