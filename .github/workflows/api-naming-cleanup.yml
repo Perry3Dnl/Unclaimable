@@ -63,6 +63,23 @@ jobs:
               if updated != text:
                   path.write_text(updated, encoding="utf-8")
 
+          # Microsoft.Extensions.DependencyInjection contains a sibling Options namespace,
+          # so the public Unclaimable.Options type must be qualified in this integration file.
+          extensions_path = Path(
+              "platforms/dotnet/src/Unclaimable.AspNetCore/UnclaimableServiceCollectionExtensions.cs"
+          )
+          if extensions_path.exists():
+              text = extensions_path.read_text(encoding="utf-8")
+              text = text.replace(
+                  "Action<Options>? configure = null",
+                  "Action<Unclaimable.Options>? configure = null"
+              )
+              text = text.replace(
+                  "var options = new Options();",
+                  "var options = new Unclaimable.Options();"
+              )
+              extensions_path.write_text(text, encoding="utf-8")
+
           renames = {
               "platforms/dotnet/src/Unclaimable/IUnclaimableChecker.cs":
                   "platforms/dotnet/src/Unclaimable/IChecker.cs",
