@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "other",
+  "language": "global",
+  "description": "Miscellaneous protected platform-facing names that do not fit cleanly into a more specific reserved-name category.",
+  "values": [
+    "about",
+    "aboutus",
+    "careers",
+    "changelog",
+    "example",
+    "feedback",
+    "investorrelations",
+    "investors",
+    "newsroom",
+    "officialaccount",
+    "partners",
+    "partnerships",
+    "placeholder",
+    "press",
+    "pressoffice",
+    "pressroom",
+    "reserved",
+    "roadmap",
+    "sampleaccount",
+    "sponsors",
+    "sponsorships",
+    "statuspage",
+    "unavailable",
+    "verifiedaccount"
+  ]
+}

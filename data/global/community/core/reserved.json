@@ -1,0 +1,30 @@
+{
+  "schema": 1,
+  "category": "community",
+  "language": "global",
+  "description": "Names associated with official community programs, ambassadors, community hubs, member relations, and public community-facing identities.",
+  "values": [
+    "ambassador",
+    "ambassadors",
+    "communityambassador",
+    "communityboard",
+    "communitycouncil",
+    "communityevents",
+    "communityguide",
+    "communityguidelines",
+    "communityhost",
+    "communityhub",
+    "communitylead",
+    "communitynews",
+    "communityofficial",
+    "communityprogram",
+    "communityprograms",
+    "communityrelations",
+    "communityupdates",
+    "membercommunity",
+    "memberrelations",
+    "officialcommunity",
+    "usercommunity",
+    "volunteerteam"
+  ]
+}
