@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "finance",
+  "language": "global",
+  "description": "Billing, payments, accounting, merchant and financial operations identities.",
+  "combinations": [
+    {
+      "roots": ["billing","invoice","invoicing","payment","payments","payout","payouts","refund","refunds","chargeback","chargebacks","subscription","subscriptions","pricing","tax","taxes","vat","treasury","accounting","finance","revenue","purchase","purchasing","orderpayment","transaction","transactions","credit","debit","settlement","settlements","merchant","sellerfinance","escrow","wallet","balance","receivables","payables","payroll","expense","expenses","reimbursement","procurement","checkout","receipt","reconciliation"],
+      "suffixes": ["team","desk","service","admin","manager","portal","operations","support","office","center"]
+    }
+  ]
+}
