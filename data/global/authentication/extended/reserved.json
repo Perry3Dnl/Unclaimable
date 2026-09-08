@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "authentication",
+  "language": "global",
+  "description": "Authentication, login, recovery, token and access-control service identities.",
+  "combinations": [
+    {
+      "roots": ["auth","authentication","login","signin","signon","password","passcode","credential","credentials","accesscontrol","accessmanagement","identityaccess","mfa","multifactor","twofactor","otp","onetimepassword","authenticator","verificationcode","securitycode","recoverycode","backupcode","passwordreset","passwordrecovery","accountrecovery","sessioncontrol","sessionmanagement","tokenservice","accesstoken","refreshtoken","securitytoken","magiclink","sso","singlesignon","oauth","oauth2","oidc","openid","saml","kerberos","biometric","biometrics","passkey","passkeys","loginverification"],
+      "suffixes": ["team","desk","service","admin","manager","portal","operations","support","office","center"]
+    }
+  ]
+}
