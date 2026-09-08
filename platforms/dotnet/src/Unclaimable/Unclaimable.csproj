@@ -11,7 +11,7 @@
     <PackageId>Unclaimable</PackageId>
     <Version>$(UnclaimableVersion)</Version>
     <Description>Fast, dependency-free reserved username detection backed by the shared Unclaimable datasets.</Description>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
     <PackageIcon>unclaimable-icon.png</PackageIcon>
     <PackageTags>username;validation;security;reserved-names</PackageTags>
   </PropertyGroup>
@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="../../../../data/**/reserved.json" LogicalName="Unclaimable.Data.%(RecursiveDir)%(Filename)%(Extension)" />
-    <None Include="../../../../README.NUGET.md" Pack="true" PackagePath="/" Link="README.md" />
+    <None Include="../../../../README.NUGET.md" Pack="true" PackagePath="/" />
     <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
   </ItemGroup>
 
