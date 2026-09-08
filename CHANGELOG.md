@@ -2,6 +2,32 @@
 
 All notable changes to Unclaimable are documented here.
 
+## 0.3.0 - 2026-09-08
+
+Third public NuGet release, focused on broader semantic coverage, maintainable dataset expansion, and safer compound matching.
+
+### Added
+
+- Dataset schema v2 with generated `roots × suffixes` combinations for maintainable large-scale coverage without duplicating thousands of literal strings in source files.
+- Explicit `partialValues` support so entries can opt into safe compound matching independently of the global profanity-partial setting.
+- Ten new language-independent categories: `identity`, `authentication`, `moderation`, `finance`, `communications`, `operations`, `infrastructure`, `developer`, `governance`, and `official`.
+- Localized identity expansion across all 15 supported languages.
+- Built-in dataset coverage of 10,731 filter entries across 22 categories, representing 10,633 unique values within those categories.
+- Regression coverage for safe profanity compounds, exact-only short profanity, generated schema-v2 values, localized schema-v2 loading, and false-positive protection.
+
+### Changed
+
+- Safe compound profanity values can now participate in partial matching by default without making short ambiguous entries such as `ass` generic substring rules.
+- Dataset statistics now include concrete values expanded from schema-v2 combinations.
+- Language-pack tests now validate both literal values and generated schema-v2 combinations.
+- NuGet and GitHub-facing documentation now reflects the 0.3.0 dataset totals and expanded category set.
+
+### Fixed
+
+- Prevented compound-matching regression tests from depending on unrelated reserved-token precedence.
+- Updated localized dataset tests so schema-v2 files no longer fail legacy schema-v1 assumptions.
+- Removed nullable-analysis warnings from `Checker` normalization and conformance test data without suppressing compiler diagnostics.
+
 ## 0.2.0 - 2026-09-08
 
 Second public NuGet release, focused on substantially broader built-in dataset coverage and language support.
