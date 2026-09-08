@@ -9,7 +9,7 @@ public sealed class SchemaV2CoverageTests
     {
         var checker = new Checker(new Options());
 
-        var result = checker.Check("superfuckboyprofile");
+        var result = checker.Check("fuckboylover");
 
         Assert.True(result.IsReserved);
         Assert.Equal("fuckboy", result.MatchedValue);
@@ -66,5 +66,6 @@ public sealed class SchemaV2CoverageTests
         Assert.True(result.IsReserved);
         Assert.Equal(value, result.MatchedValue);
         Assert.Equal("identity", result.Category);
+        Assert.Equal(MatchKind.Exact, result.MatchKind);
     }
 }
