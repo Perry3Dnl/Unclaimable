@@ -8,7 +8,9 @@
   Strict, fast username and identifier validation for .NET.
 </p>
 
-> **Release status:** preparing the first public NuGet release, `0.1.0`.
+<p align="center">
+  <a href="https://www.nuget.org/packages/Unclaimable"><strong>Available on NuGet</strong></a>
+</p>
 
 Unclaimable answers one question: **should this identifier be claimable?**
 
@@ -26,19 +28,19 @@ English localized data is enabled by default. Additional language packs are addi
 
 | Package | Target | Purpose |
 | --- | --- | --- |
-| `Unclaimable` | `netstandard2.0` | dependency-free runtime core and embedded datasets |
+| [`Unclaimable`](https://www.nuget.org/packages/Unclaimable) | `netstandard2.0` | dependency-free runtime core and embedded datasets |
 | `Unclaimable.AspNetCore` | `net8.0` | ASP.NET Core dependency injection and model validation |
 
-After `0.1.0` is published:
+Install the core package from NuGet:
 
 ```bash
-dotnet add package Unclaimable --version 0.1.0
+dotnet add package Unclaimable
 ```
 
 For ASP.NET Core:
 
 ```bash
-dotnet add package Unclaimable.AspNetCore --version 0.1.0
+dotnet add package Unclaimable.AspNetCore
 ```
 
 ## What Unclaimable provides
@@ -51,6 +53,7 @@ The default policy includes:
 - English localized datasets by default;
 - additive localized datasets for 15 languages using the Latin alphabet;
 - global brand and technology impersonation datasets regardless of enabled languages;
+- global security, automation, legal, commerce, community, and other reserved-name categories;
 - strict embedded/partial reserved-name matching;
 - separator and punctuation normalization for reserved-name matching;
 - common leetspeak and symbol substitutions;
@@ -136,7 +139,18 @@ Each language pack uses the same localized dataset categories:
 - `system`;
 - `profanity`.
 
-Global datasets contain language-independent proper names such as brands, companies, platforms, products, and technology ecosystems. They are always active, so disabling every localized language does not make names such as `paypal`, `github`, or `nike` claimable.
+Global datasets contain language-independent protected names. Current global categories are:
+
+- `brands`;
+- `technology`;
+- `security`;
+- `automation`;
+- `legal`;
+- `commerce`;
+- `community`;
+- `other`.
+
+They are always active, so disabling every localized language does not make protected global values claimable.
 
 ### English only — default
 
@@ -614,156 +628,3 @@ public sealed class SignupModel
 ```
 
 `[Required]` remains useful for required-field semantics; Unclaimable focuses on whether a supplied identifier is claimable.
-
-## Validation messages
-
-Configure one application-wide fallback:
-
-```csharp
-builder.Services.AddUnclaimable(options =>
-{
-    options.ValidationMessage = "{FieldName} is not available.";
-});
-```
-
-Or configure messages by rejection reason:
-
-```csharp
-builder.Services.AddUnclaimable(options =>
-{
-    options.Messages.Reserved =
-        "{FieldName} '{MatchedValue}' is reserved.";
-
-    options.Messages.Partial =
-        "{FieldName} contains protected value '{MatchedValue}'.";
-
-    options.Messages.NumbersNotAllowed =
-        "Numbers are not allowed in {FieldName}; '{Character}' was found at index {Index}.";
-
-    options.Messages.BlockedCharacter =
-        "{FieldName} contains blocked character '{Character}'.";
-
-    options.Messages.TooShort =
-        "{FieldName} has {Length} characters; at least {MinimumLength} are required.";
-
-    options.Messages.TooLong =
-        "{FieldName} has {Length} characters; at most {MaximumLength} are allowed.";
-});
-```
-
-Supported placeholders include:
-
-| Placeholder | Value |
-| --- | --- |
-| `{FieldName}` | DataAnnotations display name |
-| `{MatchedValue}` | matched protected value |
-| `{Category}` | matched dataset category |
-| `{Character}` | offending character |
-| `{Index}` | zero-based offending-character index |
-| `{Length}` | supplied value length |
-| `{MinimumLength}` | configured minimum length |
-| `{MaximumLength}` | configured maximum length |
-
-Message precedence is:
-
-1. `[ClaimableUsername(ErrorMessage = "...")]`;
-2. reason-specific `options.Messages.*` message;
-3. `options.ValidationMessage` fallback;
-4. Unclaimable's built-in message.
-
-## Datasets
-
-Reserved values are stored as human-reviewable JSON below `data/` and embedded into the core package.
-
-Current scopes:
-
-| Scope | Categories | Behavior |
-| --- | --- | --- |
-| `languages/en` | profanity, roles, support, system | enabled by default; folder may be removed from source builds |
-| `languages/nl` | profanity, roles, support, system | optional, additive; folder may be removed |
-| `languages/de` | profanity, roles, support, system | optional, additive; folder may be removed |
-| `languages/fr` | profanity, roles, support, system | optional, additive; folder may be removed |
-| `languages/es` | profanity, roles, support, system | optional, additive; folder may be removed |
-| `languages/it` | profanity, roles, support, system | optional, additive; folder may be removed |
-| `languages/pt` | profanity, roles, support, system | optional, additive; folder may be removed |
-| `languages/pl` | profanity, roles, support, system | optional, additive; folder may be removed |
-| `languages/tr` | profanity, roles, support, system | optional, additive; folder may be removed |
-| `languages/id` | profanity, roles, support, system | optional, additive; folder may be removed |
-| `languages/cs` | profanity, roles, support, system | optional, additive; folder may be removed |
-| `languages/vi` | profanity, roles, support, system | optional, additive; folder may be removed |
-| `languages/hu` | profanity, roles, support, system | optional, additive; folder may be removed |
-| `languages/sv` | profanity, roles, support, system | optional, additive; folder may be removed |
-| `languages/ro` | profanity, roles, support, system | optional, additive; folder may be removed |
-| `global` | brands, technology | always loaded |
-
-Localized dataset documents declare their language explicitly where possible:
-
-```json
-{
-  "schema": 1,
-  "category": "support",
-  "language": "de",
-  "description": "...",
-  "values": ["..."]
-}
-```
-
-Language-independent data uses:
-
-```json
-"language": "global"
-```
-
-The loader uses document metadata rather than hard-coded language-pack paths. The project file embeds `data/**/reserved.json`, so only files that actually exist are compiled into a build.
-
-## Matching pipeline
-
-`Check(...)` is fail-fast. The effective order is designed to reject inexpensive policy violations before performing more expensive normalization work:
-
-1. minimum / maximum length;
-2. leading / trailing separator checks;
-3. numeric and character policy checks;
-4. exact reserved-name matching;
-5. compact matching;
-6. strict partial matching;
-7. Unicode-confusable matching;
-8. bounded obfuscation / leetspeak matching.
-
-Built-in protected values for all enabled language scopes are indexed when the checker is constructed. Normal exact and compact lookups use hashed dictionaries rather than repeatedly scanning the full dataset.
-
-## Repository layout
-
-```text
-.github/workflows/
-assets/
-conformance/
-data/
-  global/
-    brands/
-    technology/
-  languages/
-    en/
-    nl/
-    de/
-    fr/
-    es/
-    it/
-    pt/
-    pl/
-    tr/
-    id/
-    cs/
-    vi/
-    hu/
-    sv/
-    ro/
-platforms/dotnet/src/Unclaimable/
-  Languages/
-platforms/dotnet/src/Unclaimable.AspNetCore/
-platforms/dotnet/tests/Unclaimable.Tests/
-platforms/dotnet/smoke/Unclaimable.ConsumerSmoke/
-```
-
-## License
-
-MPL-2.0
