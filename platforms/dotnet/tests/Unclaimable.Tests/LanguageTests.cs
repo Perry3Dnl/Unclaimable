@@ -15,7 +15,7 @@ public sealed class LanguageTests
         Assert.True(UnclaimableChecker.Default.IsReserved("fuckwaffle"));
         Assert.True(UnclaimableChecker.Default.IsClaimable("facturatiehulp"));
         Assert.True(UnclaimableChecker.Default.IsClaimable("abrechnungshilfe"));
-        Assert.True(UnclaimableChecker.Default.IsClaimable("serviceclient"));
+        Assert.True(UnclaimableChecker.Default.IsClaimable("motdepasseoublie"));
     }
 
     [Fact]
