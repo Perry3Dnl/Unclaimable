@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "identity",
+  "language": "global",
+  "description": "Protected account, profile and identity-facing names expanded into concrete service identities.",
+  "combinations": [
+    {
+      "roots": ["account","profile","identity","useridentity","memberidentity","customeridentity","subscriberidentity","registrantidentity","accountowner","profileowner","userowner","memberowner","identityowner","accountverification","profileverification","userverification","memberverification","identityverification","verifiedidentity","verifiedaccount","verifiedprofile","verifieduser","officialaccount","officialprofile","officialuser","primaryaccount","masteraccount","serviceaccount","systemaccount","platformaccount","siteaccount","appaccount","organizationaccount","businessaccount","enterpriseaccount","corporateaccount","staffaccount","teamaccount","adminaccount","supportaccount","securityaccount","billingaccount","developeraccount","partneraccount","vendoraccount"],
+      "suffixes": ["team","desk","service","admin","manager","portal","operations","support","office","center"]
+    }
+  ]
+}
