@@ -12,16 +12,18 @@ public sealed class Checker : IChecker
 
     private sealed class ReservedEntry
     {
-        public ReservedEntry(string value, string category, Language? language = null)
+        public ReservedEntry(string value, string category, Language? language = null, bool safePartial = false)
         {
             Value = value;
             Category = category;
             Language = language;
+            SafePartial = safePartial;
         }
 
         public string Value { get; }
         public string Category { get; }
         public Language? Language { get; }
+        public bool SafePartial { get; }
     }
 
     private sealed class PartialEntry
@@ -52,6 +54,25 @@ public sealed class Checker : IChecker
 
         [DataMember(Name = "values")]
         public string[] Values { get; set; } = Array.Empty<string>();
+
+        [DataMember(Name = "partialValues")]
+        public string[] PartialValues { get; set; } = Array.Empty<string>();
+
+        [DataMember(Name = "combinations")]
+        public CombinationDocument[] Combinations { get; set; } = Array.Empty<CombinationDocument>();
+    }
+
+    [DataContract]
+    private sealed class CombinationDocument
+    {
+        [DataMember(Name = "roots")]
+        public string[] Roots { get; set; } = Array.Empty<string>();
+
+        [DataMember(Name = "suffixes")]
+        public string[] Suffixes { get; set; } = Array.Empty<string>();
+
+        [DataMember(Name = "partial")]
+        public bool Partial { get; set; }
     }
 
     private static readonly Lazy<IReadOnlyList<ReservedEntry>> BuiltInEntries =
@@ -163,7 +184,9 @@ public sealed class Checker : IChecker
                 continue;
             }
 
-            Add(entry, includeInPartialMatching: !isProfanity || options.ProfanityPartialMatching);
+            Add(
+                entry,
+                includeInPartialMatching: entry.SafePartial || !isProfanity || options.ProfanityPartialMatching);
         }
 
         foreach (var value in options.AdditionalReserved)
@@ -964,15 +987,43 @@ public sealed class Checker : IChecker
                     throw new InvalidOperationException($"Embedded dataset '{resourceName}' is invalid.");
                 }
 
-                if (document.Schema != 1 || string.IsNullOrWhiteSpace(document.Category))
+                if ((document.Schema != 1 && document.Schema != 2) || string.IsNullOrWhiteSpace(document.Category))
                 {
                     throw new InvalidOperationException($"Embedded dataset '{resourceName}' has an unsupported schema.");
                 }
 
                 var language = ResolveDatasetLanguage(document, resourceName);
+
                 entries.AddRange(document.Values
                     .Where(value => !string.IsNullOrWhiteSpace(value))
                     .Select(value => new ReservedEntry(value, document.Category, language)));
+
+                if (document.Schema >= 2)
+                {
+                    entries.AddRange(document.PartialValues
+                        .Where(value => !string.IsNullOrWhiteSpace(value))
+                        .Select(value => new ReservedEntry(value, document.Category, language, safePartial: true)));
+
+                    foreach (var combination in document.Combinations)
+                    {
+                        if (combination is null)
+                        {
+                            continue;
+                        }
+
+                        foreach (var root in combination.Roots.Where(root => !string.IsNullOrWhiteSpace(root)))
+                        {
+                            foreach (var suffix in combination.Suffixes.Where(suffix => !string.IsNullOrWhiteSpace(suffix)))
+                            {
+                                entries.Add(new ReservedEntry(
+                                    root + suffix,
+                                    document.Category,
+                                    language,
+                                    safePartial: combination.Partial));
+                            }
+                        }
+                    }
+                }
             }
         }
 
