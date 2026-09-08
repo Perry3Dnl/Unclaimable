@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "identity",
+  "language": "cs",
+  "description": "České varianty účtů, profilů a identity.",
+  "combinations": [
+    {
+      "roots": ["identitaúčtu","identitaprofilu","profiluživatele","profilčlena","profilzákazníka","profilpředplatitele","profilregistrace"],
+      "suffixes": ["tým","přepážka","služba","správa","manažer","portál","operace","podpora","kancelář","centrum"]
+    }
+  ]
+}
