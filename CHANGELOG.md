@@ -2,7 +2,33 @@
 
 All notable changes to Unclaimable are documented here.
 
-## 0.1.0 - Unreleased
+## 0.2.0 - 2026-09-08
+
+Second public NuGet release, focused on substantially broader built-in dataset coverage and language support.
+
+### Added
+
+- Eight additional localized language packs: Polish, Turkish, Indonesian, Czech, Vietnamese, Hungarian, Swedish, and Romanian.
+- Fifteen supported Latin-script languages in total when combined with English, Dutch, German, French, Spanish, Italian, and Portuguese.
+- New language-independent global categories for `security`, `automation`, `legal`, `commerce`, `community`, and `other`.
+- Built-in dataset coverage of 5,181 filter entries across 12 categories, representing 5,085 unique values within those categories.
+- Category-expansion and additional-language tests that verify representative values, language isolation, global-category behavior, and dataset-category integrity.
+- Dataset statistics tooling for reproducibly counting filter entries and unique values by category.
+- A dedicated NuGet README, separate from the GitHub repository README.
+
+### Changed
+
+- Expanded the existing brand, technology, profanity, role, support, and system datasets with substantially more coverage.
+- Expanded German, Spanish, French, Italian, Dutch, and Portuguese localized datasets.
+- Updated both README files with current category totals, package installation guidance, and the full supported-language list.
+- NuGet package metadata now uses the dedicated NuGet README while GitHub continues to render the repository README.
+
+### Fixed
+
+- Prevented new global category values from silently reclassifying existing localized values when datasets overlap.
+- Corrected NuGet README packaging so both generated packages contain the README declared in package metadata.
+
+## 0.1.0
 
 Initial public NuGet release.
 
