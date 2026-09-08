@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "identity",
+  "language": "sv",
+  "description": "Svenska konto-, profil- och identitetsvarianter.",
+  "combinations": [
+    {
+      "roots": ["kontoidentitet","profilidentitet","användarprofil","medlemsprofil","kundprofil","abonnentprofil","registreringsprofil"],
+      "suffixes": ["team","disk","tjänst","administration","chef","portal","drift","support","kontor","centrum"]
+    }
+  ]
+}
