@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "identity",
+  "language": "es",
+  "description": "Variantes españolas de cuenta, perfil e identidad.",
+  "combinations": [
+    {
+      "roots": ["identidadcuenta","identidadperfil","perfilusuario","perfilmiembro","perfilcliente","perfilsuscriptor","perfilregistro"],
+      "suffixes": ["equipo","mesa","servicio","administracion","gerente","portal","operaciones","soporte","oficina","centro"]
+    }
+  ]
+}
