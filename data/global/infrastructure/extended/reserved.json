@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "infrastructure",
+  "language": "global",
+  "description": "Infrastructure, hosting, networking, storage, runtime and deployment identities.",
+  "combinations": [
+    {
+      "roots": ["infrastructure","backend","frontend","server","network","networking","dns","domainservice","storage","database","databases","cache","caching","queue","queues","messagequeue","proxy","gateway","loadbalancer","firewall","cdn","hosting","host","datacenter","cloud","cloudservice","container","containers","kubernetes","cluster","clusters","orchestration","deployment","deployments","runtime","compute","virtualmachine","virtualmachines","filesystem","objectstorage","blockstorage","backup","backups","replication","infraplatform"],
+      "suffixes": ["team","desk","service","admin","manager","portal","operations","support","office","center"]
+    }
+  ]
+}
