@@ -6,6 +6,7 @@ on:
       - "Directory.Build.props"
       - "LICENSE"
       - "README.md"
+      - "README.NUGET.md"
       - "CHANGELOG.md"
       - "assets/**"
       - "data/**"
@@ -17,6 +18,7 @@ on:
       - "Directory.Build.props"
       - "LICENSE"
       - "README.md"
+      - "README.NUGET.md"
       - "CHANGELOG.md"
       - "assets/**"
       - "data/**"
@@ -41,6 +43,10 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
+
+      - name: Dataset statistics
+        shell: pwsh
+        run: ./platforms/dotnet/scripts/Get-DatasetStatistics.ps1
 
       - name: Test
         run: dotnet test platforms/dotnet/tests/Unclaimable.Tests/Unclaimable.Tests.csproj --configuration Release
