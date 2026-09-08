@@ -3,7 +3,7 @@ namespace Unclaimable;
 /// <summary>
 /// Default in-memory runtime policy. Built-in blocked characters can be relaxed or extended at runtime.
 /// </summary>
-public sealed class UnclaimablePolicy : IUnclaimablePolicy
+public sealed class Policy : IPolicy
 {
     private static readonly string[] BuiltInBlockedCharacters = { "-", "_" };
 
@@ -11,11 +11,11 @@ public sealed class UnclaimablePolicy : IUnclaimablePolicy
     private readonly HashSet<string> _blocked = new HashSet<string>(StringComparer.Ordinal);
     private readonly HashSet<string> _allowed = new HashSet<string>(StringComparer.Ordinal);
 
-    public UnclaimablePolicy()
+    public Policy()
     {
     }
 
-    public UnclaimablePolicy(IEnumerable<string> additionalBlockedCharacters)
+    public Policy(IEnumerable<string> additionalBlockedCharacters)
     {
         if (additionalBlockedCharacters is null)
         {

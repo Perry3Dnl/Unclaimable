@@ -30,7 +30,7 @@ public sealed class AspNetCoreIntegrationTests
             .AddUnclaimable(options => options.AdditionalReserved.Add("examplebrand"))
             .BuildServiceProvider();
 
-        var checker = provider.GetRequiredService<IUnclaimableChecker>();
+        var checker = provider.GetRequiredService<IChecker>();
 
         Assert.True(checker.IsReserved("ExampleBrand"));
     }

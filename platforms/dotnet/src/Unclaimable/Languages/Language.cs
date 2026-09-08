@@ -3,7 +3,7 @@ namespace Unclaimable;
 /// <summary>
 /// Languages supported by Unclaimable's localized built-in datasets.
 /// </summary>
-public enum UnclaimableLanguage
+public enum Language
 {
     /// <summary>English localized datasets.</summary>
     English = 0,

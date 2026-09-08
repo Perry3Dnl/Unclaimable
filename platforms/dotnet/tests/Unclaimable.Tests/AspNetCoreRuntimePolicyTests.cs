@@ -12,14 +12,14 @@ public sealed class AspNetCoreRuntimePolicyTests
             .AddUnclaimable()
             .BuildServiceProvider();
 
-        var checker = provider.GetRequiredService<IUnclaimableChecker>();
-        var policy = provider.GetRequiredService<IUnclaimablePolicy>();
+        var checker = provider.GetRequiredService<IChecker>();
+        var policy = provider.GetRequiredService<IPolicy>();
 
         Assert.True(checker.IsClaimable("normal^name"));
 
         policy.BlockCharacter("^");
 
-        Assert.Equal(UnclaimableMatchKind.BlockedCharacter, checker.Check("normal^name").MatchKind);
+        Assert.Equal(MatchKind.BlockedCharacter, checker.Check("normal^name").MatchKind);
     }
 
     [Fact]
@@ -29,10 +29,10 @@ public sealed class AspNetCoreRuntimePolicyTests
             .AddUnclaimable(options => options.AdditionalBlockedCharacters("^", "$"))
             .BuildServiceProvider();
 
-        var checker = provider.GetRequiredService<IUnclaimableChecker>();
-        var policy = provider.GetRequiredService<IUnclaimablePolicy>();
+        var checker = provider.GetRequiredService<IChecker>();
+        var policy = provider.GetRequiredService<IPolicy>();
 
         Assert.True(policy.IsCharacterBlocked("^"));
-        Assert.Equal(UnclaimableMatchKind.BlockedCharacter, checker.Check("normal^name").MatchKind);
+        Assert.Equal(MatchKind.BlockedCharacter, checker.Check("normal^name").MatchKind);
     }
 }

@@ -1,7 +1,7 @@
 namespace Unclaimable;
 
 /// <summary>Optional user-facing validation messages for individual rejection reasons.</summary>
-public sealed class UnclaimableValidationMessages
+public sealed class ValidationMessages
 {
     public string? Reserved { get; set; }
     public string? Compact { get; set; }

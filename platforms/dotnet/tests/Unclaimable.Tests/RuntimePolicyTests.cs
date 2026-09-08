@@ -7,14 +7,14 @@ public sealed class RuntimePolicyTests
     [Fact]
     public void RuntimePolicyCanRelaxBuiltInBlockedCharacters()
     {
-        var options = new UnclaimableOptions
+        var options = new Options
         {
-            Strictness = UnclaimableStrictness.Standard
+            Strictness = Strictness.Standard
         };
-        var policy = new UnclaimablePolicy(options.ConfiguredBlockedCharacters);
-        var checker = new UnclaimableChecker(options, policy);
+        var policy = new Policy(options.ConfiguredBlockedCharacters);
+        var checker = new Checker(options, policy);
 
-        Assert.Equal(UnclaimableMatchKind.BlockedCharacter, checker.Check("john-doe").MatchKind);
+        Assert.Equal(MatchKind.BlockedCharacter, checker.Check("john-doe").MatchKind);
 
         policy.AllowCharacter("-");
 
@@ -24,26 +24,26 @@ public sealed class RuntimePolicyTests
     [Fact]
     public void RuntimePolicyCanBlockAdditionalCharactersWithoutRebuildingChecker()
     {
-        var options = new UnclaimableOptions
+        var options = new Options
         {
-            Strictness = UnclaimableStrictness.Standard
+            Strictness = Strictness.Standard
         };
-        var policy = new UnclaimablePolicy(options.ConfiguredBlockedCharacters);
-        var checker = new UnclaimableChecker(options, policy);
+        var policy = new Policy(options.ConfiguredBlockedCharacters);
+        var checker = new Checker(options, policy);
 
         Assert.True(checker.IsClaimable("john^doe"));
 
         policy.BlockCharacter("^");
 
         var result = checker.Check("john^doe");
-        Assert.Equal(UnclaimableMatchKind.BlockedCharacter, result.MatchKind);
+        Assert.Equal(MatchKind.BlockedCharacter, result.MatchKind);
         Assert.Equal("^", result.OffendingCharacter);
     }
 
     [Fact]
     public void RuntimePolicyOperationsAreImmediatelyVisible()
     {
-        var policy = new UnclaimablePolicy();
+        var policy = new Policy();
 
         policy.BlockCharacters("^", "$", "@");
         Assert.Contains("^", policy.BlockedCharacters);

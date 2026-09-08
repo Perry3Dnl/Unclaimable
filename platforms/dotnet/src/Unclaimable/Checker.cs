@@ -6,13 +6,13 @@ using System.Text;
 
 namespace Unclaimable;
 
-public sealed class UnclaimableChecker : IUnclaimableChecker
+public sealed class Checker : IChecker
 {
     private const int MaxObfuscationCandidates = 32;
 
     private sealed class ReservedEntry
     {
-        public ReservedEntry(string value, string category, UnclaimableLanguage? language = null)
+        public ReservedEntry(string value, string category, Language? language = null)
         {
             Value = value;
             Category = category;
@@ -21,7 +21,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
         public string Value { get; }
         public string Category { get; }
-        public UnclaimableLanguage? Language { get; }
+        public Language? Language { get; }
     }
 
     private sealed class PartialEntry
@@ -60,7 +60,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
     private readonly Dictionary<string, ReservedEntry> _exact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
     private readonly Dictionary<string, ReservedEntry> _compact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
     private readonly List<PartialEntry> _partialEntries = new List<PartialEntry>();
-    private readonly IUnclaimablePolicy _policy;
+    private readonly IPolicy _policy;
     private readonly bool _minimumLengthEnabled;
     private readonly bool _maximumLengthEnabled;
     private readonly bool _whitespaceEnabled;
@@ -77,19 +77,19 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
     private readonly bool _allowNumbers;
     private readonly bool _asciiOnly;
 
-    public static UnclaimableChecker Default { get; } = new UnclaimableChecker();
+    public static Checker Default { get; } = new Checker();
 
-    public UnclaimableChecker()
-        : this(new UnclaimableOptions())
+    public Checker()
+        : this(new Options())
     {
     }
 
-    public UnclaimableChecker(UnclaimableOptions options)
-        : this(options, new UnclaimablePolicy(options?.ConfiguredBlockedCharacters ?? Array.Empty<string>()))
+    public Checker(Options options)
+        : this(options, new Policy(options?.ConfiguredBlockedCharacters ?? Array.Empty<string>()))
     {
     }
 
-    public UnclaimableChecker(UnclaimableOptions options, IUnclaimablePolicy policy)
+    public Checker(Options options, IPolicy policy)
     {
         if (options is null)
         {
@@ -103,9 +103,9 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
         foreach (var language in options.Languages)
         {
-            if (!Enum.IsDefined(typeof(UnclaimableLanguage), language))
+            if (!Enum.IsDefined(typeof(Language), language))
             {
-                throw new ArgumentOutOfRangeException(nameof(options.Languages), "Languages must contain only supported UnclaimableLanguage values.");
+                throw new ArgumentOutOfRangeException(nameof(options.Languages), "Languages must contain only supported Language values.");
             }
         }
 
@@ -132,23 +132,23 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         }
 
         _policy = policy;
-        _minimumLengthEnabled = options.IsRuleEnabled(UnclaimableRule.MinimumLength);
-        _maximumLengthEnabled = options.IsRuleEnabled(UnclaimableRule.MaximumLength);
-        _whitespaceEnabled = options.IsRuleEnabled(UnclaimableRule.Whitespace);
-        _blockedCharactersEnabled = options.IsRuleEnabled(UnclaimableRule.BlockedCharacters);
-        _leadingSeparatorEnabled = options.IsRuleEnabled(UnclaimableRule.LeadingSeparator);
-        _trailingSeparatorEnabled = options.IsRuleEnabled(UnclaimableRule.TrailingSeparator);
+        _minimumLengthEnabled = options.IsRuleEnabled(Rule.MinimumLength);
+        _maximumLengthEnabled = options.IsRuleEnabled(Rule.MaximumLength);
+        _whitespaceEnabled = options.IsRuleEnabled(Rule.Whitespace);
+        _blockedCharactersEnabled = options.IsRuleEnabled(Rule.BlockedCharacters);
+        _leadingSeparatorEnabled = options.IsRuleEnabled(Rule.LeadingSeparator);
+        _trailingSeparatorEnabled = options.IsRuleEnabled(Rule.TrailingSeparator);
         _minimumLength = options.MinimumLength;
         _maximumLength = options.MaximumLength;
-        _compactMatching = options.CompactMatching && options.IsRuleEnabled(UnclaimableRule.CompactMatching);
-        _partialMatching = options.PartialMatching && options.IsRuleEnabled(UnclaimableRule.PartialMatching);
+        _compactMatching = options.CompactMatching && options.IsRuleEnabled(Rule.CompactMatching);
+        _partialMatching = options.PartialMatching && options.IsRuleEnabled(Rule.PartialMatching);
         _partialMatchMinimumLength = options.PartialMatchMinimumLength;
-        _obfuscationMatching = options.ObfuscationMatching && options.IsRuleEnabled(UnclaimableRule.ObfuscationMatching);
-        _unicodeConfusableMatching = options.UnicodeConfusableMatching && options.IsRuleEnabled(UnclaimableRule.UnicodeConfusableMatching);
-        _allowNumbers = options.AllowNumbers || !options.IsRuleEnabled(UnclaimableRule.Numbers);
+        _obfuscationMatching = options.ObfuscationMatching && options.IsRuleEnabled(Rule.ObfuscationMatching);
+        _unicodeConfusableMatching = options.UnicodeConfusableMatching && options.IsRuleEnabled(Rule.UnicodeConfusableMatching);
+        _allowNumbers = options.AllowNumbers || !options.IsRuleEnabled(Rule.Numbers);
         _asciiOnly = options.AsciiOnly;
 
-        var profanityMatching = options.ProfanityMatching && options.IsRuleEnabled(UnclaimableRule.Profanity);
+        var profanityMatching = options.ProfanityMatching && options.IsRuleEnabled(Rule.Profanity);
 
         foreach (var entry in BuiltInEntries.Value)
         {
@@ -178,9 +178,9 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
     public bool IsClaimable(string? value) => !Check(value).IsReserved;
 
-    public UnclaimableResult Check(string? value)
+    public Result Check(string? value)
     {
-        UnclaimableResult? policyViolation;
+        Result? policyViolation;
         if (TryFindFirstPolicyViolation(value, out policyViolation))
         {
             return policyViolation!;
@@ -189,9 +189,9 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         return CheckReservedName(value);
     }
 
-    public UnclaimableDetailedResult CheckDetailed(string? value, bool includeMessages = false)
+    public DetailedResult CheckDetailed(string? value, bool includeMessages = false)
     {
-        var diagnostics = new List<UnclaimableDiagnostic>();
+        var diagnostics = new List<Diagnostic>();
         CollectPolicyDiagnostics(value, includeMessages, diagnostics);
 
         var reservedResult = CheckReservedName(value);
@@ -200,21 +200,21 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             diagnostics.Add(ToDiagnostic(reservedResult, includeMessages));
         }
 
-        return new UnclaimableDetailedResult(value, diagnostics);
+        return new DetailedResult(value, diagnostics);
     }
 
-    private UnclaimableResult CheckReservedName(string? value)
+    private Result CheckReservedName(string? value)
     {
         var exact = NormalizeExact(value);
         if (exact is null)
         {
-            return UnclaimableResult.Allowed(value);
+            return Result.Allowed(value);
         }
 
         ReservedEntry? exactMatch;
         if (_exact.TryGetValue(exact, out exactMatch))
         {
-            return CreateReservedResult(value, exactMatch, UnclaimableMatchKind.Exact, 0, exact.Length);
+            return CreateReservedResult(value, exactMatch, MatchKind.Exact, 0, exact.Length);
         }
 
         var compact = NormalizeCompact(exact);
@@ -223,7 +223,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             ReservedEntry? compactMatch;
             if (compact.Length > 0 && _compact.TryGetValue(compact, out compactMatch))
             {
-                return CreateReservedResult(value, compactMatch, UnclaimableMatchKind.Compact, 0, compact.Length);
+                return CreateReservedResult(value, compactMatch, MatchKind.Compact, 0, compact.Length);
             }
         }
 
@@ -234,14 +234,14 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             int partialLength;
             if (TryMatchPartial(exact, compact, out partialMatch, out partialStart, out partialLength))
             {
-                return CreateReservedResult(value, partialMatch!, UnclaimableMatchKind.Partial, partialStart, partialLength);
+                return CreateReservedResult(value, partialMatch!, MatchKind.Partial, partialStart, partialLength);
             }
         }
 
         if (_unicodeConfusableMatching)
         {
             ReservedEntry? confusableMatch;
-            UnclaimableMatchKind confusableKind;
+            MatchKind confusableKind;
             int? confusableStart;
             int? confusableLength;
             if (TryMatchUnicodeConfusable(
@@ -258,7 +258,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         if (_obfuscationMatching)
         {
             ReservedEntry? obfuscatedMatch;
-            UnclaimableMatchKind obfuscatedKind;
+            MatchKind obfuscatedKind;
             int? obfuscatedStart;
             int? obfuscatedLength;
             if (TryMatchObfuscated(
@@ -272,17 +272,17 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             }
         }
 
-        return UnclaimableResult.Allowed(value);
+        return Result.Allowed(value);
     }
 
-    private static UnclaimableResult CreateReservedResult(
+    private static Result CreateReservedResult(
         string? input,
         ReservedEntry match,
-        UnclaimableMatchKind matchKind,
+        MatchKind matchKind,
         int? matchStartIndex = null,
         int? matchLength = null)
     {
-        return new UnclaimableResult(
+        return new Result(
             true,
             input,
             match.Value,
@@ -359,7 +359,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
     private bool TryMatchUnicodeConfusable(
         string value,
         out ReservedEntry? match,
-        out UnclaimableMatchKind matchKind,
+        out MatchKind matchKind,
         out int? matchStartIndex,
         out int? matchLength)
     {
@@ -368,7 +368,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         if (!changed)
         {
             match = null;
-            matchKind = UnclaimableMatchKind.None;
+            matchKind = MatchKind.None;
             matchStartIndex = null;
             matchLength = null;
             return false;
@@ -376,7 +376,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
         if (_exact.TryGetValue(skeleton, out match))
         {
-            matchKind = UnclaimableMatchKind.UnicodeConfusable;
+            matchKind = MatchKind.UnicodeConfusable;
             matchStartIndex = 0;
             matchLength = skeleton.Length;
             return true;
@@ -385,7 +385,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         var compact = NormalizeCompact(skeleton);
         if (_compactMatching && compact.Length > 0 && _compact.TryGetValue(compact, out match))
         {
-            matchKind = UnclaimableMatchKind.UnicodeConfusable;
+            matchKind = MatchKind.UnicodeConfusable;
             matchStartIndex = 0;
             matchLength = compact.Length;
             return true;
@@ -397,7 +397,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             int partialLength;
             if (TryMatchPartial(skeleton, compact, out match, out partialStart, out partialLength))
             {
-                matchKind = UnclaimableMatchKind.Partial;
+                matchKind = MatchKind.Partial;
                 matchStartIndex = partialStart;
                 matchLength = partialLength;
                 return true;
@@ -411,7 +411,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         }
 
         match = null;
-        matchKind = UnclaimableMatchKind.None;
+        matchKind = MatchKind.None;
         matchStartIndex = null;
         matchLength = null;
         return false;
@@ -420,7 +420,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
     private bool TryMatchObfuscated(
         string value,
         out ReservedEntry? match,
-        out UnclaimableMatchKind matchKind,
+        out MatchKind matchKind,
         out int? matchStartIndex,
         out int? matchLength)
     {
@@ -462,7 +462,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         if (!usedSubstitution)
         {
             match = null;
-            matchKind = UnclaimableMatchKind.None;
+            matchKind = MatchKind.None;
             matchStartIndex = null;
             matchLength = null;
             return false;
@@ -472,7 +472,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         {
             if (candidate.Length > 0 && _compact.TryGetValue(candidate, out match))
             {
-                matchKind = UnclaimableMatchKind.Obfuscated;
+                matchKind = MatchKind.Obfuscated;
                 matchStartIndex = 0;
                 matchLength = candidate.Length;
                 return true;
@@ -491,7 +491,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
                     if (partialIndex >= 0)
                     {
                         match = partial.Entry;
-                        matchKind = UnclaimableMatchKind.Partial;
+                        matchKind = MatchKind.Partial;
                         matchStartIndex = partialIndex;
                         matchLength = partial.Compact.Length;
                         return true;
@@ -501,13 +501,13 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         }
 
         match = null;
-        matchKind = UnclaimableMatchKind.None;
+        matchKind = MatchKind.None;
         matchStartIndex = null;
         matchLength = null;
         return false;
     }
 
-    private bool TryFindFirstPolicyViolation(string? value, out UnclaimableResult? violation)
+    private bool TryFindFirstPolicyViolation(string? value, out Result? violation)
     {
         violation = null;
         if (value is null)
@@ -517,13 +517,13 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
         if (_minimumLengthEnabled && value.Length < _minimumLength)
         {
-            violation = UnclaimableResult.TooShort(value);
+            violation = Result.TooShort(value);
             return true;
         }
 
         if (_maximumLengthEnabled && value.Length > _maximumLength)
         {
-            violation = UnclaimableResult.TooLong(value);
+            violation = Result.TooLong(value);
             return true;
         }
 
@@ -534,13 +534,13 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
         if (_leadingSeparatorEnabled && IsSeparator(value[0]))
         {
-            violation = UnclaimableResult.LeadingSeparator(value, 0, value[0].ToString());
+            violation = Result.LeadingSeparator(value, 0, value[0].ToString());
             return true;
         }
 
         if (_trailingSeparatorEnabled && IsSeparator(value[value.Length - 1]))
         {
-            violation = UnclaimableResult.TrailingSeparator(value, value.Length - 1, value[value.Length - 1].ToString());
+            violation = Result.TrailingSeparator(value, value.Length - 1, value[value.Length - 1].ToString());
             return true;
         }
 
@@ -559,26 +559,26 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
             if (!_allowNumbers && category == UnicodeCategory.DecimalDigitNumber)
             {
-                violation = UnclaimableResult.NumbersNotAllowed(value, index, characterText);
+                violation = Result.NumbersNotAllowed(value, index, characterText);
                 return true;
             }
 
             if (_asciiOnly && (character < '\u0020' || character > '\u007E'))
             {
-                violation = UnclaimableResult.InvalidCharacters(value, index, characterText);
+                violation = Result.InvalidCharacters(value, index, characterText);
                 return true;
             }
 
             var explicitlyAllowed = _policy.IsCharacterExplicitlyAllowed(characterText);
             if (!explicitlyAllowed && _whitespaceEnabled && IsWhitespace(category, character))
             {
-                violation = UnclaimableResult.BlockedCharacter(value, index, characterText);
+                violation = Result.BlockedCharacter(value, index, characterText);
                 return true;
             }
 
             if (!explicitlyAllowed && _blockedCharactersEnabled && _policy.IsCharacterBlocked(characterText))
             {
-                violation = UnclaimableResult.BlockedCharacter(value, index, characterText);
+                violation = Result.BlockedCharacter(value, index, characterText);
                 return true;
             }
 
@@ -594,7 +594,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
     private void CollectPolicyDiagnostics(
         string? value,
         bool includeMessages,
-        List<UnclaimableDiagnostic> diagnostics)
+        List<Diagnostic> diagnostics)
     {
         if (value is null)
         {
@@ -603,15 +603,15 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
         if (_minimumLengthEnabled && value.Length < _minimumLength)
         {
-            diagnostics.Add(new UnclaimableDiagnostic(
-                UnclaimableMatchKind.TooShort,
+            diagnostics.Add(new Diagnostic(
+                MatchKind.TooShort,
                 message: includeMessages ? $"Value must be at least {_minimumLength} characters long." : null));
         }
 
         if (_maximumLengthEnabled && value.Length > _maximumLength)
         {
-            diagnostics.Add(new UnclaimableDiagnostic(
-                UnclaimableMatchKind.TooLong,
+            diagnostics.Add(new Diagnostic(
+                MatchKind.TooLong,
                 message: includeMessages ? $"Value must be no more than {_maximumLength} characters long." : null));
         }
 
@@ -622,8 +622,8 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
         if (_leadingSeparatorEnabled && IsSeparator(value[0]))
         {
-            diagnostics.Add(new UnclaimableDiagnostic(
-                UnclaimableMatchKind.LeadingSeparator,
+            diagnostics.Add(new Diagnostic(
+                MatchKind.LeadingSeparator,
                 offendingCharacterIndex: 0,
                 offendingCharacter: value[0].ToString(),
                 message: includeMessages ? "Leading separators are not allowed." : null));
@@ -631,8 +631,8 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
         if (_trailingSeparatorEnabled && IsSeparator(value[value.Length - 1]))
         {
-            diagnostics.Add(new UnclaimableDiagnostic(
-                UnclaimableMatchKind.TrailingSeparator,
+            diagnostics.Add(new Diagnostic(
+                MatchKind.TrailingSeparator,
                 offendingCharacterIndex: value.Length - 1,
                 offendingCharacter: value[value.Length - 1].ToString(),
                 message: includeMessages ? "Trailing separators are not allowed." : null));
@@ -653,8 +653,8 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
             if (!_allowNumbers && category == UnicodeCategory.DecimalDigitNumber)
             {
-                diagnostics.Add(new UnclaimableDiagnostic(
-                    UnclaimableMatchKind.NumbersNotAllowed,
+                diagnostics.Add(new Diagnostic(
+                    MatchKind.NumbersNotAllowed,
                     offendingCharacterIndex: index,
                     offendingCharacter: characterText,
                     message: includeMessages
@@ -664,8 +664,8 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
             if (_asciiOnly && (character < '\u0020' || character > '\u007E'))
             {
-                diagnostics.Add(new UnclaimableDiagnostic(
-                    UnclaimableMatchKind.InvalidCharacters,
+                diagnostics.Add(new Diagnostic(
+                    MatchKind.InvalidCharacters,
                     offendingCharacterIndex: index,
                     offendingCharacter: characterText,
                     message: includeMessages
@@ -676,16 +676,16 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             var explicitlyAllowed = _policy.IsCharacterExplicitlyAllowed(characterText);
             if (!explicitlyAllowed && _whitespaceEnabled && IsWhitespace(category, character))
             {
-                diagnostics.Add(new UnclaimableDiagnostic(
-                    UnclaimableMatchKind.BlockedCharacter,
+                diagnostics.Add(new Diagnostic(
+                    MatchKind.BlockedCharacter,
                     offendingCharacterIndex: index,
                     offendingCharacter: characterText,
                     message: includeMessages ? $"Character '{characterText}' at index {index} is blocked." : null));
             }
             else if (!explicitlyAllowed && _blockedCharactersEnabled && _policy.IsCharacterBlocked(characterText))
             {
-                diagnostics.Add(new UnclaimableDiagnostic(
-                    UnclaimableMatchKind.BlockedCharacter,
+                diagnostics.Add(new Diagnostic(
+                    MatchKind.BlockedCharacter,
                     offendingCharacterIndex: index,
                     offendingCharacter: characterText,
                     message: includeMessages ? $"Character '{characterText}' at index {index} is blocked." : null));
@@ -698,9 +698,9 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         }
     }
 
-    private static UnclaimableDiagnostic ToDiagnostic(UnclaimableResult result, bool includeMessage)
+    private static Diagnostic ToDiagnostic(Result result, bool includeMessage)
     {
-        return new UnclaimableDiagnostic(
+        return new Diagnostic(
             result.MatchKind,
             result.MatchedValue,
             result.Category,
@@ -711,33 +711,33 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             includeMessage ? BuildMessage(result) : null);
     }
 
-    private static string BuildMessage(UnclaimableResult result)
+    private static string BuildMessage(Result result)
     {
         switch (result.MatchKind)
         {
-            case UnclaimableMatchKind.Exact:
+            case MatchKind.Exact:
                 return $"'{result.MatchedValue}' is reserved and cannot be claimed.";
-            case UnclaimableMatchKind.Compact:
+            case MatchKind.Compact:
                 return $"This value resolves to the reserved value '{result.MatchedValue}' after separators or punctuation are ignored.";
-            case UnclaimableMatchKind.Partial:
+            case MatchKind.Partial:
                 return $"This value contains the reserved value '{result.MatchedValue}'.";
-            case UnclaimableMatchKind.Obfuscated:
+            case MatchKind.Obfuscated:
                 return $"This value appears to obfuscate the reserved value '{result.MatchedValue}'.";
-            case UnclaimableMatchKind.UnicodeConfusable:
+            case MatchKind.UnicodeConfusable:
                 return $"This value contains Unicode lookalikes that resolve to the reserved value '{result.MatchedValue}'.";
-            case UnclaimableMatchKind.NumbersNotAllowed:
+            case MatchKind.NumbersNotAllowed:
                 return $"Numbers are not allowed; '{result.OffendingCharacter}' at index {result.OffendingCharacterIndex} is not permitted.";
-            case UnclaimableMatchKind.InvalidCharacters:
+            case MatchKind.InvalidCharacters:
                 return $"Character '{result.OffendingCharacter}' at index {result.OffendingCharacterIndex} is not allowed.";
-            case UnclaimableMatchKind.TooShort:
+            case MatchKind.TooShort:
                 return "This value is shorter than the configured minimum length.";
-            case UnclaimableMatchKind.TooLong:
+            case MatchKind.TooLong:
                 return "This value is longer than the configured maximum length.";
-            case UnclaimableMatchKind.BlockedCharacter:
+            case MatchKind.BlockedCharacter:
                 return $"Character '{result.OffendingCharacter}' at index {result.OffendingCharacterIndex} is blocked.";
-            case UnclaimableMatchKind.LeadingSeparator:
+            case MatchKind.LeadingSeparator:
                 return "Leading separators are not allowed.";
-            case UnclaimableMatchKind.TrailingSeparator:
+            case MatchKind.TrailingSeparator:
                 return "Trailing separators are not allowed.";
             default:
                 return "This value is not allowed.";
@@ -942,7 +942,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
     private static IReadOnlyList<ReservedEntry> LoadBuiltInEntries()
     {
-        var assembly = typeof(UnclaimableChecker).Assembly;
+        var assembly = typeof(Checker).Assembly;
         var entries = new List<ReservedEntry>();
         var serializer = new DataContractJsonSerializer(typeof(ReservedListDocument));
 
@@ -979,7 +979,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         return entries;
     }
 
-    private static UnclaimableLanguage? ResolveDatasetLanguage(ReservedListDocument document, string resourceName)
+    private static Language? ResolveDatasetLanguage(ReservedListDocument document, string resourceName)
     {
         var language = document.Language?.Trim().ToLowerInvariant();
 
@@ -991,7 +991,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
                 return null;
             }
 
-            return UnclaimableLanguage.English;
+            return Language.English;
         }
 
         switch (language)
@@ -1001,38 +1001,38 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             case "en":
             case "eng":
             case "english":
-                return UnclaimableLanguage.English;
+                return Language.English;
             case "nl":
             case "nld":
             case "dutch":
-                return UnclaimableLanguage.Dutch;
+                return Language.Dutch;
             case "de":
             case "deu":
             case "ger":
             case "german":
             case "deutsch":
-                return UnclaimableLanguage.German;
+                return Language.German;
             case "fr":
             case "fra":
             case "fre":
             case "french":
             case "francais":
-                return UnclaimableLanguage.French;
+                return Language.French;
             case "es":
             case "spa":
             case "spanish":
             case "espanol":
-                return UnclaimableLanguage.Spanish;
+                return Language.Spanish;
             case "it":
             case "ita":
             case "italian":
             case "italiano":
-                return UnclaimableLanguage.Italian;
+                return Language.Italian;
             case "pt":
             case "por":
             case "portuguese":
             case "portugues":
-                return UnclaimableLanguage.Portuguese;
+                return Language.Portuguese;
             default:
                 throw new InvalidOperationException(
                     $"Embedded dataset '{resourceName}' declares unsupported language '{language}'.");

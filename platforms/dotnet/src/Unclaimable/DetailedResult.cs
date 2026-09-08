@@ -1,9 +1,9 @@
 namespace Unclaimable;
 
-public sealed class UnclaimableDiagnostic
+public sealed class Diagnostic
 {
-    public UnclaimableDiagnostic(
-        UnclaimableMatchKind kind,
+    public Diagnostic(
+        MatchKind kind,
         string? matchedValue = null,
         string? category = null,
         int? offendingCharacterIndex = null,
@@ -22,7 +22,7 @@ public sealed class UnclaimableDiagnostic
         Message = message;
     }
 
-    public UnclaimableMatchKind Kind { get; }
+    public MatchKind Kind { get; }
 
     public string? MatchedValue { get; }
 
@@ -39,9 +39,9 @@ public sealed class UnclaimableDiagnostic
     public string? Message { get; }
 }
 
-public sealed class UnclaimableDetailedResult
+public sealed class DetailedResult
 {
-    public UnclaimableDetailedResult(string? input, IReadOnlyList<UnclaimableDiagnostic> diagnostics)
+    public DetailedResult(string? input, IReadOnlyList<Diagnostic> diagnostics)
     {
         Input = input;
         Diagnostics = diagnostics ?? throw new ArgumentNullException(nameof(diagnostics));
@@ -55,5 +55,5 @@ public sealed class UnclaimableDetailedResult
 
     public bool IsClaimable => !IsReserved;
 
-    public IReadOnlyList<UnclaimableDiagnostic> Diagnostics { get; }
+    public IReadOnlyList<Diagnostic> Diagnostics { get; }
 }

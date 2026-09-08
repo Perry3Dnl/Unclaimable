@@ -4,7 +4,7 @@ namespace Unclaimable;
 /// Runtime-adjustable character policy used by Unclaimable.
 /// Changes are process-local and thread-safe.
 /// </summary>
-public interface IUnclaimablePolicy
+public interface IPolicy
 {
     IReadOnlyCollection<string> BlockedCharacters { get; }
 

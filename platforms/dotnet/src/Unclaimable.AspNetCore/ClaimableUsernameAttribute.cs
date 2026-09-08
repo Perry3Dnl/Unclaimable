@@ -17,8 +17,8 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
             return new ValidationResult($"{validationContext.DisplayName} must be a string.");
         }
 
-        var checker = validationContext.GetService(typeof(IUnclaimableChecker)) as IUnclaimableChecker
-                      ?? UnclaimableChecker.Default;
+        var checker = validationContext.GetService(typeof(IChecker)) as IChecker
+                      ?? Checker.Default;
 
         var result = checker.Check(text);
         if (!result.IsReserved)
@@ -26,14 +26,14 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
             return ValidationResult.Success;
         }
 
-        var options = validationContext.GetService(typeof(UnclaimableOptions)) as UnclaimableOptions;
+        var options = validationContext.GetService(typeof(Options)) as Options;
         var message = ResolveMessage(result, options);
         message = ApplyPlaceholders(message, validationContext.DisplayName, result, options);
 
         return new ValidationResult(message);
     }
 
-    private string ResolveMessage(UnclaimableResult result, UnclaimableOptions? options)
+    private string ResolveMessage(Result result, Options? options)
     {
         if (!string.IsNullOrWhiteSpace(ErrorMessage))
         {
@@ -55,8 +55,8 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
     }
 
     private static string? ResolveReasonSpecificMessage(
-        UnclaimableResult result,
-        UnclaimableValidationMessages? messages)
+        Result result,
+        ValidationMessages? messages)
     {
         if (messages is null)
         {
@@ -70,23 +70,23 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
 
         return result.MatchKind switch
         {
-            UnclaimableMatchKind.Exact => messages.Reserved,
-            UnclaimableMatchKind.Compact => messages.Compact,
-            UnclaimableMatchKind.Partial => messages.Partial,
-            UnclaimableMatchKind.Obfuscated => messages.Obfuscated,
-            UnclaimableMatchKind.UnicodeConfusable => messages.UnicodeConfusable,
-            UnclaimableMatchKind.NumbersNotAllowed => messages.NumbersNotAllowed,
-            UnclaimableMatchKind.InvalidCharacters => messages.InvalidCharacters,
-            UnclaimableMatchKind.TooShort => messages.TooShort,
-            UnclaimableMatchKind.TooLong => messages.TooLong,
-            UnclaimableMatchKind.BlockedCharacter => messages.BlockedCharacter,
-            UnclaimableMatchKind.LeadingSeparator => messages.LeadingSeparator,
-            UnclaimableMatchKind.TrailingSeparator => messages.TrailingSeparator,
+            MatchKind.Exact => messages.Reserved,
+            MatchKind.Compact => messages.Compact,
+            MatchKind.Partial => messages.Partial,
+            MatchKind.Obfuscated => messages.Obfuscated,
+            MatchKind.UnicodeConfusable => messages.UnicodeConfusable,
+            MatchKind.NumbersNotAllowed => messages.NumbersNotAllowed,
+            MatchKind.InvalidCharacters => messages.InvalidCharacters,
+            MatchKind.TooShort => messages.TooShort,
+            MatchKind.TooLong => messages.TooLong,
+            MatchKind.BlockedCharacter => messages.BlockedCharacter,
+            MatchKind.LeadingSeparator => messages.LeadingSeparator,
+            MatchKind.TrailingSeparator => messages.TrailingSeparator,
             _ => null
         };
     }
 
-    private static string GetBuiltInMessage(UnclaimableResult result)
+    private static string GetBuiltInMessage(Result result)
     {
         if (string.Equals(result.Category, "profanity", StringComparison.Ordinal))
         {
@@ -95,18 +95,18 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
 
         return result.MatchKind switch
         {
-            UnclaimableMatchKind.Exact => "{FieldName} is reserved and cannot be claimed.",
-            UnclaimableMatchKind.Compact => "{FieldName} matches a reserved name after separators or punctuation are ignored.",
-            UnclaimableMatchKind.Partial => "{FieldName} contains a reserved name and cannot be claimed.",
-            UnclaimableMatchKind.Obfuscated => "{FieldName} appears to imitate a reserved name and cannot be claimed.",
-            UnclaimableMatchKind.UnicodeConfusable => "{FieldName} contains Unicode lookalikes that match a reserved name.",
-            UnclaimableMatchKind.NumbersNotAllowed => "Numbers are not allowed in {FieldName}.",
-            UnclaimableMatchKind.InvalidCharacters => "{FieldName} contains an invalid character.",
-            UnclaimableMatchKind.TooShort => "{FieldName} must be at least {MinimumLength} characters long.",
-            UnclaimableMatchKind.TooLong => "{FieldName} must be no more than {MaximumLength} characters long.",
-            UnclaimableMatchKind.BlockedCharacter => "{FieldName} contains a blocked character.",
-            UnclaimableMatchKind.LeadingSeparator => "{FieldName} cannot start with a separator.",
-            UnclaimableMatchKind.TrailingSeparator => "{FieldName} cannot end with a separator.",
+            MatchKind.Exact => "{FieldName} is reserved and cannot be claimed.",
+            MatchKind.Compact => "{FieldName} matches a reserved name after separators or punctuation are ignored.",
+            MatchKind.Partial => "{FieldName} contains a reserved name and cannot be claimed.",
+            MatchKind.Obfuscated => "{FieldName} appears to imitate a reserved name and cannot be claimed.",
+            MatchKind.UnicodeConfusable => "{FieldName} contains Unicode lookalikes that match a reserved name.",
+            MatchKind.NumbersNotAllowed => "Numbers are not allowed in {FieldName}.",
+            MatchKind.InvalidCharacters => "{FieldName} contains an invalid character.",
+            MatchKind.TooShort => "{FieldName} must be at least {MinimumLength} characters long.",
+            MatchKind.TooLong => "{FieldName} must be no more than {MaximumLength} characters long.",
+            MatchKind.BlockedCharacter => "{FieldName} contains a blocked character.",
+            MatchKind.LeadingSeparator => "{FieldName} cannot start with a separator.",
+            MatchKind.TrailingSeparator => "{FieldName} cannot end with a separator.",
             _ => "{FieldName} is not allowed."
         };
     }
@@ -114,8 +114,8 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
     private static string ApplyPlaceholders(
         string message,
         string fieldName,
-        UnclaimableResult result,
-        UnclaimableOptions? options)
+        Result result,
+        Options? options)
     {
         return message
             .Replace("{FieldName}", fieldName, StringComparison.Ordinal)

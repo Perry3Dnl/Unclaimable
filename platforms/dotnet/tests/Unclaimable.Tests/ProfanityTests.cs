@@ -4,7 +4,7 @@ namespace Unclaimable.Tests;
 
 public sealed class ProfanityTests
 {
-    private static readonly UnclaimableChecker EnglishChecker = new UnclaimableChecker(new UnclaimableOptions());
+    private static readonly Checker EnglishChecker = new Checker(new Options());
 
     [Fact]
     public void ProfanityIsEnabledByDefault()
@@ -14,16 +14,16 @@ public sealed class ProfanityTests
         Assert.True(result.IsReserved);
         Assert.Equal("fuck", result.MatchedValue);
         Assert.Equal("profanity", result.Category);
-        Assert.Equal(UnclaimableMatchKind.Exact, result.MatchKind);
+        Assert.Equal(MatchKind.Exact, result.MatchKind);
     }
 
     [Fact]
     public void ProfanityCanBeDisabledExplicitly()
     {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
+        var checker = new Checker(new Options
         {
-            Strictness = UnclaimableStrictness.Standard,
-            DisabledRules = UnclaimableRule.Profanity
+            Strictness = Strictness.Standard,
+            DisabledRules = Rule.Profanity
         });
 
         Assert.True(checker.IsClaimable("fuck"));
@@ -32,11 +32,11 @@ public sealed class ProfanityTests
     [Fact]
     public void ProfanityUsesCompactAndObfuscationMatchingWhenStructuralRulesAreRelaxed()
     {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
+        var checker = new Checker(new Options
         {
-            DisabledRules = UnclaimableRule.Numbers
-                            | UnclaimableRule.BlockedCharacters
-                            | UnclaimableRule.Whitespace
+            DisabledRules = Rule.Numbers
+                            | Rule.BlockedCharacters
+                            | Rule.Whitespace
         });
 
         var compact = checker.Check("f-u-c-k");
@@ -45,12 +45,12 @@ public sealed class ProfanityTests
         Assert.True(compact.IsReserved);
         Assert.Equal("fuck", compact.MatchedValue);
         Assert.Equal("profanity", compact.Category);
-        Assert.Equal(UnclaimableMatchKind.Compact, compact.MatchKind);
+        Assert.Equal(MatchKind.Compact, compact.MatchKind);
 
         Assert.True(obfuscated.IsReserved);
         Assert.Equal("shit", obfuscated.MatchedValue);
         Assert.Equal("profanity", obfuscated.Category);
-        Assert.Equal(UnclaimableMatchKind.Obfuscated, obfuscated.MatchKind);
+        Assert.Equal(MatchKind.Obfuscated, obfuscated.MatchKind);
     }
 
     [Fact]
@@ -62,7 +62,7 @@ public sealed class ProfanityTests
     [Fact]
     public void ProfanityPartialMatchingCanBeEnabledExplicitly()
     {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
+        var checker = new Checker(new Options
         {
             ProfanityPartialMatching = true
         });
@@ -72,15 +72,15 @@ public sealed class ProfanityTests
         Assert.True(result.IsReserved);
         Assert.Equal("cock", result.MatchedValue);
         Assert.Equal("profanity", result.Category);
-        Assert.Equal(UnclaimableMatchKind.Partial, result.MatchKind);
+        Assert.Equal(MatchKind.Partial, result.MatchKind);
     }
 
     [Fact]
     public void DetailedResultPreservesProfanityCategory()
     {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
+        var checker = new Checker(new Options
         {
-            DisabledRules = UnclaimableRule.Numbers
+            DisabledRules = Rule.Numbers
         });
 
         var result = checker.CheckDetailed("sh1t", includeMessages: true);
@@ -89,7 +89,7 @@ public sealed class ProfanityTests
         Assert.True(result.IsReserved);
         Assert.Equal("profanity", diagnostic.Category);
         Assert.Equal("shit", diagnostic.MatchedValue);
-        Assert.Equal(UnclaimableMatchKind.Obfuscated, diagnostic.Kind);
+        Assert.Equal(MatchKind.Obfuscated, diagnostic.Kind);
         Assert.False(string.IsNullOrWhiteSpace(diagnostic.Message));
     }
 }

@@ -72,7 +72,7 @@ The default policy includes:
 
 ## Strict defaults
 
-`new UnclaimableOptions()` starts with the strict baseline:
+`new Options()` starts with the strict baseline:
 
 | Rule | Default |
 | --- | --- |
@@ -98,8 +98,8 @@ The baseline is opt-out. Applications that need a more permissive identifier pol
 builder.Services.AddUnclaimable(options =>
 {
     options.DisabledRules =
-        UnclaimableRule.Numbers |
-        UnclaimableRule.BlockedCharacters;
+        Rule.Numbers |
+        Rule.BlockedCharacters;
 });
 ```
 
@@ -109,13 +109,13 @@ This keeps every other Unclaimable rule active.
 
 Localized datasets currently support:
 
-- `UnclaimableLanguage.English` — enabled by default;
-- `UnclaimableLanguage.Dutch`;
-- `UnclaimableLanguage.German`;
-- `UnclaimableLanguage.French`;
-- `UnclaimableLanguage.Spanish`;
-- `UnclaimableLanguage.Italian`;
-- `UnclaimableLanguage.Portuguese`.
+- `Language.English` — enabled by default;
+- `Language.Dutch`;
+- `Language.German`;
+- `Language.French`;
+- `Language.Spanish`;
+- `Language.Italian`;
+- `Language.Portuguese`.
 
 Each language pack uses the same localized dataset categories:
 
@@ -139,7 +139,7 @@ No language configuration is required because English is enabled by default.
 ```csharp
 builder.Services.AddUnclaimable(options =>
 {
-    options.AddLanguage(UnclaimableLanguage.Dutch);
+    options.AddLanguage(Language.Dutch);
 });
 ```
 
@@ -150,8 +150,8 @@ Adding a language does not replace English. It extends the enabled localized dat
 ```csharp
 builder.Services.AddUnclaimable(options =>
 {
-    options.RemoveLanguage(UnclaimableLanguage.English);
-    options.AddLanguage(UnclaimableLanguage.Dutch);
+    options.RemoveLanguage(Language.English);
+    options.AddLanguage(Language.Dutch);
 });
 ```
 
@@ -160,9 +160,9 @@ builder.Services.AddUnclaimable(options =>
 ```csharp
 builder.Services.AddUnclaimable(options =>
 {
-    options.AddLanguage(UnclaimableLanguage.Dutch);
-    options.AddLanguage(UnclaimableLanguage.German);
-    options.AddLanguage(UnclaimableLanguage.French);
+    options.AddLanguage(Language.Dutch);
+    options.AddLanguage(Language.German);
+    options.AddLanguage(Language.French);
 });
 ```
 
@@ -190,7 +190,7 @@ CI explicitly builds the core and ASP.NET Core projects from a temporary checkou
 
 ## Rule controls
 
-Rules are represented by `UnclaimableRule` flags:
+Rules are represented by `Rule` flags:
 
 ```text
 MinimumLength
@@ -210,20 +210,20 @@ UnicodeConfusableMatching
 Disable only what your application deliberately wants to relax:
 
 ```csharp
-var options = new UnclaimableOptions
+var options = new Options
 {
     DisabledRules =
-        UnclaimableRule.Numbers |
-        UnclaimableRule.Whitespace
+        Rule.Numbers |
+        Rule.Whitespace
 };
 ```
 
 To use conservative reserved-name behavior instead of the strict default:
 
 ```csharp
-var options = new UnclaimableOptions
+var options = new Options
 {
-    Strictness = UnclaimableStrictness.Standard
+    Strictness = Strictness.Standard
 };
 ```
 
@@ -247,8 +247,8 @@ They can also be disabled independently:
 
 ```csharp
 options.DisabledRules =
-    UnclaimableRule.MinimumLength |
-    UnclaimableRule.MaximumLength;
+    Rule.MinimumLength |
+    Rule.MaximumLength;
 ```
 
 ### Numbers
@@ -263,7 +263,7 @@ user١     -> NumbersNotAllowed
 Allow numbers by disabling the numeric rule:
 
 ```csharp
-options.DisabledRules = UnclaimableRule.Numbers;
+options.DisabledRules = Rule.Numbers;
 ```
 
 ### Whitespace and blocked characters
@@ -300,25 +300,25 @@ These rules remain independent from the general blocked-character policy. For ex
 
 ## Runtime character policy
 
-ASP.NET Core registration exposes a live `IUnclaimablePolicy` singleton. Applications can tighten or relax the character policy without rebuilding the checker or restarting the validation pipeline.
+ASP.NET Core registration exposes a live `IPolicy` singleton. Applications can tighten or relax the character policy without rebuilding the checker or restarting the validation pipeline.
 
 ```csharp
-var policy = app.Services.GetRequiredService<IUnclaimablePolicy>();
+var policy = app.Services.GetRequiredService<IPolicy>();
 
 policy.BlockCharacters("^", "$", "@");
 policy.AllowCharacter("-");
 ```
 
-Existing injected `IUnclaimableChecker` instances immediately observe those changes.
+Existing injected `IChecker` instances immediately observe those changes.
 
 Runtime policy changes are process-local. Applications are free to load their desired policy from their own configuration source during startup or while the application is running.
 
 The core package supports the same pattern directly:
 
 ```csharp
-var options = new UnclaimableOptions();
-var policy = new UnclaimablePolicy(options.ConfiguredBlockedCharacters);
-var checker = new UnclaimableChecker(options, policy);
+var options = new Options();
+var policy = new Policy(options.ConfiguredBlockedCharacters);
+var checker = new Checker(options, policy);
 
 policy.BlockCharacter("^");
 
@@ -424,8 +424,8 @@ fuckwaffle -> profanity
 Add other profanity datasets with the same language API:
 
 ```csharp
-options.AddLanguage(UnclaimableLanguage.Dutch);
-options.AddLanguage(UnclaimableLanguage.German);
+options.AddLanguage(Language.Dutch);
+options.AddLanguage(Language.German);
 ```
 
 Profanity uses the same exact, compact, obfuscation, and Unicode-aware pipeline as the other datasets.
@@ -433,7 +433,7 @@ Profanity uses the same exact, compact, obfuscation, and Unicode-aware pipeline 
 Applications can disable it independently:
 
 ```csharp
-options.DisabledRules = UnclaimableRule.Profanity;
+options.DisabledRules = Rule.Profanity;
 ```
 
 Substring matching for profanity is deliberately configurable separately because it is substantially more aggressive:
@@ -466,7 +466,7 @@ Fast yes/no checks:
 ```csharp
 using Unclaimable;
 
-if (UnclaimableChecker.Default.IsClaimable(userName))
+if (Checker.Default.IsClaimable(userName))
 {
     // Identifier passed the strict English default policy plus global datasets.
 }
@@ -475,36 +475,36 @@ if (UnclaimableChecker.Default.IsClaimable(userName))
 English + Dutch checker:
 
 ```csharp
-var options = new UnclaimableOptions();
-options.AddLanguage(UnclaimableLanguage.Dutch);
-var checker = new UnclaimableChecker(options);
+var options = new Options();
+options.AddLanguage(Language.Dutch);
+var checker = new Checker(options);
 ```
 
 Dutch-only checker:
 
 ```csharp
-var options = new UnclaimableOptions();
-options.RemoveLanguage(UnclaimableLanguage.English);
-options.AddLanguage(UnclaimableLanguage.Dutch);
-var checker = new UnclaimableChecker(options);
+var options = new Options();
+options.RemoveLanguage(Language.English);
+options.AddLanguage(Language.Dutch);
+var checker = new Checker(options);
 ```
 
 Public checker contract:
 
 ```csharp
-public interface IUnclaimableChecker
+public interface IChecker
 {
     bool IsReserved(string? value);
     bool IsClaimable(string? value);
-    UnclaimableResult Check(string? value);
-    UnclaimableDetailedResult CheckDetailed(string? value, bool includeMessages = false);
+    Result Check(string? value);
+    DetailedResult CheckDetailed(string? value, bool includeMessages = false);
 }
 ```
 
 ### Structured fail-fast results
 
 ```csharp
-var result = UnclaimableChecker.Default.Check("john-doe");
+var result = Checker.Default.Check("john-doe");
 
 Console.WriteLine(result.IsReserved);             // true
 Console.WriteLine(result.MatchKind);              // BlockedCharacter
@@ -537,7 +537,7 @@ TrailingSeparator
 Use `CheckDetailed(...)` when UI, logging, or diagnostics benefit from seeing multiple reasons:
 
 ```csharp
-var result = UnclaimableChecker.Default.CheckDetailed(
+var result = Checker.Default.CheckDetailed(
     "support2",
     includeMessages: true);
 
@@ -562,8 +562,8 @@ Or customize the policy:
 ```csharp
 builder.Services.AddUnclaimable(options =>
 {
-    options.AddLanguage(UnclaimableLanguage.Dutch);
-    options.AddLanguage(UnclaimableLanguage.German);
+    options.AddLanguage(Language.Dutch);
+    options.AddLanguage(Language.German);
 
     options.MinimumLength = 4;
     options.MaximumLength = 24;
@@ -571,14 +571,14 @@ builder.Services.AddUnclaimable(options =>
     options.AdditionalReserved.Add("examplebrand");
     options.AdditionalBlockedCharacters("^", "$");
 
-    options.DisabledRules = UnclaimableRule.Numbers;
+    options.DisabledRules = Rule.Numbers;
 });
 ```
 
 Inject the checker anywhere:
 
 ```csharp
-public sealed class UsernameService(IUnclaimableChecker checker)
+public sealed class UsernameService(IChecker checker)
 {
     public bool CanRegister(string userName) => checker.IsClaimable(userName);
 }
