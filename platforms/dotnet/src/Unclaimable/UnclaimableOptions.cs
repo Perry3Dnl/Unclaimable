@@ -1,5 +1,8 @@
 namespace Unclaimable;
 
+/// <summary>
+/// Configures the validation rules, datasets, matching behavior, and messages used by <see cref="UnclaimableChecker"/>.
+/// </summary>
 public sealed class UnclaimableOptions
 {
     private bool _partialMatching;
@@ -28,7 +31,11 @@ public sealed class UnclaimableOptions
     /// </summary>
     public IReadOnlyCollection<UnclaimableLanguage> Languages => _languages;
 
-    /// <summary>Adds a localized built-in language dataset while keeping currently enabled languages.</summary>
+    /// <summary>
+    /// Enables a localized built-in language dataset while preserving the currently enabled languages.
+    /// </summary>
+    /// <param name="language">The language dataset to enable.</param>
+    /// <returns>This options instance for fluent configuration.</returns>
     public UnclaimableOptions AddLanguage(UnclaimableLanguage language)
     {
         ValidateLanguage(language, nameof(language));
@@ -36,7 +43,11 @@ public sealed class UnclaimableOptions
         return this;
     }
 
-    /// <summary>Removes a localized built-in language dataset.</summary>
+    /// <summary>
+    /// Disables a localized built-in language dataset.
+    /// </summary>
+    /// <param name="language">The language dataset to disable.</param>
+    /// <returns>This options instance for fluent configuration.</returns>
     public UnclaimableOptions RemoveLanguage(UnclaimableLanguage language)
     {
         ValidateLanguage(language, nameof(language));
@@ -123,8 +134,10 @@ public sealed class UnclaimableOptions
     public IReadOnlyCollection<string> ConfiguredBlockedCharacters => _additionalBlockedCharacters;
 
     /// <summary>
-    /// Adds application-specific blocked characters to the strict built-in character policy.
+    /// Adds application-specific blocked characters to the built-in character policy.
     /// </summary>
+    /// <param name="characters">The characters to block. Each value must contain exactly one Unicode character.</param>
+    /// <returns>This options instance for fluent configuration.</returns>
     public UnclaimableOptions AdditionalBlockedCharacters(params string[] characters)
     {
         if (characters is null)
@@ -135,6 +148,10 @@ public sealed class UnclaimableOptions
         foreach (var character in characters)
         {
             ValidateCharacter(character, nameof(characters));
+        }
+
+        foreach (var character in characters)
+        {
             _additionalBlockedCharacters.Add(character);
         }
 
