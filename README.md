@@ -73,6 +73,28 @@ The default policy includes:
 - configurable validation messages;
 - runtime-adjustable character policy.
 
+## Dataset coverage
+
+The current built-in datasets contain **5,181 filter entries across 12 categories**, representing **5,085 unique values within those categories**. Localized language packs can contain the same literal value in more than one language, so entry counts can be higher than unique-value counts.
+
+| Category | Filter entries | Unique values |
+| --- | ---: | ---: |
+| `automation` | 32 | 32 |
+| `brands` | 556 | 556 |
+| `commerce` | 31 | 31 |
+| `community` | 22 | 22 |
+| `legal` | 34 | 34 |
+| `other` | 24 | 24 |
+| `profanity` | 861 | 848 |
+| `roles` | 813 | 757 |
+| `security` | 33 | 33 |
+| `support` | 1,010 | 1,001 |
+| `system` | 1,349 | 1,331 |
+| `technology` | 416 | 416 |
+| **Total** | **5,181** | **5,085** |
+
+These are stored dataset values, not the total number of strings Unclaimable can detect. Compact matching, partial matching, obfuscation detection, and Unicode-confusable detection can reject additional variants without storing every variant separately.
+
 ## Strict defaults
 
 `new Options()` starts with the strict baseline:
