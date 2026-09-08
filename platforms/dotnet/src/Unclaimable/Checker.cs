@@ -53,23 +53,23 @@ public sealed class Checker : IChecker
         public string? Language { get; set; }
 
         [DataMember(Name = "values")]
-        public string[] Values { get; set; } = Array.Empty<string>();
+        public string[]? Values { get; set; }
 
         [DataMember(Name = "partialValues")]
-        public string[] PartialValues { get; set; } = Array.Empty<string>();
+        public string[]? PartialValues { get; set; }
 
         [DataMember(Name = "combinations")]
-        public CombinationDocument[] Combinations { get; set; } = Array.Empty<CombinationDocument>();
+        public CombinationDocument[]? Combinations { get; set; }
     }
 
     [DataContract]
     private sealed class CombinationDocument
     {
         [DataMember(Name = "roots")]
-        public string[] Roots { get; set; } = Array.Empty<string>();
+        public string[]? Roots { get; set; }
 
         [DataMember(Name = "suffixes")]
-        public string[] Suffixes { get; set; } = Array.Empty<string>();
+        public string[]? Suffixes { get; set; }
 
         [DataMember(Name = "partial")]
         public bool Partial { get; set; }
@@ -586,7 +586,7 @@ public sealed class Checker : IChecker
                 return true;
             }
 
-            if (_asciiOnly && (character < '\u0020' || character > '\u007E'))
+            if (_asciiOnly && (character < 0x20 || character > 0x7E))
             {
                 violation = Result.InvalidCharacters(value, index, characterText);
                 return true;
@@ -685,7 +685,7 @@ public sealed class Checker : IChecker
                         : null));
             }
 
-            if (_asciiOnly && (character < '\u0020' || character > '\u007E'))
+            if (_asciiOnly && (character < 0x20 || character > 0x7E))
             {
                 diagnostics.Add(new Diagnostic(
                     MatchKind.InvalidCharacters,
@@ -822,38 +822,38 @@ public sealed class Checker : IChecker
     {
         switch (character)
         {
-            case '\u0430': mapped = 'a'; return true;
-            case '\u0432': mapped = 'b'; return true;
-            case '\u0435': mapped = 'e'; return true;
-            case '\u043A': mapped = 'k'; return true;
-            case '\u043C': mapped = 'm'; return true;
-            case '\u043D': mapped = 'h'; return true;
-            case '\u043E': mapped = 'o'; return true;
-            case '\u0440': mapped = 'p'; return true;
-            case '\u0441': mapped = 'c'; return true;
-            case '\u0442': mapped = 't'; return true;
-            case '\u0443': mapped = 'y'; return true;
-            case '\u0445': mapped = 'x'; return true;
-            case '\u0455': mapped = 's'; return true;
-            case '\u0456': mapped = 'i'; return true;
-            case '\u0458': mapped = 'j'; return true;
-            case '\u04CF': mapped = 'l'; return true;
-            case '\u03B1': mapped = 'a'; return true;
-            case '\u03B2': mapped = 'b'; return true;
-            case '\u03B5': mapped = 'e'; return true;
-            case '\u03B9': mapped = 'i'; return true;
-            case '\u03BA': mapped = 'k'; return true;
-            case '\u03BC': mapped = 'm'; return true;
-            case '\u03BD': mapped = 'v'; return true;
-            case '\u03BF': mapped = 'o'; return true;
-            case '\u03C1': mapped = 'p'; return true;
-            case '\u03C4': mapped = 't'; return true;
-            case '\u03C5': mapped = 'y'; return true;
-            case '\u03C7': mapped = 'x'; return true;
-            case '\u03F2': mapped = 'c'; return true;
-            case '\u0131': mapped = 'i'; return true;
+            case (char)0x0430: mapped = 'a'; return true;
+            case (char)0x0432: mapped = 'b'; return true;
+            case (char)0x0435: mapped = 'e'; return true;
+            case (char)0x043A: mapped = 'k'; return true;
+            case (char)0x043C: mapped = 'm'; return true;
+            case (char)0x043D: mapped = 'h'; return true;
+            case (char)0x043E: mapped = 'o'; return true;
+            case (char)0x0440: mapped = 'p'; return true;
+            case (char)0x0441: mapped = 'c'; return true;
+            case (char)0x0442: mapped = 't'; return true;
+            case (char)0x0443: mapped = 'y'; return true;
+            case (char)0x0445: mapped = 'x'; return true;
+            case (char)0x0455: mapped = 's'; return true;
+            case (char)0x0456: mapped = 'i'; return true;
+            case (char)0x0458: mapped = 'j'; return true;
+            case (char)0x04CF: mapped = 'l'; return true;
+            case (char)0x03B1: mapped = 'a'; return true;
+            case (char)0x03B2: mapped = 'b'; return true;
+            case (char)0x03B5: mapped = 'e'; return true;
+            case (char)0x03B9: mapped = 'i'; return true;
+            case (char)0x03BA: mapped = 'k'; return true;
+            case (char)0x03BC: mapped = 'm'; return true;
+            case (char)0x03BD: mapped = 'v'; return true;
+            case (char)0x03BF: mapped = 'o'; return true;
+            case (char)0x03C1: mapped = 'p'; return true;
+            case (char)0x03C4: mapped = 't'; return true;
+            case (char)0x03C5: mapped = 'y'; return true;
+            case (char)0x03C7: mapped = 'x'; return true;
+            case (char)0x03F2: mapped = 'c'; return true;
+            case (char)0x0131: mapped = 'i'; return true;
             default:
-                mapped = '\0';
+                mapped = (char)0;
                 return false;
         }
     }
@@ -994,26 +994,28 @@ public sealed class Checker : IChecker
 
                 var language = ResolveDatasetLanguage(document, resourceName);
 
-                entries.AddRange(document.Values
+                entries.AddRange((document.Values ?? Array.Empty<string>())
                     .Where(value => !string.IsNullOrWhiteSpace(value))
                     .Select(value => new ReservedEntry(value, document.Category, language)));
 
                 if (document.Schema >= 2)
                 {
-                    entries.AddRange(document.PartialValues
+                    entries.AddRange((document.PartialValues ?? Array.Empty<string>())
                         .Where(value => !string.IsNullOrWhiteSpace(value))
                         .Select(value => new ReservedEntry(value, document.Category, language, safePartial: true)));
 
-                    foreach (var combination in document.Combinations)
+                    foreach (var combination in document.Combinations ?? Array.Empty<CombinationDocument>())
                     {
                         if (combination is null)
                         {
                             continue;
                         }
 
-                        foreach (var root in combination.Roots.Where(root => !string.IsNullOrWhiteSpace(root)))
+                        foreach (var root in (combination.Roots ?? Array.Empty<string>())
+                                     .Where(root => !string.IsNullOrWhiteSpace(root)))
                         {
-                            foreach (var suffix in combination.Suffixes.Where(suffix => !string.IsNullOrWhiteSpace(suffix)))
+                            foreach (var suffix in (combination.Suffixes ?? Array.Empty<string>())
+                                         .Where(suffix => !string.IsNullOrWhiteSpace(suffix)))
                             {
                                 entries.Add(new ReservedEntry(
                                     root + suffix,
