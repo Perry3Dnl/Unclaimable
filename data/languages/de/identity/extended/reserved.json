@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "identity",
+  "language": "de",
+  "description": "Deutsche Konto-, Profil- und Identitätsvarianten.",
+  "combinations": [
+    {
+      "roots": ["kontoidentität","profilidentität","benutzerprofil","mitgliederprofil","kundenprofil","abonnentenprofil","registrierungsprofil"],
+      "suffixes": ["team","stelle","dienst","verwaltung","manager","portal","betrieb","unterstützung","büro","zentrum"]
+    }
+  ]
+}
