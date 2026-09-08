@@ -1,7 +1,8 @@
 namespace Unclaimable;
 
 /// <summary>
-/// Default in-memory runtime policy. Built-in blocked characters can be relaxed or extended at runtime.
+/// Provides the default process-local, thread-safe runtime character policy used by Unclaimable.
+/// Built-in blocked characters can be relaxed or extended without rebuilding an active checker.
 /// </summary>
 public sealed class UnclaimablePolicy : IUnclaimablePolicy
 {
@@ -11,10 +12,17 @@ public sealed class UnclaimablePolicy : IUnclaimablePolicy
     private readonly HashSet<string> _blocked = new HashSet<string>(StringComparer.Ordinal);
     private readonly HashSet<string> _allowed = new HashSet<string>(StringComparer.Ordinal);
 
+    /// <summary>
+    /// Initializes a policy with only the built-in blocked characters.
+    /// </summary>
     public UnclaimablePolicy()
     {
     }
 
+    /// <summary>
+    /// Initializes a policy with additional blocked Unicode characters.
+    /// </summary>
+    /// <param name="additionalBlockedCharacters">Characters to block in addition to the built-in policy.</param>
     public UnclaimablePolicy(IEnumerable<string> additionalBlockedCharacters)
     {
         if (additionalBlockedCharacters is null)
@@ -29,6 +37,9 @@ public sealed class UnclaimablePolicy : IUnclaimablePolicy
         }
     }
 
+    /// <summary>
+    /// Gets a snapshot of the currently blocked Unicode characters after runtime allowances are applied.
+    /// </summary>
     public IReadOnlyCollection<string> BlockedCharacters
     {
         get
@@ -45,6 +56,10 @@ public sealed class UnclaimablePolicy : IUnclaimablePolicy
         }
     }
 
+    /// <summary>
+    /// Blocks a Unicode character and removes any explicit runtime allowance for it.
+    /// </summary>
+    /// <param name="value">Exactly one Unicode character to block.</param>
     public void BlockCharacter(string value)
     {
         ValidateCharacter(value, nameof(value));
@@ -56,6 +71,10 @@ public sealed class UnclaimablePolicy : IUnclaimablePolicy
         }
     }
 
+    /// <summary>
+    /// Blocks one or more Unicode characters as a single validated update.
+    /// </summary>
+    /// <param name="values">The characters to block. Each value must contain exactly one Unicode character.</param>
     public void BlockCharacters(params string[] values)
     {
         if (values is null)
@@ -65,10 +84,24 @@ public sealed class UnclaimablePolicy : IUnclaimablePolicy
 
         foreach (var value in values)
         {
-            BlockCharacter(value);
+            ValidateCharacter(value, nameof(values));
+        }
+
+        lock (_sync)
+        {
+            foreach (var value in values)
+            {
+                _allowed.Remove(value);
+                _blocked.Add(value);
+            }
         }
     }
 
+    /// <summary>
+    /// Explicitly allows a Unicode character, including a character blocked by the built-in policy.
+    /// </summary>
+    /// <param name="value">Exactly one Unicode character to allow.</param>
+    /// <returns><see langword="true"/> when a new allowance was added; otherwise, <see langword="false"/>.</returns>
     public bool AllowCharacter(string value)
     {
         ValidateCharacter(value, nameof(value));
@@ -80,6 +113,10 @@ public sealed class UnclaimablePolicy : IUnclaimablePolicy
         }
     }
 
+    /// <summary>
+    /// Explicitly allows one or more Unicode characters as a single validated update.
+    /// </summary>
+    /// <param name="values">The characters to allow. Each value must contain exactly one Unicode character.</param>
     public void AllowCharacters(params string[] values)
     {
         if (values is null)
@@ -89,10 +126,24 @@ public sealed class UnclaimablePolicy : IUnclaimablePolicy
 
         foreach (var value in values)
         {
-            AllowCharacter(value);
+            ValidateCharacter(value, nameof(values));
+        }
+
+        lock (_sync)
+        {
+            foreach (var value in values)
+            {
+                _blocked.Remove(value);
+                _allowed.Add(value);
+            }
         }
     }
 
+    /// <summary>
+    /// Determines whether a Unicode character is currently blocked.
+    /// </summary>
+    /// <param name="value">Exactly one Unicode character to inspect.</param>
+    /// <returns><see langword="true"/> when the character is blocked; otherwise, <see langword="false"/>.</returns>
     public bool IsCharacterBlocked(string value)
     {
         ValidateCharacter(value, nameof(value));
@@ -109,6 +160,11 @@ public sealed class UnclaimablePolicy : IUnclaimablePolicy
         }
     }
 
+    /// <summary>
+    /// Determines whether a Unicode character has been explicitly allowed at runtime.
+    /// </summary>
+    /// <param name="value">Exactly one Unicode character to inspect.</param>
+    /// <returns><see langword="true"/> when the character is explicitly allowed; otherwise, <see langword="false"/>.</returns>
     public bool IsCharacterExplicitlyAllowed(string value)
     {
         ValidateCharacter(value, nameof(value));

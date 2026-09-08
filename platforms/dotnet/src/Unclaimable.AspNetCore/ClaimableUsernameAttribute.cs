@@ -2,9 +2,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Unclaimable.AspNetCore;
 
+/// <summary>
+/// Validates that a string identifier can be claimed under the registered Unclaimable policy.
+/// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
 public sealed class ClaimableUsernameAttribute : ValidationAttribute
 {
+    /// <inheritdoc />
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
         if (value is null)

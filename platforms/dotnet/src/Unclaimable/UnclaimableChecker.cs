@@ -6,6 +6,9 @@ using System.Text;
 
 namespace Unclaimable;
 
+/// <summary>
+/// Evaluates identifiers against Unclaimable's configured policy and reserved-name datasets.
+/// </summary>
 public sealed class UnclaimableChecker : IUnclaimableChecker
 {
     private const int MaxObfuscationCandidates = 32;
@@ -77,18 +80,33 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
     private readonly bool _allowNumbers;
     private readonly bool _asciiOnly;
 
+    /// <summary>
+    /// Gets a shared checker that uses the default <see cref="UnclaimableOptions"/> and runtime policy.
+    /// </summary>
     public static UnclaimableChecker Default { get; } = new UnclaimableChecker();
 
+    /// <summary>
+    /// Initializes a checker with the default options and runtime policy.
+    /// </summary>
     public UnclaimableChecker()
         : this(new UnclaimableOptions())
     {
     }
 
+    /// <summary>
+    /// Initializes a checker with the supplied options and a new runtime policy containing any configured blocked characters.
+    /// </summary>
+    /// <param name="options">The validation options to apply.</param>
     public UnclaimableChecker(UnclaimableOptions options)
         : this(options, new UnclaimablePolicy(options?.ConfiguredBlockedCharacters ?? Array.Empty<string>()))
     {
     }
 
+    /// <summary>
+    /// Initializes a checker with the supplied options and runtime character policy.
+    /// </summary>
+    /// <param name="options">The validation options to apply.</param>
+    /// <param name="policy">The runtime character policy used for blocked and explicitly allowed characters.</param>
     public UnclaimableChecker(UnclaimableOptions options, IUnclaimablePolicy policy)
     {
         if (options is null)
@@ -174,10 +192,25 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         _partialEntries.Sort((left, right) => right.Compact.Length.CompareTo(left.Compact.Length));
     }
 
+    /// <summary>
+    /// Determines whether the supplied value is rejected by any configured policy or reserved-name rule.
+    /// </summary>
+    /// <param name="value">The identifier to evaluate.</param>
+    /// <returns><see langword="true"/> when the value is rejected; otherwise, <see langword="false"/>.</returns>
     public bool IsReserved(string? value) => Check(value).IsReserved;
 
+    /// <summary>
+    /// Determines whether the supplied value can be claimed under the configured policy.
+    /// </summary>
+    /// <param name="value">The identifier to evaluate.</param>
+    /// <returns><see langword="true"/> when the value is allowed; otherwise, <see langword="false"/>.</returns>
     public bool IsClaimable(string? value) => !Check(value).IsReserved;
 
+    /// <summary>
+    /// Evaluates the supplied value and returns the first rejection reason, or an allowed result.
+    /// </summary>
+    /// <param name="value">The identifier to evaluate.</param>
+    /// <returns>The validation result for the supplied value.</returns>
     public UnclaimableResult Check(string? value)
     {
         UnclaimableResult? policyViolation;
@@ -189,6 +222,12 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
         return CheckReservedName(value);
     }
 
+    /// <summary>
+    /// Evaluates the supplied value and returns all detected policy and reserved-name diagnostics.
+    /// </summary>
+    /// <param name="value">The identifier to evaluate.</param>
+    /// <param name="includeMessages">Whether to include human-readable diagnostic messages.</param>
+    /// <returns>A detailed validation result containing every detected diagnostic.</returns>
     public UnclaimableDetailedResult CheckDetailed(string? value, bool includeMessages = false)
     {
         var diagnostics = new List<UnclaimableDiagnostic>();
