@@ -59,6 +59,8 @@ public sealed class Checker : IChecker
 
     private readonly Dictionary<string, ReservedEntry> _exact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
     private readonly Dictionary<string, ReservedEntry> _compact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
+    private readonly Dictionary<string, ReservedEntry> _unicodeExact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
+    private readonly Dictionary<string, ReservedEntry> _unicodeCompact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
     private readonly List<PartialEntry> _partialEntries = new List<PartialEntry>();
     private readonly IPolicy _policy;
     private readonly bool _minimumLengthEnabled;
@@ -317,6 +319,34 @@ public sealed class Checker : IChecker
         {
             _partialEntries.Add(new PartialEntry(exact, compact, entry));
         }
+
+        if (!_unicodeConfusableMatching)
+        {
+            return;
+        }
+
+        bool changed;
+        var skeleton = NormalizeUnicodeConfusables(exact, out changed);
+        if (!changed)
+        {
+            return;
+        }
+
+        if (!_unicodeExact.ContainsKey(skeleton))
+        {
+            _unicodeExact.Add(skeleton, entry);
+        }
+
+        var skeletonCompact = NormalizeCompact(skeleton);
+        if (skeletonCompact.Length > 0 && !_unicodeCompact.ContainsKey(skeletonCompact))
+        {
+            _unicodeCompact.Add(skeletonCompact, entry);
+        }
+
+        if (includeInPartialMatching && skeletonCompact.Length >= _partialMatchMinimumLength)
+        {
+            _partialEntries.Add(new PartialEntry(skeleton, skeletonCompact, entry));
+        }
     }
 
     private bool TryMatchPartial(
@@ -365,16 +395,8 @@ public sealed class Checker : IChecker
     {
         bool changed;
         var skeleton = NormalizeUnicodeConfusables(value, out changed);
-        if (!changed)
-        {
-            match = null;
-            matchKind = MatchKind.None;
-            matchStartIndex = null;
-            matchLength = null;
-            return false;
-        }
-
-        if (_exact.TryGetValue(skeleton, out match))
+        if ((changed && _exact.TryGetValue(skeleton, out match))
+            || _unicodeExact.TryGetValue(skeleton, out match))
         {
             matchKind = MatchKind.UnicodeConfusable;
             matchStartIndex = 0;
@@ -383,7 +405,9 @@ public sealed class Checker : IChecker
         }
 
         var compact = NormalizeCompact(skeleton);
-        if (_compactMatching && compact.Length > 0 && _compact.TryGetValue(compact, out match))
+        if (_compactMatching && compact.Length > 0
+            && ((changed && _compact.TryGetValue(compact, out match))
+                || _unicodeCompact.TryGetValue(compact, out match)))
         {
             matchKind = MatchKind.UnicodeConfusable;
             matchStartIndex = 0;
@@ -391,7 +415,7 @@ public sealed class Checker : IChecker
             return true;
         }
 
-        if (_partialMatching)
+        if (changed && _partialMatching)
         {
             int partialStart;
             int partialLength;
@@ -404,7 +428,7 @@ public sealed class Checker : IChecker
             }
         }
 
-        if (_obfuscationMatching
+        if (changed && _obfuscationMatching
             && TryMatchObfuscated(skeleton, out match, out matchKind, out matchStartIndex, out matchLength))
         {
             return true;
@@ -470,7 +494,9 @@ public sealed class Checker : IChecker
 
         foreach (var candidate in candidates)
         {
-            if (candidate.Length > 0 && _compact.TryGetValue(candidate, out match))
+            if (candidate.Length > 0
+                && (_compact.TryGetValue(candidate, out match)
+                    || (_unicodeConfusableMatching && _unicodeCompact.TryGetValue(candidate, out match))))
             {
                 matchKind = MatchKind.Obfuscated;
                 matchStartIndex = 0;

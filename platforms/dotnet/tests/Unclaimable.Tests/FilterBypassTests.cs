@@ -249,6 +249,65 @@ public sealed class FilterBypassTests
         Assert.True(new Checker(options).IsClaimable(input));
     }
 
+    /// <summary>Checks combinations of accent omission, leetspeak and partial matching for native reservations.</summary>
+    [Theory]
+    [InlineData("zephyrium", false, MatchKind.UnicodeConfusable)]
+    [InlineData("z.e.p.h.y.r.i.u.m", false, MatchKind.UnicodeConfusable)]
+    [InlineData("z3phyrium", false, MatchKind.Obfuscated)]
+    [InlineData("qqzephyriumzz", true, MatchKind.Partial)]
+    [InlineData("qqz3phyriumzz", true, MatchKind.Partial)]
+    public void NativeReservationAliasesHonorMatchingControls(string input, bool partial, MatchKind expected)
+    {
+        var options = MatchingOptions();
+        options.PartialMatching = partial;
+        options.AdditionalReserved.Add("zéphyrium");
+        var result = new Checker(options).Check(input);
+        Assert.True(result.IsReserved);
+        Assert.Equal("custom", result.Category);
+        Assert.Equal("zéphyrium", result.MatchedValue);
+        Assert.Equal(expected, result.MatchKind);
+
+        options.DisabledRules |= Rule.UnicodeConfusableMatching;
+        Assert.True(new Checker(options).IsClaimable(input));
+    }
+
+    /// <summary>Checks that native profanity aliases still require the separate profanity-partial option.</summary>
+    [Fact]
+    public void NativeProfanityAliasesPreservePartialOptIn()
+    {
+        var options = MatchingOptions();
+        options.RemoveLanguage(Language.English);
+        options.AddLanguage(Language.Romanian);
+        options.Strictness = Strictness.Strict;
+        Assert.True(new Checker(options).IsClaimable("qqpizdazz"));
+
+        options.ProfanityPartialMatching = true;
+        AssertCategory(new Checker(options), "qqpizdazz", "profanity");
+    }
+
+    /// <summary>Checks that disabling compact matching also disables compact native aliases.</summary>
+    [Fact]
+    public void NativeAliasesHonorCompactMatchingSwitch()
+    {
+        var options = MatchingOptions();
+        options.AdditionalReserved.Add("zéphyrium");
+        options.DisabledRules |= Rule.CompactMatching;
+        Assert.True(new Checker(options).IsClaimable("z.e.p.h.y.r.i.u.m"));
+        AssertCategory(new Checker(options), "zephyrium", "custom");
+    }
+
+    /// <summary>Checks that Unicode aliases do not evade the configured minimum substring length.</summary>
+    [Fact]
+    public void NativeAliasesHonorPartialLengthThreshold()
+    {
+        var options = MatchingOptions();
+        options.Strictness = Strictness.Strict;
+        options.AdditionalReserved.Add("éx");
+        Assert.True(new Checker(options).IsClaimable("qqexzz"));
+        options.PartialMatchMinimumLength = 2;
+        AssertCategory(new Checker(options), "qqexzz", "custom");
+    }
+
     /// <summary>Checks complete language coverage with separator and casing bypass attempts in each category.</summary>
     [Fact]
     public void AllLanguagesRejectAlteredValuesFromAllFourLocalizedCategories()

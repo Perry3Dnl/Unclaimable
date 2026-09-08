@@ -426,6 +426,8 @@ For example:
 
 resolves to protected `apple` because technology and brand-style impersonation datasets are global.
 
+Unicode matching normalizes both the submitted identifier and reserved entries. With Swedish enabled, `losenord` resolves to the native entry `lösenord`; with Turkish enabled, `yonetici` resolves to `yönetici`. The result retains the original reserved spelling and category. These aliases follow `Rule.UnicodeConfusableMatching`, compact-matching controls, and the separate profanity-partial setting.
+
 ## Profanity matching
 
 Profanity from every enabled localized language participates in matching by default.
