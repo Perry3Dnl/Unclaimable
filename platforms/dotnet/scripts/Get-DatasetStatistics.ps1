@@ -1,5 +1,5 @@
 param(
-    [string]$DataPath = (Join-Path $PSScriptRoot "../../../../data")
+    [string]$DataPath = (Join-Path $PSScriptRoot "../../../data")
 )
 
 $resolvedDataPath = (Resolve-Path $DataPath).Path
