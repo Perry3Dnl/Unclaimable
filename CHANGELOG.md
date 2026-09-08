@@ -11,8 +11,9 @@ Initial public NuGet release.
 - Strict-by-default validation so `AddUnclaimable()` enables the recommended protection set without additional configuration.
 - `UnclaimableRule` flags and `DisabledRules` for selectively relaxing individual checks while keeping all other protections enabled.
 - Localized built-in datasets for English, Dutch, German, French, Spanish, Italian, and Portuguese across profanity, roles, support/trust identities, and system names.
-- English as the default localized language, with additive language configuration through `UnclaimableOptions.Languages`, `AddLanguage(...)`, and `RemoveLanguage(...)`.
-- Language packs organized below `data/languages/<code>/`, with wildcard resource discovery so unused language folders can be removed from source builds without creating compile-time dependencies.
+- English as the default localized language, with additive language configuration through `AddLanguage(...)` and `RemoveLanguage(...)`; `UnclaimableOptions.Languages` is exposed read-only for inspection.
+- Language packs organized below `data/languages/<code>/`, with wildcard resource discovery so unused language folders can be physically removed from source builds without creating compile-time dependencies.
+- CI verification that the core and ASP.NET Core projects still compile with the entire `data/languages/` directory removed.
 - Language-independent global datasets for technology names and broadly recognizable brands.
 - Extensible language-tagged JSON dataset format using ISO-style language codes or `global` scope.
 - Exact matching with Unicode NFKC normalization and invariant case normalization.

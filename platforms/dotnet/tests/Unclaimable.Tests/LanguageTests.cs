@@ -102,7 +102,7 @@ public sealed class LanguageTests
     public void GlobalDatasetsAreAlwaysIncluded(UnclaimableLanguage language)
     {
         var options = new UnclaimableOptions();
-        options.Languages.Clear();
+        options.RemoveLanguage(UnclaimableLanguage.English);
         options.AddLanguage(language);
         var checker = new UnclaimableChecker(options);
 
@@ -111,10 +111,10 @@ public sealed class LanguageTests
     }
 
     [Fact]
-    public void NoLocalizedLanguagesStillKeepsGlobalDatasets()
+    public void RemovingDefaultEnglishStillKeepsGlobalDatasets()
     {
         var options = new UnclaimableOptions();
-        options.Languages.Clear();
+        options.RemoveLanguage(UnclaimableLanguage.English);
         var checker = new UnclaimableChecker(options);
 
         Assert.True(checker.IsClaimable("customersupport"));
@@ -141,8 +141,6 @@ public sealed class LanguageTests
         var options = new UnclaimableOptions();
 
         Assert.Throws<ArgumentOutOfRangeException>(() => options.AddLanguage((UnclaimableLanguage)999));
-
-        options.Languages.Add((UnclaimableLanguage)999);
-        Assert.Throws<ArgumentOutOfRangeException>(() => new UnclaimableChecker(options));
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.RemoveLanguage((UnclaimableLanguage)999));
     }
 }
