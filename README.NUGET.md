@@ -2,6 +2,8 @@
 
 Strict, fast username and identifier validation for .NET.
 
+**Current version: 0.3.0**
+
 Unclaimable helps decide whether a username, handle, slug, account name, or similar identifier should be claimable.
 
 It combines curated reserved-name datasets with structural validation rules, impersonation protection, obfuscation detection, Unicode lookalike handling, localized profanity filtering, and configurable application-specific rules.
@@ -9,13 +11,13 @@ It combines curated reserved-name datasets with structural validation rules, imp
 ## Install
 
 ```bash
-dotnet add package Unclaimable
+dotnet add package Unclaimable --version 0.3.0
 ```
 
 For ASP.NET Core integration:
 
 ```bash
-dotnet add package Unclaimable.AspNetCore
+dotnet add package Unclaimable.AspNetCore --version 0.3.0
 ```
 
 ## Quick start
@@ -54,9 +56,14 @@ The default policy includes:
 - trusted-role and support impersonation;
 - system and infrastructure identities;
 - global brand and technology names;
-- security, automation, legal, commerce, community, and other protected categories;
+- identity and authentication identities;
+- moderation and governance identities;
+- finance and communications identities;
+- operations and developer identities;
+- security, automation, legal, commerce, community, official, and other protected categories;
 - localized profanity filtering;
 - strict partial matching;
+- safe compound matching for explicitly marked entries;
 - compact separator/punctuation matching;
 - common leetspeak and symbol substitutions;
 - selected Unicode-confusable lookalikes;
@@ -68,15 +75,25 @@ The default policy includes:
 
 ## Dataset coverage
 
-The current package contains **5,181 filter entries across 12 categories**, representing **5,085 unique values within those categories**. Localized language packs can contain the same literal value in more than one language, so entry counts can be higher than unique-value counts.
+Version 0.3.0 contains **10,731 filter entries across 22 categories**, representing **10,633 unique values within those categories**. Localized language packs can contain the same literal value in more than one language, so entry counts can be higher than unique-value counts.
 
 | Category | Filter entries | Unique values |
 | --- | ---: | ---: |
+| `authentication` | 450 | 450 |
 | `automation` | 32 | 32 |
 | `brands` | 556 | 556 |
 | `commerce` | 31 | 31 |
+| `communications` | 450 | 450 |
 | `community` | 22 | 22 |
+| `developer` | 450 | 450 |
+| `finance` | 450 | 450 |
+| `governance` | 450 | 450 |
+| `identity` | 1,500 | 1,498 |
+| `infrastructure` | 450 | 450 |
 | `legal` | 34 | 34 |
+| `moderation` | 450 | 450 |
+| `official` | 450 | 450 |
+| `operations` | 450 | 450 |
 | `other` | 24 | 24 |
 | `profanity` | 861 | 848 |
 | `roles` | 813 | 757 |
@@ -84,9 +101,9 @@ The current package contains **5,181 filter entries across 12 categories**, repr
 | `support` | 1,010 | 1,001 |
 | `system` | 1,349 | 1,331 |
 | `technology` | 416 | 416 |
-| **Total** | **5,181** | **5,085** |
+| **Total** | **10,731** | **10,633** |
 
-These counts describe the built-in dataset values. Matching rules such as compact matching, partial matching, obfuscation detection, and Unicode-confusable detection can reject additional variants without storing every variant as a separate filter entry.
+These counts include concrete entries expanded from schema-v2 dataset combinations. Matching rules such as compact matching, partial matching, safe compound matching, obfuscation detection, and Unicode-confusable detection can reject additional variants without storing every variant as a separate filter entry.
 
 ## Language support
 
