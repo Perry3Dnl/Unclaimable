@@ -17,17 +17,31 @@ public sealed class UnclaimableOptions
     public UnclaimableRule DisabledRules { get; set; } = UnclaimableRule.None;
 
     /// <summary>
-    /// Localized built-in dataset to use. English is the default.
-    /// Global datasets such as brands and technology are always included.
+    /// Localized built-in datasets to include. English is enabled by default.
+    /// Add languages for additive multilingual filtering, or remove English when an
+    /// application deliberately wants only other localized datasets. Global datasets
+    /// such as brands and technology are always included.
     /// </summary>
-    public UnclaimableLanguage Language { get; set; } = UnclaimableLanguage.English;
+    public ISet<UnclaimableLanguage> Languages { get; } = new HashSet<UnclaimableLanguage>
+    {
+        UnclaimableLanguage.English
+    };
 
-    /// <summary>
-    /// Include every supported localized dataset instead of only <see cref="Language"/>.
-    /// Disabled by default because it increases checker construction cost, memory usage,
-    /// and the amount of work required by partial and obfuscation matching.
-    /// </summary>
-    public bool AllowMultiLanguage { get; set; }
+    /// <summary>Adds a localized built-in language dataset while keeping currently enabled languages.</summary>
+    public UnclaimableOptions AddLanguage(UnclaimableLanguage language)
+    {
+        ValidateLanguage(language, nameof(language));
+        Languages.Add(language);
+        return this;
+    }
+
+    /// <summary>Removes a localized built-in language dataset.</summary>
+    public UnclaimableOptions RemoveLanguage(UnclaimableLanguage language)
+    {
+        ValidateLanguage(language, nameof(language));
+        Languages.Remove(language);
+        return this;
+    }
 
     /// <summary>Minimum accepted identifier length. Defaults to 3.</summary>
     public int MinimumLength { get; set; } = 3;
@@ -127,6 +141,14 @@ public sealed class UnclaimableOptions
     }
 
     internal bool IsRuleEnabled(UnclaimableRule rule) => (DisabledRules & rule) == 0;
+
+    private static void ValidateLanguage(UnclaimableLanguage language, string parameterName)
+    {
+        if (!Enum.IsDefined(typeof(UnclaimableLanguage), language))
+        {
+            throw new ArgumentOutOfRangeException(parameterName, "Language must be a supported UnclaimableLanguage value.");
+        }
+    }
 
     private static void ValidateCharacter(string value, string parameterName)
     {

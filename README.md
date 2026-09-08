@@ -20,7 +20,7 @@ The default policy is intentionally strict. For most applications, configuration
 builder.Services.AddUnclaimable();
 ```
 
-The default localized dataset is **English**. Dutch or German can be selected explicitly, and applications can opt into checking every supported language together.
+English localized data is enabled by default. Additional language packs are additive: add only the languages your application needs, and remove English if you deliberately do not want it.
 
 ## Packages
 
@@ -48,11 +48,9 @@ Unclaimable provides a strict baseline for usernames, handles, slugs, account na
 The default policy includes:
 
 - reserved and protected names;
-- localized English datasets by default;
-- optional Dutch localized datasets;
-- optional German localized datasets;
-- optional English + Dutch + German multi-language checking;
-- global brand and technology impersonation datasets regardless of selected language;
+- English localized datasets by default;
+- additive Dutch, German, French, Spanish, Italian, and Portuguese localized datasets;
+- global brand and technology impersonation datasets regardless of enabled languages;
 - strict embedded/partial reserved-name matching;
 - separator and punctuation normalization for reserved-name matching;
 - common leetspeak and symbol substitutions;
@@ -78,14 +76,13 @@ The default policy includes:
 
 | Rule | Default |
 | --- | --- |
-| Selected localized language | `English` |
-| Multi-language checking | disabled |
+| Enabled localized languages | `English` |
 | Strict reserved-name matching | enabled |
 | Compact matching | enabled |
 | Partial matching | enabled through strict mode |
 | Obfuscation / leetspeak matching | enabled |
 | Unicode-confusable matching | enabled |
-| Profanity dataset | enabled for selected language(s) |
+| Profanity dataset | enabled for enabled language(s) |
 | Minimum length | `3` |
 | Maximum length | `32` |
 | Numbers | rejected |
@@ -112,57 +109,89 @@ This keeps every other Unclaimable rule active.
 
 Localized datasets currently support:
 
-- `UnclaimableLanguage.English` — default;
+- `UnclaimableLanguage.English` — enabled by default;
 - `UnclaimableLanguage.Dutch`;
-- `UnclaimableLanguage.German`.
+- `UnclaimableLanguage.German`;
+- `UnclaimableLanguage.French`;
+- `UnclaimableLanguage.Spanish`;
+- `UnclaimableLanguage.Italian`;
+- `UnclaimableLanguage.Portuguese`.
 
-Global datasets such as `brands` and `technology` are always active. Selecting one localized language therefore does not make names such as `paypal`, `github`, or `nike` claimable.
+Each language pack uses the same localized dataset categories:
+
+- `roles`;
+- `support`;
+- `system`;
+- `profanity`.
+
+Global datasets contain language-independent proper names such as brands, companies, platforms, products, and technology ecosystems. They are always active, so disabling every localized language does not make names such as `paypal`, `github`, or `nike` claimable.
 
 ### English only — default
 
 ```csharp
+builder.Services.AddUnclaimable();
+```
+
+No language configuration is required because English is already present in `options.Languages`.
+
+### English + Dutch
+
+```csharp
 builder.Services.AddUnclaimable(options =>
 {
-    options.Language = UnclaimableLanguage.English;
+    options.AddLanguage(UnclaimableLanguage.Dutch);
 });
 ```
 
-The explicit assignment is optional because English is the default.
+Adding a language does not replace English. It extends the enabled localized datasets.
 
 ### Dutch only
 
 ```csharp
 builder.Services.AddUnclaimable(options =>
 {
-    options.Language = UnclaimableLanguage.Dutch;
+    options.RemoveLanguage(UnclaimableLanguage.English);
+    options.AddLanguage(UnclaimableLanguage.Dutch);
 });
 ```
 
-### German only
+### Several languages
 
 ```csharp
 builder.Services.AddUnclaimable(options =>
 {
-    options.Language = UnclaimableLanguage.German;
+    options.AddLanguage(UnclaimableLanguage.Dutch);
+    options.AddLanguage(UnclaimableLanguage.German);
+    options.AddLanguage(UnclaimableLanguage.French);
 });
 ```
 
-### All supported languages
+There is no separate multi-language mode. The enabled language set is always additive.
+
+You can also manage the set directly:
 
 ```csharp
-builder.Services.AddUnclaimable(options =>
-{
-    options.AllowMultiLanguage = true;
-});
+options.Languages.Add(UnclaimableLanguage.Spanish);
+options.Languages.Remove(UnclaimableLanguage.English);
 ```
 
-When `AllowMultiLanguage` is enabled, Unclaimable loads every supported localized dataset rather than only `Language`. With the current package this means English, Dutch, and German.
+An empty localized-language set is valid:
 
-The additional language data is merged into the checker's indexes when the checker is constructed. Exact and compact checks remain dictionary lookups, but multi-language mode uses more memory and increases the amount of work performed by strict partial, Unicode-confusable, and obfuscation matching. For applications that only need one language, leaving multi-language mode disabled is the leaner option.
+```csharp
+options.Languages.Clear();
+```
 
-Language selection controls **which built-in datasets are loaded**, not which language the submitted identifier is allowed to contain. For example, an English-only checker can still reject a mixed-language value if it literally contains an enabled English protected token.
+In that configuration only global datasets and application-specific reservations are loaded.
 
-The dataset format is designed for more languages later. Localized files carry a language code, while language-independent datasets are tagged `global`.
+The additional language data is merged into the checker's indexes when the checker is constructed. Exact and compact checks remain dictionary lookups, while enabling more languages increases memory use and the amount of work performed by strict partial, Unicode-confusable, and obfuscation matching.
+
+Language configuration controls **which built-in localized datasets are loaded**, not which language the submitted identifier is allowed to contain.
+
+### Optional source language packs
+
+The repository keeps localized datasets below `data/languages/<code>/`. Dataset discovery is wildcard-based and metadata-driven; the core project does not reference Dutch, German, French, Spanish, Italian, Portuguese, or English files by a fixed path.
+
+This means a source consumer or fork may remove unused language-pack folders before building without causing a compile failure. For example, deleting `data/languages/de/` simply means German contributes no embedded localized entries in that build. The `UnclaimableLanguage.German` enum value still exists so application source does not have to change between full and trimmed builds.
 
 ## Rule controls
 
@@ -326,7 +355,7 @@ When structural character restrictions are relaxed, localized or global protecte
 
 Strict mode is the default. It catches protected names embedded inside larger values.
 
-For example, with English selected:
+For example, with English enabled:
 
 ```text
 supportive -> support
@@ -334,7 +363,7 @@ apples     -> apple
 nikee      -> nike
 ```
 
-Localized Dutch and German protected terms participate in the same matching pipeline when those datasets are enabled.
+Protected terms from every enabled localized language participate in the same matching pipeline.
 
 `PartialMatchMinimumLength` defaults to `4`, which keeps very short reserved values from participating in ordinary substring matching.
 
@@ -389,26 +418,19 @@ resolves to protected `apple` because technology and brand-style impersonation d
 
 ## Profanity matching
 
-Profanity from the selected localized dataset participates in matching by default.
+Profanity from every enabled localized language participates in matching by default.
 
-English is used by default:
+English is enabled by default:
 
 ```text
 fuckwaffle -> profanity
 ```
 
-Select Dutch or German when the application primarily serves those users:
+Add other profanity datasets with the same language API:
 
 ```csharp
-options.Language = UnclaimableLanguage.Dutch;
-// or
-options.Language = UnclaimableLanguage.German;
-```
-
-Or enable every localized profanity dataset:
-
-```csharp
-options.AllowMultiLanguage = true;
+options.AddLanguage(UnclaimableLanguage.Dutch);
+options.AddLanguage(UnclaimableLanguage.German);
 ```
 
 Profanity uses the same exact, compact, obfuscation, and Unicode-aware pipeline as the other datasets.
@@ -455,22 +477,21 @@ if (UnclaimableChecker.Default.IsClaimable(userName))
 }
 ```
 
-Dutch checker:
+English + Dutch checker:
 
 ```csharp
-var checker = new UnclaimableChecker(new UnclaimableOptions
-{
-    Language = UnclaimableLanguage.Dutch
-});
+var options = new UnclaimableOptions();
+options.AddLanguage(UnclaimableLanguage.Dutch);
+var checker = new UnclaimableChecker(options);
 ```
 
-German checker:
+Dutch-only checker:
 
 ```csharp
-var checker = new UnclaimableChecker(new UnclaimableOptions
-{
-    Language = UnclaimableLanguage.German
-});
+var options = new UnclaimableOptions();
+options.RemoveLanguage(UnclaimableLanguage.English);
+options.AddLanguage(UnclaimableLanguage.Dutch);
+var checker = new UnclaimableChecker(options);
 ```
 
 Public checker contract:
@@ -546,8 +567,8 @@ Or customize the policy:
 ```csharp
 builder.Services.AddUnclaimable(options =>
 {
-    options.Language = UnclaimableLanguage.Dutch;
-    options.AllowMultiLanguage = false;
+    options.AddLanguage(UnclaimableLanguage.Dutch);
+    options.AddLanguage(UnclaimableLanguage.German);
 
     options.MinimumLength = 4;
     options.MaximumLength = 24;
@@ -648,14 +669,16 @@ Current scopes:
 
 | Scope | Categories | Behavior |
 | --- | --- | --- |
-| `en` | profanity, roles, support, system | loaded by default or when English is selected |
-| `nl` | profanity, roles, support, system | loaded when Dutch is selected |
-| `de` | profanity, roles, support, system | loaded when German is selected |
+| `languages/en` | profanity, roles, support, system | enabled by default |
+| `languages/nl` | profanity, roles, support, system | optional, additive |
+| `languages/de` | profanity, roles, support, system | optional, additive |
+| `languages/fr` | profanity, roles, support, system | optional, additive |
+| `languages/es` | profanity, roles, support, system | optional, additive |
+| `languages/it` | profanity, roles, support, system | optional, additive |
+| `languages/pt` | profanity, roles, support, system | optional, additive |
 | `global` | brands, technology | always loaded |
 
-The repository also contains the original top-level datasets. For compatibility, legacy top-level `brands` and `technology` data is treated as global, while the other legacy top-level datasets are treated as English.
-
-Localized dataset documents can declare:
+Localized dataset documents declare their language explicitly where possible:
 
 ```json
 {
@@ -673,7 +696,7 @@ Language-independent data uses:
 "language": "global"
 ```
 
-This keeps the format extensible: additional languages can receive their own localized datasets without changing the matching model.
+The loader uses document metadata rather than hard-coded language-pack paths. This keeps language folders removable in source builds and makes adding another localized pack a data-and-enum change rather than a matching-engine redesign.
 
 ## Matching pipeline
 
@@ -688,7 +711,7 @@ This keeps the format extensible: additional languages can receive their own loc
 7. Unicode-confusable matching;
 8. bounded obfuscation / leetspeak matching.
 
-Built-in protected values for the selected language scope are indexed when the checker is constructed. Normal exact and compact lookups use hashed dictionaries rather than repeatedly scanning the full dataset.
+Built-in protected values for all enabled language scopes are indexed when the checker is constructed. Normal exact and compact lookups use hashed dictionaries rather than repeatedly scanning the full dataset.
 
 ## Repository layout
 
@@ -697,11 +720,19 @@ Built-in protected values for the selected language scope are indexed when the c
 assets/
 conformance/
 data/
-  en/
-  nl/
-  de/
   global/
+    brands/
+    technology/
+  languages/
+    en/
+    nl/
+    de/
+    fr/
+    es/
+    it/
+    pt/
 platforms/dotnet/src/Unclaimable/
+  Languages/
 platforms/dotnet/src/Unclaimable.AspNetCore/
 platforms/dotnet/tests/Unclaimable.Tests/
 platforms/dotnet/smoke/Unclaimable.ConsumerSmoke/

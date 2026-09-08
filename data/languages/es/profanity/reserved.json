@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "profanity",
+  "language": "es",
+  "description": "Basic Spanish profanity and vulgar insult variants. Identity-targeting slurs are intentionally excluded.",
+  "values": [
+    "mierda",
+    "joder",
+    "cojones",
+    "cabron",
+    "cabrona",
+    "gilipollas",
+    "pendejo",
+    "pendeja",
+    "imbecil",
+    "idiota",
+    "estupido",
+    "estupida",
+    "capullo",
+    "capulla",
+    "mamón",
+    "mamona",
+    "mamone",
+    "culero",
+    "culera",
+    "hijodeputa",
+    "hijaputa",
+    "comemierda",
+    "pedazodemierda",
+    "vetealcarajo"
+  ]
+}

@@ -6,10 +6,7 @@ namespace Unclaimable.Tests;
 
 public sealed class ConformanceTests
 {
-    private static readonly UnclaimableChecker EnglishChecker = new UnclaimableChecker(new UnclaimableOptions
-    {
-        Language = UnclaimableLanguage.English
-    });
+    private static readonly UnclaimableChecker EnglishChecker = new UnclaimableChecker(new UnclaimableOptions());
 
     private sealed class ConformanceCase
     {

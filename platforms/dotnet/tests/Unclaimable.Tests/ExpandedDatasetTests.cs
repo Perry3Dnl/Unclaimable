@@ -6,7 +6,6 @@ public sealed class ExpandedDatasetTests
 {
     private static readonly UnclaimableChecker DatasetChecker = new UnclaimableChecker(new UnclaimableOptions
     {
-        Language = UnclaimableLanguage.English,
         Strictness = UnclaimableStrictness.Standard,
         DisabledRules = UnclaimableRule.Numbers
                         | UnclaimableRule.BlockedCharacters

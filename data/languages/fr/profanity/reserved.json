@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "profanity",
+  "language": "fr",
+  "description": "Basic French profanity and vulgar insult variants. Identity-targeting slurs are intentionally excluded.",
+  "values": [
+    "merde",
+    "putain",
+    "connard",
+    "connasse",
+    "encule",
+    "enculee",
+    "bordel",
+    "salaud",
+    "salope",
+    "abruti",
+    "abrutie",
+    "debile",
+    "cretin",
+    "cretine",
+    "couillon",
+    "couillonne",
+    "trouduc",
+    "trouducul",
+    "filsdepute",
+    "tasdemerde",
+    "facedemerde",
+    "groscon",
+    "grosseconne",
+    "vatefairefoutre"
+  ]
+}

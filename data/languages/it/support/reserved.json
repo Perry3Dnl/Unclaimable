@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "support",
+  "language": "it",
+  "description": "Basic Italian support, billing, identity, safety, and trust-channel names.",
+  "values": [
+    "servizioclienti",
+    "assistenza clienti",
+    "assistenzaclienti",
+    "supportoclienti",
+    "centroassistenza",
+    "supportotecnico",
+    "assistenzatecnica",
+    "assistenzaconto",
+    "sicurezzaconto",
+    "protezioneconto",
+    "recuperoconto",
+    "verificaidentita",
+    "assistenzaidentita",
+    "supportopagamenti",
+    "assistenzapagamenti",
+    "supportofatturazione",
+    "assistenzafatturazione",
+    "serviziofatturazione",
+    "supportorimborsi",
+    "assistenzarimborsi",
+    "supportosicurezza",
+    "assistenzasicurezza",
+    "teamverifica",
+    "teamfiducia"
+  ]
+}

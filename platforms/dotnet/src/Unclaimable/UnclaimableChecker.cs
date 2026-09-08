@@ -101,9 +101,12 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             throw new ArgumentNullException(nameof(policy));
         }
 
-        if (!Enum.IsDefined(typeof(UnclaimableLanguage), options.Language))
+        foreach (var language in options.Languages)
         {
-            throw new ArgumentOutOfRangeException(nameof(options.Language), "Language must be a supported UnclaimableLanguage value.");
+            if (!Enum.IsDefined(typeof(UnclaimableLanguage), language))
+            {
+                throw new ArgumentOutOfRangeException(nameof(options.Languages), "Languages must contain only supported UnclaimableLanguage values.");
+            }
         }
 
         if (options.MinimumLength < 0)
@@ -149,9 +152,7 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
 
         foreach (var entry in BuiltInEntries.Value)
         {
-            if (entry.Language.HasValue
-                && !options.AllowMultiLanguage
-                && entry.Language.Value != options.Language)
+            if (entry.Language.HasValue && !options.Languages.Contains(entry.Language.Value))
             {
                 continue;
             }
@@ -1011,6 +1012,27 @@ public sealed class UnclaimableChecker : IUnclaimableChecker
             case "german":
             case "deutsch":
                 return UnclaimableLanguage.German;
+            case "fr":
+            case "fra":
+            case "fre":
+            case "french":
+            case "francais":
+                return UnclaimableLanguage.French;
+            case "es":
+            case "spa":
+            case "spanish":
+            case "espanol":
+                return UnclaimableLanguage.Spanish;
+            case "it":
+            case "ita":
+            case "italian":
+            case "italiano":
+                return UnclaimableLanguage.Italian;
+            case "pt":
+            case "por":
+            case "portuguese":
+            case "portugues":
+                return UnclaimableLanguage.Portuguese;
             default:
                 throw new InvalidOperationException(
                     $"Embedded dataset '{resourceName}' declares unsupported language '{language}'.");

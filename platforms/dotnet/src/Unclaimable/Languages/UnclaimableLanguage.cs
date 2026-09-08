@@ -12,5 +12,17 @@ public enum UnclaimableLanguage
     Dutch = 1,
 
     /// <summary>German localized datasets.</summary>
-    German = 2
+    German = 2,
+
+    /// <summary>French localized datasets.</summary>
+    French = 3,
+
+    /// <summary>Spanish localized datasets.</summary>
+    Spanish = 4,
+
+    /// <summary>Italian localized datasets.</summary>
+    Italian = 5,
+
+    /// <summary>Portuguese localized datasets.</summary>
+    Portuguese = 6
 }
