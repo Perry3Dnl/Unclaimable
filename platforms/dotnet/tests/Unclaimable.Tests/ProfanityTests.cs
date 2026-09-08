@@ -4,10 +4,7 @@ namespace Unclaimable.Tests;
 
 public sealed class ProfanityTests
 {
-    private static readonly UnclaimableChecker EnglishChecker = new UnclaimableChecker(new UnclaimableOptions
-    {
-        Language = UnclaimableLanguage.English
-    });
+    private static readonly UnclaimableChecker EnglishChecker = new UnclaimableChecker(new UnclaimableOptions());
 
     [Fact]
     public void ProfanityIsEnabledByDefault()
@@ -25,7 +22,6 @@ public sealed class ProfanityTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
-            Language = UnclaimableLanguage.English,
             Strictness = UnclaimableStrictness.Standard,
             DisabledRules = UnclaimableRule.Profanity
         });
@@ -38,7 +34,6 @@ public sealed class ProfanityTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
-            Language = UnclaimableLanguage.English,
             DisabledRules = UnclaimableRule.Numbers
                             | UnclaimableRule.BlockedCharacters
                             | UnclaimableRule.Whitespace
@@ -69,7 +64,6 @@ public sealed class ProfanityTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
-            Language = UnclaimableLanguage.English,
             ProfanityPartialMatching = true
         });
 
@@ -86,7 +80,6 @@ public sealed class ProfanityTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
-            Language = UnclaimableLanguage.English,
             DisabledRules = UnclaimableRule.Numbers
         });
 

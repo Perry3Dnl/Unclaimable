@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "system",
+  "language": "pt",
+  "description": "Basic Portuguese application, authentication, automation, and system-owned identity names.",
+  "values": [
+    "contasistema",
+    "usuariosistema",
+    "administracaosistema",
+    "senhaesquecida",
+    "redefinirsenha",
+    "alterarsenha",
+    "recuperarsenha",
+    "autenticacao",
+    "autorizacao",
+    "registroauditoria",
+    "registrosauditoria",
+    "tarefaprogramada",
+    "tarefasprogramadas",
+    "filamensagens",
+    "armazenamentointerno",
+    "backupsistema",
+    "restauracaosistema",
+    "configuracaosistema",
+    "configuracoessistema",
+    "manutencaosistema",
+    "atualizacaosistema",
+    "servicointerno",
+    "contarobo",
+    "contaaplicacao"
+  ]
+}

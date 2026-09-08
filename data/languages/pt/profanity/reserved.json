@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "profanity",
+  "language": "pt",
+  "description": "Basic Portuguese profanity and vulgar insult variants. Identity-targeting slurs are intentionally excluded.",
+  "values": [
+    "merda",
+    "caralho",
+    "porra",
+    "cacete",
+    "babaca",
+    "otario",
+    "otaria",
+    "idiota",
+    "imbecil",
+    "estupido",
+    "estupida",
+    "fdp",
+    "filhodaputa",
+    "filhadaputa",
+    "vai tomar no cu",
+    "vaitomarnocu",
+    "vai se foder",
+    "vaisefoder",
+    "cuzao",
+    "cuzona",
+    "bostao",
+    "bostona",
+    "pedacodemerde",
+    "cabecadebagre"
+  ]
+}

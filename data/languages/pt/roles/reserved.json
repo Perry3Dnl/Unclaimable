@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "roles",
+  "language": "pt",
+  "description": "Basic Portuguese privileged, trusted, official, and moderation role names.",
+  "values": [
+    "administrador",
+    "administradora",
+    "superadministrador",
+    "moderador",
+    "moderadora",
+    "administradorsite",
+    "administradorrede",
+    "administradorsistema",
+    "responsavelcomunidade",
+    "gestorcomunidade",
+    "proprietarioconta",
+    "proprietariogrupo",
+    "proprietarioorganizacao",
+    "responsavelseguranca",
+    "agenteseguranca",
+    "responsavelsuporte",
+    "agentesuporte",
+    "responsavelmoderacao",
+    "gestorconteudo",
+    "administradorconteudo",
+    "responsavelfaturamento",
+    "responsavelidentidade",
+    "agenteverificacao",
+    "responsaveloperacoes"
+  ]
+}

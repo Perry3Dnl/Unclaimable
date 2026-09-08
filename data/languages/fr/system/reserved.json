@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "system",
+  "language": "fr",
+  "description": "Basic French application, authentication, automation, and system-owned identity names.",
+  "values": [
+    "comptesysteme",
+    "utilisateursysteme",
+    "administrationsysteme",
+    "motdepasseoublie",
+    "reinitialisationmotdepasse",
+    "changermotdepasse",
+    "recuperationmotdepasse",
+    "authentification",
+    "autorisation",
+    "journalisation",
+    "journalaudit",
+    "tacheplanifiee",
+    "tachesplanifiees",
+    "fileattente",
+    "stockageinterne",
+    "sauvegardesysteme",
+    "restaurationsysteme",
+    "configurationsysteme",
+    "parametresysteme",
+    "maintenancesysteme",
+    "miseajoursysteme",
+    "serviceinterne",
+    "compterobot",
+    "compteapplication"
+  ]
+}

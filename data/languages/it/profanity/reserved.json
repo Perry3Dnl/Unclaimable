@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "profanity",
+  "language": "it",
+  "description": "Basic Italian profanity and vulgar insult variants. Identity-targeting slurs are intentionally excluded.",
+  "values": [
+    "merda",
+    "cazzo",
+    "minchia",
+    "stronzo",
+    "stronza",
+    "coglione",
+    "cogliona",
+    "vaffanculo",
+    "bastardo",
+    "bastarda",
+    "cretino",
+    "cretina",
+    "idiota",
+    "imbecille",
+    "testadicazzo",
+    "testadimerda",
+    "pezzo di merda",
+    "pezzodimerda",
+    "rompicoglioni",
+    "facciadimerda",
+    "cazzone",
+    "cazzona",
+    "porcamerda",
+    "vaiacagare"
+  ]
+}

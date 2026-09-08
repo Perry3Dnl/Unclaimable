@@ -22,34 +22,42 @@ Require(checker.Check("ordinary user").MatchKind == UnclaimableMatchKind.Blocked
 Require(checker.Check("ab").MatchKind == UnclaimableMatchKind.TooShort, "Minimum length should be enforced by default.");
 Require(checker.Check(new string('a', 33)).MatchKind == UnclaimableMatchKind.TooLong, "Maximum length should be enforced by default.");
 Require(checker.Check("fuckwaffle").Category == "profanity", "English profanity should participate by default.");
-Require(checker.IsClaimable("facturatiehulp"), "Dutch localized support data should not load in English-only mode by default.");
-Require(checker.IsClaimable("abrechnungshilfe"), "German localized support data should not load in English-only mode by default.");
+Require(checker.IsClaimable("facturatiehulp"), "Dutch localized support data should not load until Dutch is added.");
+Require(checker.IsClaimable("abrechnungshilfe"), "German localized support data should not load until German is added.");
 
-var dutchChecker = new UnclaimableChecker(new UnclaimableOptions
-{
-    Language = UnclaimableLanguage.Dutch
-});
-Require(dutchChecker.Check("facturatiehulp").Category == "support", "Dutch should be selectable explicitly.");
-Require(dutchChecker.Check("systeembeheerder").Category == "roles", "Dutch role data should be embedded in the package.");
-Require(dutchChecker.Check("godverdomme").Category == "profanity", "Dutch profanity data should be embedded in the package.");
-Require(dutchChecker.IsClaimable("abrechnungshilfe"), "German localized support data should not load in Dutch-only mode.");
+var englishAndDutchOptions = new UnclaimableOptions();
+englishAndDutchOptions.AddLanguage(UnclaimableLanguage.Dutch);
+var englishAndDutchChecker = new UnclaimableChecker(englishAndDutchOptions);
+Require(englishAndDutchChecker.Check("customersupport").Category == "support", "Adding Dutch should keep English enabled.");
+Require(englishAndDutchChecker.Check("facturatiehulp").Category == "support", "Dutch should be additive.");
+Require(englishAndDutchChecker.Check("systeembeheerder").Category == "roles", "Dutch role data should be embedded in the package.");
+Require(englishAndDutchChecker.Check("godverdomme").Category == "profanity", "Dutch profanity data should be embedded in the package.");
 
-var germanChecker = new UnclaimableChecker(new UnclaimableOptions
-{
-    Language = UnclaimableLanguage.German
-});
-Require(germanChecker.Check("abrechnungshilfe").Category == "support", "German should be selectable explicitly.");
+var dutchOnlyOptions = new UnclaimableOptions();
+dutchOnlyOptions.RemoveLanguage(UnclaimableLanguage.English);
+dutchOnlyOptions.AddLanguage(UnclaimableLanguage.Dutch);
+var dutchOnlyChecker = new UnclaimableChecker(dutchOnlyOptions);
+Require(dutchOnlyChecker.Check("facturatiehulp").Category == "support", "Dutch-only filtering should be supported.");
+Require(dutchOnlyChecker.IsClaimable("customersupport"), "Removing English should remove English localized data.");
+
+var germanOptions = new UnclaimableOptions();
+germanOptions.AddLanguage(UnclaimableLanguage.German);
+var germanChecker = new UnclaimableChecker(germanOptions);
+Require(germanChecker.Check("abrechnungshilfe").Category == "support", "German should be addable.");
 Require(germanChecker.Check("systemverwalter").Category == "roles", "German role data should be embedded in the package.");
 Require(germanChecker.Check("scheiße").Category == "profanity", "German profanity data should be embedded in the package.");
-Require(germanChecker.IsClaimable("facturatiehulp"), "Dutch localized support data should not load in German-only mode.");
+Require(germanChecker.IsReserved("customersupport"), "English should remain enabled when German is added.");
 
-var multiLanguageChecker = new UnclaimableChecker(new UnclaimableOptions
-{
-    AllowMultiLanguage = true
-});
-Require(multiLanguageChecker.IsReserved("customersupport"), "Multi-language mode should include English data.");
-Require(multiLanguageChecker.IsReserved("facturatiehulp"), "Multi-language mode should include Dutch data.");
-Require(multiLanguageChecker.IsReserved("abrechnungshilfe"), "Multi-language mode should include German data.");
+var extendedOptions = new UnclaimableOptions();
+extendedOptions.AddLanguage(UnclaimableLanguage.French);
+extendedOptions.AddLanguage(UnclaimableLanguage.Spanish);
+extendedOptions.AddLanguage(UnclaimableLanguage.Italian);
+extendedOptions.AddLanguage(UnclaimableLanguage.Portuguese);
+var extendedChecker = new UnclaimableChecker(extendedOptions);
+Require(extendedChecker.Check("serviceclient").Category == "support", "French language data should be embedded in the package.");
+Require(extendedChecker.Check("servicioalcliente").Category == "support", "Spanish language data should be embedded in the package.");
+Require(extendedChecker.Check("servizioclienti").Category == "support", "Italian language data should be embedded in the package.");
+Require(extendedChecker.Check("atendimentocliente").Category == "support", "Portuguese language data should be embedded in the package.");
 
 var relaxed = new UnclaimableChecker(new UnclaimableOptions
 {

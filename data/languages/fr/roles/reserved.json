@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "roles",
+  "language": "fr",
+  "description": "Basic French privileged, trusted, official, and moderation role names.",
+  "values": [
+    "administrateur",
+    "administratrice",
+    "superadministrateur",
+    "moderateur",
+    "moderatrice",
+    "administrateursite",
+    "administrateurreseau",
+    "administrateursysteme",
+    "responsablecommunaute",
+    "gestionnairecommunaute",
+    "proprietairecompte",
+    "proprietairegroupe",
+    "proprietaireorganisation",
+    "responsablesecurite",
+    "agentsecurite",
+    "responsablesupport",
+    "agentsupport",
+    "responsablemoderation",
+    "gestionnairecontenu",
+    "administrateurcontenu",
+    "responsablefacturation",
+    "responsableidentite",
+    "agentverification",
+    "responsableoperations"
+  ]
+}

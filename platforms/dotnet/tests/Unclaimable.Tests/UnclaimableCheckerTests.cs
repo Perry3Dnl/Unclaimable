@@ -4,10 +4,7 @@ namespace Unclaimable.Tests;
 
 public sealed class UnclaimableCheckerTests
 {
-    private static readonly UnclaimableChecker EnglishChecker = new UnclaimableChecker(new UnclaimableOptions
-    {
-        Language = UnclaimableLanguage.English
-    });
+    private static readonly UnclaimableChecker EnglishChecker = new UnclaimableChecker(new UnclaimableOptions());
 
     [Theory]
     [InlineData("admin")]
@@ -141,7 +138,6 @@ public sealed class UnclaimableCheckerTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
-            Language = UnclaimableLanguage.English,
             DisabledRules = UnclaimableRule.Numbers
         });
 
@@ -158,7 +154,6 @@ public sealed class UnclaimableCheckerTests
     {
         var checker = new UnclaimableChecker(new UnclaimableOptions
         {
-            Language = UnclaimableLanguage.English,
             DisabledRules = UnclaimableRule.BlockedCharacters
                             | UnclaimableRule.Whitespace
         });
@@ -186,10 +181,7 @@ public sealed class UnclaimableCheckerTests
     [Fact]
     public void DetailedCheckCollectsPolicyAndReservedNameDiagnostics()
     {
-        var checker = new UnclaimableChecker(new UnclaimableOptions
-        {
-            Language = UnclaimableLanguage.English
-        });
+        var checker = new UnclaimableChecker(new UnclaimableOptions());
         var result = checker.CheckDetailed("admin2", includeMessages: true);
 
         Assert.True(result.IsReserved);

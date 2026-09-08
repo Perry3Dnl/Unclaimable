@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "roles",
+  "language": "es",
+  "description": "Basic Spanish privileged, trusted, official, and moderation role names.",
+  "values": [
+    "administrador",
+    "administradora",
+    "superadministrador",
+    "moderador",
+    "moderadora",
+    "administradorsitio",
+    "administradorred",
+    "administradorsistema",
+    "responsablecomunidad",
+    "gestorcomunidad",
+    "propietariocuenta",
+    "propietariogrupo",
+    "propietarioorganizacion",
+    "responsableseguridad",
+    "agenteseguridad",
+    "responsablesoporte",
+    "agentesoporte",
+    "responsablemoderacion",
+    "gestorcontenido",
+    "administradorcontenido",
+    "responsablefacturacion",
+    "responsableidentidad",
+    "agenteverificacion",
+    "responsableoperaciones"
+  ]
+}

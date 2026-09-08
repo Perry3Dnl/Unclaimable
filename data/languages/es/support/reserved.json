@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "support",
+  "language": "es",
+  "description": "Basic Spanish support, billing, identity, safety, and trust-channel names.",
+  "values": [
+    "servicioalcliente",
+    "atencionalcliente",
+    "soportecliente",
+    "centroayuda",
+    "soportetecnico",
+    "asistenciatecnica",
+    "soportecuenta",
+    "seguridadcuenta",
+    "proteccioncuenta",
+    "recuperacioncuenta",
+    "verificacionidentidad",
+    "soporteidentidad",
+    "soportepagos",
+    "asistenciapagos",
+    "soportefacturacion",
+    "asistenciafacturacion",
+    "serviciofacturacion",
+    "soportereembolsos",
+    "asistenciareembolsos",
+    "soporteseguridad",
+    "asistenciaseguridad",
+    "equipoverificacion",
+    "equipoconfianza",
+    "servicioayuda"
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "roles",
+  "language": "it",
+  "description": "Basic Italian privileged, trusted, official, and moderation role names.",
+  "values": [
+    "amministratore",
+    "amministratrice",
+    "superamministratore",
+    "moderatore",
+    "moderatrice",
+    "amministratoresito",
+    "amministratorerete",
+    "amministratoresistema",
+    "responsabilecomunita",
+    "gestorecomunita",
+    "proprietarioconto",
+    "proprietariogruppo",
+    "proprietarioorganizzazione",
+    "responsabilesicurezza",
+    "agentesicurezza",
+    "responsabileassistenza",
+    "agenteassistenza",
+    "responsabilemoderazione",
+    "gestorecontenuti",
+    "amministratorecontenuti",
+    "responsabilefatturazione",
+    "responsabileidentita",
+    "agenteverifica",
+    "responsabileoperazioni"
+  ]
+}

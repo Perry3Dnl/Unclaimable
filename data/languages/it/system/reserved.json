@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "system",
+  "language": "it",
+  "description": "Basic Italian application, authentication, automation, and system-owned identity names.",
+  "values": [
+    "contosistema",
+    "utentesistema",
+    "amministrazionesistema",
+    "passworddimenticata",
+    "reimpostapassword",
+    "cambiapassword",
+    "recuperopassword",
+    "autenticazione",
+    "autorizzazione",
+    "registroaudit",
+    "registriaudit",
+    "attivitapianificata",
+    "attivitapianificate",
+    "codamessaggi",
+    "archiviazioneinterna",
+    "backupsistema",
+    "ripristinosistema",
+    "configurazionesistema",
+    "impostazionisistema",
+    "manutenzionesistema",
+    "aggiornamentosistema",
+    "serviziointerno",
+    "contorobot",
+    "contoapplicazione"
+  ]
+}

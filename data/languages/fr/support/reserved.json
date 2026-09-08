@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "support",
+  "language": "fr",
+  "description": "Basic French support, billing, identity, safety, and trust-channel names.",
+  "values": [
+    "serviceclient",
+    "assistanceclient",
+    "supportclient",
+    "centreassistance",
+    "assistancetechnique",
+    "assistancecompte",
+    "securitecompte",
+    "protectioncompte",
+    "recuperationcompte",
+    "verificationidentite",
+    "assistanceidentite",
+    "supportpaiement",
+    "assistancepaiement",
+    "supportfacturation",
+    "assistancefacturation",
+    "servicefacturation",
+    "supportremboursement",
+    "assistanceremboursement",
+    "supportsecurite",
+    "assistancesecurite",
+    "equipeverification",
+    "equipeconfiance",
+    "serviceassistance",
+    "servicereclamation"
+  ]
+}
