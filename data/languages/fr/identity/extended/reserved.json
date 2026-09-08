@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "identity",
+  "language": "fr",
+  "description": "Variantes françaises liées aux comptes, profils et identités.",
+  "combinations": [
+    {
+      "roots": ["identitécompte","identitéprofil","profilutilisateur","profilmembre","profilclient","profilabonné","profilinscription"],
+      "suffixes": ["équipe","guichet","service","administration","responsable","portail","opérations","assistance","bureau","centre"]
+    }
+  ]
+}
