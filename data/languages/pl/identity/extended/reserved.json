@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "identity",
+  "language": "pl",
+  "description": "Polskie warianty kont, profili i tożsamości.",
+  "combinations": [
+    {
+      "roots": ["tożsamośćkonta","tożsamośćprofilu","profilużytkownika","profilczłonka","profilklienta","profilsubskrybenta","profilrejestracji"],
+      "suffixes": ["zespół","obsługa","usługa","administracja","menedżer","portal","operacje","wsparcie","biuro","centrum"]
+    }
+  ]
+}
