@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "identity",
+  "language": "id",
+  "description": "Varian identitas akun dan profil dalam bahasa Indonesia.",
+  "combinations": [
+    {
+      "roots": ["identitasakun","identitasprofil","profilpengguna","profilanggota","profilpelanggan","profillangganan","profilpendaftar"],
+      "suffixes": ["tim","meja","layanan","administrasi","manajer","portal","operasi","dukungan","kantor","pusat"]
+    }
+  ]
+}
