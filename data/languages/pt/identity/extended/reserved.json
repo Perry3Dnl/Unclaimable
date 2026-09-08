@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "identity",
+  "language": "pt",
+  "description": "Variantes portuguesas de conta, perfil e identidade.",
+  "combinations": [
+    {
+      "roots": ["identidadeconta","identidadeperfil","perfilutilizador","perfilmembro","perfilcliente","perfilassinante","perfilregisto"],
+      "suffixes": ["equipa","balcão","serviço","administração","gestor","portal","operações","apoio","escritório","centro"]
+    }
+  ]
+}
