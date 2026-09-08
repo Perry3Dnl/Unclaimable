@@ -4,10 +4,15 @@
   "title": "Unclaimable reserved-name list",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema", "category", "description", "values"],
+  "required": ["schema", "category", "description"],
+  "anyOf": [
+    { "required": ["values"] },
+    { "required": ["partialValues"] },
+    { "required": ["combinations"] }
+  ],
   "properties": {
     "schema": {
-      "const": 1
+      "enum": [1, 2]
     },
     "category": {
       "type": "string",
@@ -29,6 +34,43 @@
         "minLength": 1
       },
       "uniqueItems": true
+    },
+    "partialValues": {
+      "type": "array",
+      "description": "Schema-v2 values that remain exact reserved names and are also explicitly safe to match inside larger identifiers.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "combinations": {
+      "type": "array",
+      "description": "Schema-v2 value families. Every root is concatenated with every suffix to create concrete reserved-name entries.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["roots", "suffixes"],
+        "properties": {
+          "roots": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
+          "suffixes": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
+          "partial": {
+            "type": "boolean",
+            "default": false,
+            "description": "When true, expanded values are explicitly safe for partial matching."
+          }
+        }
+      }
     }
   }
 }
