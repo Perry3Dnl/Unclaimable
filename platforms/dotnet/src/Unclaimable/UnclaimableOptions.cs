@@ -4,6 +4,10 @@ public sealed class UnclaimableOptions
 {
     private bool _partialMatching;
     private readonly HashSet<string> _additionalBlockedCharacters = new HashSet<string>(StringComparer.Ordinal);
+    private readonly HashSet<UnclaimableLanguage> _languages = new HashSet<UnclaimableLanguage>
+    {
+        UnclaimableLanguage.English
+    };
 
     /// <summary>
     /// Controls how aggressively reserved-name rules are applied.
@@ -17,21 +21,18 @@ public sealed class UnclaimableOptions
     public UnclaimableRule DisabledRules { get; set; } = UnclaimableRule.None;
 
     /// <summary>
-    /// Localized built-in datasets to include. English is enabled by default.
-    /// Add languages for additive multilingual filtering, or remove English when an
-    /// application deliberately wants only other localized datasets. Global datasets
-    /// such as brands and technology are always included.
+    /// Localized built-in datasets currently enabled for this checker. English is enabled by default.
+    /// Use <see cref="AddLanguage"/> and <see cref="RemoveLanguage"/> to change the enabled set.
+    /// Removing language-pack folders from a source checkout is also supported; missing packs simply
+    /// contribute no embedded entries. Global datasets such as brands and technology are always included.
     /// </summary>
-    public ISet<UnclaimableLanguage> Languages { get; } = new HashSet<UnclaimableLanguage>
-    {
-        UnclaimableLanguage.English
-    };
+    public IReadOnlyCollection<UnclaimableLanguage> Languages => _languages;
 
     /// <summary>Adds a localized built-in language dataset while keeping currently enabled languages.</summary>
     public UnclaimableOptions AddLanguage(UnclaimableLanguage language)
     {
         ValidateLanguage(language, nameof(language));
-        Languages.Add(language);
+        _languages.Add(language);
         return this;
     }
 
@@ -39,7 +40,7 @@ public sealed class UnclaimableOptions
     public UnclaimableOptions RemoveLanguage(UnclaimableLanguage language)
     {
         ValidateLanguage(language, nameof(language));
-        Languages.Remove(language);
+        _languages.Remove(language);
         return this;
     }
 
