@@ -9,9 +9,34 @@ $entries = foreach ($file in $files) {
     $dataset = Get-Content -Path $file.FullName -Raw | ConvertFrom-Json
 
     foreach ($value in @($dataset.values)) {
-        [pscustomobject]@{
-            Category = [string]$dataset.category
-            Value = [string]$value
+        if (-not [string]::IsNullOrWhiteSpace([string]$value)) {
+            [pscustomobject]@{
+                Category = [string]$dataset.category
+                Value = [string]$value
+            }
+        }
+    }
+
+    foreach ($value in @($dataset.partialValues)) {
+        if (-not [string]::IsNullOrWhiteSpace([string]$value)) {
+            [pscustomobject]@{
+                Category = [string]$dataset.category
+                Value = [string]$value
+            }
+        }
+    }
+
+    foreach ($combination in @($dataset.combinations)) {
+        foreach ($root in @($combination.roots)) {
+            foreach ($suffix in @($combination.suffixes)) {
+                $value = "{0}{1}" -f [string]$root, [string]$suffix
+                if (-not [string]::IsNullOrWhiteSpace($value)) {
+                    [pscustomobject]@{
+                        Category = [string]$dataset.category
+                        Value = $value
+                    }
+                }
+            }
         }
     }
 }
