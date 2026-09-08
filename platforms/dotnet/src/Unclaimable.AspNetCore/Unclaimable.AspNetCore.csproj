@@ -10,7 +10,7 @@
     <PackageId>Unclaimable.AspNetCore</PackageId>
     <Version>$(UnclaimableVersion)</Version>
     <Description>ASP.NET Core dependency injection and model validation integration for Unclaimable.</Description>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
     <PackageIcon>unclaimable-icon.png</PackageIcon>
     <PackageTags>username;validation;security;aspnetcore;reserved-names</PackageTags>
   </PropertyGroup>
@@ -19,7 +19,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="../Unclaimable/Unclaimable.csproj" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    <None Include="../../../../README.NUGET.md" Pack="true" PackagePath="/" Link="README.md" />
+    <None Include="../../../../README.NUGET.md" Pack="true" PackagePath="/" />
     <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
   </ItemGroup>
 
