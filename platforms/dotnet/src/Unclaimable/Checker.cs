@@ -913,7 +913,7 @@ public sealed class Checker : IChecker
 
     private static string? NormalizeExact(string? value)
     {
-        if (string.IsNullOrWhiteSpace(value))
+        if (value is null || string.IsNullOrWhiteSpace(value))
         {
             return null;
         }
