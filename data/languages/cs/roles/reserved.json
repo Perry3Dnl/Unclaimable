@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "roles",
+  "language": "cs",
+  "description": "Czech roles names and expressions.",
+  "values": [
+    "administrátor",
+    "auditor",
+    "bezpečnostní tým",
+    "koordinátor",
+    "moderační tým",
+    "moderátor",
+    "ombudsman",
+    "pověřenec pro ochranu údajů",
+    "pověřená osoba",
+    "redaktor",
+    "správce",
+    "správce komunity",
+    "správce skupiny",
+    "správce systému",
+    "správce sítě",
+    "správce webu",
+    "správce účtu",
+    "správní rada",
+    "vedoucí podpory",
+    "vlastník",
+    "vydavatel",
+    "zakladatel",
+    "zaměstnanec",
+    "zástupce zákaznické podpory"
+  ]
+}

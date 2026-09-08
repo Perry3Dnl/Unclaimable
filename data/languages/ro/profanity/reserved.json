@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "category": "profanity",
+  "language": "ro",
+  "description": "Romanian profanity names and expressions.",
+  "values": [
+    "curvă",
+    "căcat",
+    "du-te dracu",
+    "futu-ți morții",
+    "muie",
+    "pizdă",
+    "pulă",
+    "sugi pula",
+    "tâmpit"
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "category": "profanity",
+  "language": "cs",
+  "description": "Czech profanity names and expressions.",
+  "values": [
+    "debil",
+    "hajzl",
+    "hovno",
+    "kokot",
+    "kretén",
+    "kurva",
+    "píča",
+    "sráč",
+    "zkurvysyn",
+    "zmrd",
+    "čurák",
+    "šmejd"
+  ]
+}

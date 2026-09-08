@@ -1,0 +1,20 @@
+{
+  "schema": 1,
+  "category": "profanity",
+  "language": "tr",
+  "description": "Turkish profanity names and expressions.",
+  "values": [
+    "amcık",
+    "amına koyayım",
+    "ananı sikeyim",
+    "bok",
+    "göt",
+    "ibne",
+    "orospu",
+    "pezevenk",
+    "piç",
+    "sikmek",
+    "siktir",
+    "yarrak"
+  ]
+}

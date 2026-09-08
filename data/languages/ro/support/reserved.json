@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "support",
+  "language": "ro",
+  "description": "Romanian support names and expressions.",
+  "values": [
+    "acces pierdut",
+    "anulare abonament",
+    "asistență plăți",
+    "asistență securitate",
+    "asistență tehnică",
+    "centru de ajutor",
+    "cerere de ștergere a datelor",
+    "cont blocat",
+    "contestație",
+    "departament facturare",
+    "protecția contului",
+    "rambursare",
+    "raportează abuz",
+    "raportează fraudă",
+    "raportează problemă",
+    "reclamații",
+    "recuperare cont",
+    "resetare parolă",
+    "securitatea contului",
+    "serviciul clienți",
+    "starea comenzii",
+    "suport tehnic",
+    "urmărire colet",
+    "verificarea identității"
+  ]
+}

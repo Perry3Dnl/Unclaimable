@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "support",
+  "language": "cs",
+  "description": "Czech support names and expressions.",
+  "values": [
+    "bezpečnostní podpora",
+    "centrum nápovědy",
+    "fakturační oddělení",
+    "nahlásit podvod",
+    "nahlásit problém",
+    "nahlásit zneužití",
+    "obnovení hesla",
+    "obnovení účtu",
+    "ochrana účtu",
+    "odvolání proti rozhodnutí",
+    "ověření totožnosti",
+    "podpora plateb",
+    "reklamace",
+    "sledování zásilky",
+    "stav objednávky",
+    "technická podpora",
+    "vrácení peněz",
+    "zabezpečení účtu",
+    "zablokovaný účet",
+    "zrušení předplatného",
+    "ztracený přístup",
+    "zákaznická podpora",
+    "zákaznický servis",
+    "žádost o výmaz údajů"
+  ]
+}

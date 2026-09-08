@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "support",
+  "language": "sv",
+  "description": "Swedish support names and expressions.",
+  "values": [
+    "anmäl bedrägeri",
+    "anmäl missbruk",
+    "avsluta prenumeration",
+    "begäran om radering",
+    "betalningshjälp",
+    "faktureringsavdelning",
+    "förlorad åtkomst",
+    "hjälpcenter",
+    "identitetsverifiering",
+    "klagomål",
+    "kontoskydd",
+    "kontosäkerhet",
+    "kontoåterställning",
+    "kundsupport",
+    "kundtjänst",
+    "låst konto",
+    "lösenordsåterställning",
+    "orderstatus",
+    "paketspårning",
+    "rapportera problem",
+    "säkerhetssupport",
+    "teknisk support",
+    "återbetalning",
+    "överklagande"
+  ]
+}

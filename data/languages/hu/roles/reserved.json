@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "roles",
+  "language": "hu",
+  "description": "Hungarian roles names and expressions.",
+  "values": [
+    "adatvédelmi tisztviselő",
+    "adminisztrátor",
+    "alapító",
+    "alkalmazott",
+    "biztonsági csapat",
+    "csoportkezelő",
+    "ellenőr",
+    "fiókkezelő",
+    "hálózati rendszergazda",
+    "igazgatótanács",
+    "kezelő",
+    "kiadó",
+    "koordinátor",
+    "közösségi vezető",
+    "meghatalmazott",
+    "moderátor",
+    "moderátori csapat",
+    "ombudsman",
+    "rendszergazda",
+    "szerkesztő",
+    "tulajdonos",
+    "támogatási vezető",
+    "webhelykezelő",
+    "ügyfélkapcsolati munkatárs"
+  ]
+}

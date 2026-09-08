@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "roles",
+  "language": "vi",
+  "description": "Vietnamese roles names and expressions.",
+  "values": [
+    "ban quản trị",
+    "biên tập viên",
+    "chủ sở hữu",
+    "cán bộ bảo vệ dữ liệu",
+    "kiểm duyệt viên",
+    "kiểm toán viên",
+    "người quản lý",
+    "người sáng lập",
+    "người được ủy quyền",
+    "nhà xuất bản",
+    "nhân viên",
+    "nhóm bảo mật",
+    "nhóm kiểm duyệt",
+    "quản lý cộng đồng",
+    "quản lý nhóm",
+    "quản lý tài khoản",
+    "quản trị hệ thống",
+    "quản trị mạng",
+    "quản trị trang web",
+    "quản trị viên",
+    "thanh tra viên",
+    "trưởng nhóm hỗ trợ",
+    "điều phối viên",
+    "đại diện khách hàng"
+  ]
+}

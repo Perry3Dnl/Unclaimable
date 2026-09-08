@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "roles",
+  "language": "id",
+  "description": "Indonesian roles names and expressions.",
+  "values": [
+    "administrator",
+    "administrator jaringan",
+    "administrator sistem",
+    "auditor",
+    "dewan pengurus",
+    "koordinator",
+    "moderator",
+    "ombudsman",
+    "pegawai",
+    "pemilik",
+    "pendiri",
+    "penerbit",
+    "pengelola",
+    "pengelola akun",
+    "pengelola dukungan",
+    "pengelola grup",
+    "pengelola komunitas",
+    "pengelola situs",
+    "penyunting",
+    "perwakilan pelanggan",
+    "petugas perlindungan data",
+    "petugas resmi",
+    "tim keamanan",
+    "tim moderasi"
+  ]
+}

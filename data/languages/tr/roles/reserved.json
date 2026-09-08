@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "roles",
+  "language": "tr",
+  "description": "Turkish roles names and expressions.",
+  "values": [
+    "ağ yöneticisi",
+    "denetçi",
+    "destek yöneticisi",
+    "editör",
+    "grup yöneticisi",
+    "güvenlik ekibi",
+    "hesap yöneticisi",
+    "koordinatör",
+    "kurucu",
+    "moderasyon ekibi",
+    "moderatör",
+    "müşteri temsilcisi",
+    "ombudsman",
+    "personel",
+    "sahip",
+    "sistem yöneticisi",
+    "site yöneticisi",
+    "topluluk yöneticisi",
+    "veri koruma görevlisi",
+    "yayıncı",
+    "yetkili",
+    "yönetici",
+    "yönetim kurulu",
+    "çalışan"
+  ]
+}

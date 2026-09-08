@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "roles",
+  "language": "ro",
+  "description": "Romanian roles names and expressions.",
+  "values": [
+    "administrator",
+    "administrator de cont",
+    "administrator de grup",
+    "administrator de rețea",
+    "administrator de sistem",
+    "administrator de site",
+    "angajat",
+    "auditor",
+    "avocatul poporului",
+    "consiliu de administrație",
+    "coordonator",
+    "echipă de moderare",
+    "echipă de securitate",
+    "editor",
+    "fondator",
+    "gestionar",
+    "manager de comunitate",
+    "moderator",
+    "proprietar",
+    "redactor",
+    "reprezentant clienți",
+    "responsabil asistență",
+    "responsabil protecția datelor",
+    "împuternicit"
+  ]
+}

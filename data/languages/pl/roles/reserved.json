@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "roles",
+  "language": "pl",
+  "description": "Polish roles names and expressions.",
+  "values": [
+    "administrator",
+    "administrator grupy",
+    "administrator konta",
+    "administrator sieci",
+    "administrator strony",
+    "administrator systemu",
+    "audytor",
+    "inspektor ochrony danych",
+    "kierownik",
+    "kierownik wsparcia",
+    "koordynator",
+    "moderator",
+    "opiekun klienta",
+    "opiekun społeczności",
+    "pełnomocnik",
+    "pracownik",
+    "redaktor",
+    "rzecznik",
+    "wydawca",
+    "właściciel",
+    "zarząd",
+    "założyciel",
+    "zespół bezpieczeństwa",
+    "zespół moderacji"
+  ]
+}

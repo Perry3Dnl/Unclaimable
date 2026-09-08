@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "support",
+  "language": "hu",
+  "description": "Hungarian support names and expressions.",
+  "values": [
+    "adattörlési kérelem",
+    "biztonsági támogatás",
+    "csalás bejelentése",
+    "csomagkövetés",
+    "elveszett hozzáférés",
+    "előfizetés lemondása",
+    "fellebbezés",
+    "fizetési segítség",
+    "fiók helyreállítása",
+    "fiókbiztonság",
+    "fiókvédelem",
+    "hiba bejelentése",
+    "jelszó visszaállítása",
+    "panaszkezelés",
+    "rendelés állapota",
+    "személyazonosság ellenőrzése",
+    "számlázási osztály",
+    "súgóközpont",
+    "technikai támogatás",
+    "visszatérítés",
+    "visszaélés bejelentése",
+    "zárolt fiók",
+    "ügyfélszolgálat",
+    "ügyféltámogatás"
+  ]
+}

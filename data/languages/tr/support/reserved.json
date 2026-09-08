@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "support",
+  "language": "tr",
+  "description": "Turkish support names and expressions.",
+  "values": [
+    "abonelik iptali",
+    "destek hattı",
+    "dolandırıcılık bildir",
+    "erişim sorunu",
+    "faturalandırma desteği",
+    "güvenlik desteği",
+    "hesap güvenliği",
+    "hesap koruması",
+    "hesap kurtarma",
+    "karara itiraz",
+    "kargo takibi",
+    "kilitli hesap",
+    "kimlik doğrulama",
+    "kötüye kullanım bildir",
+    "müşteri hizmetleri",
+    "para iadesi",
+    "sipariş durumu",
+    "sorun bildir",
+    "teknik destek",
+    "veri silme talebi",
+    "yardım merkezi",
+    "ödeme desteği",
+    "şifre sıfırlama",
+    "şikayetler"
+  ]
+}

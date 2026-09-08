@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "roles",
+  "language": "sv",
+  "description": "Swedish roles names and expressions.",
+  "values": [
+    "administratör",
+    "anställd",
+    "behörig företrädare",
+    "communityansvarig",
+    "dataskyddsombud",
+    "förvaltare",
+    "grundare",
+    "gruppadministratör",
+    "kontoadministratör",
+    "kundansvarig",
+    "moderator",
+    "modereringsteam",
+    "nätverksadministratör",
+    "ombudsman",
+    "redaktör",
+    "revisor",
+    "samordnare",
+    "styrelse",
+    "supportansvarig",
+    "systemadministratör",
+    "säkerhetsteam",
+    "utgivare",
+    "webbplatsadministratör",
+    "ägare"
+  ]
+}

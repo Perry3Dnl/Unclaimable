@@ -1033,6 +1033,40 @@ public sealed class Checker : IChecker
             case "portuguese":
             case "portugues":
                 return Language.Portuguese;
+            case "pl":
+            case "pol":
+            case "polish":
+                return Language.Polish;
+            case "tr":
+            case "tur":
+            case "turkish":
+                return Language.Turkish;
+            case "id":
+            case "ind":
+            case "indonesian":
+                return Language.Indonesian;
+            case "cs":
+            case "ces":
+            case "cze":
+            case "czech":
+                return Language.Czech;
+            case "vi":
+            case "vie":
+            case "vietnamese":
+                return Language.Vietnamese;
+            case "hu":
+            case "hun":
+            case "hungarian":
+                return Language.Hungarian;
+            case "sv":
+            case "swe":
+            case "swedish":
+                return Language.Swedish;
+            case "ro":
+            case "ron":
+            case "rum":
+            case "romanian":
+                return Language.Romanian;
             default:
                 throw new InvalidOperationException(
                     $"Embedded dataset '{resourceName}' declares unsupported language '{language}'.");

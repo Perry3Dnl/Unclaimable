@@ -99,6 +99,14 @@ public sealed class LanguageTests
     [InlineData(Language.Spanish)]
     [InlineData(Language.Italian)]
     [InlineData(Language.Portuguese)]
+    [InlineData(Language.Polish)]
+    [InlineData(Language.Turkish)]
+    [InlineData(Language.Indonesian)]
+    [InlineData(Language.Czech)]
+    [InlineData(Language.Vietnamese)]
+    [InlineData(Language.Hungarian)]
+    [InlineData(Language.Swedish)]
+    [InlineData(Language.Romanian)]
     public void GlobalDatasetsAreAlwaysIncluded(Language language)
     {
         var options = new Options();

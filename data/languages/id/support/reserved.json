@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "support",
+  "language": "id",
+  "description": "Indonesian support names and expressions.",
+  "values": [
+    "akses hilang",
+    "akun terkunci",
+    "atur ulang kata sandi",
+    "bagian penagihan",
+    "bantuan keamanan",
+    "bantuan pembayaran",
+    "dukungan teknis",
+    "keamanan akun",
+    "laporkan masalah",
+    "laporkan penipuan",
+    "laporkan penyalahgunaan",
+    "layanan pelanggan",
+    "meja bantuan",
+    "pelacakan kiriman",
+    "pembatalan langganan",
+    "pemulihan akun",
+    "pengaduan",
+    "pengajuan banding",
+    "pengembalian dana",
+    "perlindungan akun",
+    "permintaan penghapusan data",
+    "pusat bantuan",
+    "status pesanan",
+    "verifikasi identitas"
+  ]
+}

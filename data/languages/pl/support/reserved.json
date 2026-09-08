@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "support",
+  "language": "pl",
+  "description": "Polish support names and expressions.",
+  "values": [
+    "anulowanie subskrypcji",
+    "bezpieczeństwo konta",
+    "centrum pomocy",
+    "dział bezpieczeństwa",
+    "dział rozliczeń",
+    "obsługa klienta",
+    "ochrona konta",
+    "odwołanie od decyzji",
+    "odzyskiwanie konta",
+    "pomoc techniczna",
+    "pomoc w płatnościach",
+    "reklamacje",
+    "resetowanie hasła",
+    "status zamówienia",
+    "utracony dostęp",
+    "weryfikacja tożsamości",
+    "wniosek o usunięcie danych",
+    "wsparcie techniczne",
+    "zablokowane konto",
+    "zgłoś nadużycie",
+    "zgłoś oszustwo",
+    "zgłoś problem",
+    "zwrot pieniędzy",
+    "śledzenie przesyłki"
+  ]
+}

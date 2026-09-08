@@ -49,7 +49,7 @@ The default policy includes:
 
 - reserved and protected names;
 - English localized datasets by default;
-- additive Dutch, German, French, Spanish, Italian, and Portuguese localized datasets;
+- additive localized datasets for 15 languages using the Latin alphabet;
 - global brand and technology impersonation datasets regardless of enabled languages;
 - strict embedded/partial reserved-name matching;
 - separator and punctuation normalization for reserved-name matching;
@@ -115,7 +115,19 @@ Localized datasets currently support:
 - `Language.French`;
 - `Language.Spanish`;
 - `Language.Italian`;
-- `Language.Portuguese`.
+- `Language.Portuguese`;
+- `Language.Polish`;
+- `Language.Turkish`;
+- `Language.Indonesian`;
+- `Language.Czech`;
+- `Language.Vietnamese`;
+- `Language.Hungarian`;
+- `Language.Swedish`;
+- `Language.Romanian`.
+
+The language selection covers the 15 most-used website content languages written in the Latin alphabet in the [W3Techs survey of 8 September 2026](https://w3techs.com/technologies/overview/content_language). Native Latin letters and accents are preserved in the datasets.
+
+The eight additional packs provide an initial set of 24 role names, 24 support terms, 32 system names and a small profanity list each.
 
 Each language pack uses the same localized dataset categories:
 
@@ -163,6 +175,9 @@ builder.Services.AddUnclaimable(options =>
     options.AddLanguage(Language.Dutch);
     options.AddLanguage(Language.German);
     options.AddLanguage(Language.French);
+    options.AddLanguage(Language.Polish);
+    options.AddLanguage(Language.Turkish);
+    options.AddLanguage(Language.Vietnamese);
 });
 ```
 
@@ -182,7 +197,7 @@ If a source checkout or fork does not need Dutch, it can simply delete:
 data/languages/nl/
 ```
 
-The project still compiles. The same applies to German, French, Spanish, Italian, Portuguese, and even English. A missing folder contributes no embedded localized entries; it does not create a compile-time dependency or require a code change.
+The project still compiles. The same applies to all other supported languages, including English. A missing folder contributes no embedded localized entries; it does not create a compile-time dependency or require a code change.
 
 This is separate from `AddLanguage(...)` / `RemoveLanguage(...)`: those methods select from language data that exists in the build. Physically deleting a language folder trims that language data from the build itself. If application code enables a language whose folder was removed, that language simply contributes no built-in entries.
 
@@ -671,6 +686,14 @@ Current scopes:
 | `languages/es` | profanity, roles, support, system | optional, additive; folder may be removed |
 | `languages/it` | profanity, roles, support, system | optional, additive; folder may be removed |
 | `languages/pt` | profanity, roles, support, system | optional, additive; folder may be removed |
+| `languages/pl` | profanity, roles, support, system | optional, additive; folder may be removed |
+| `languages/tr` | profanity, roles, support, system | optional, additive; folder may be removed |
+| `languages/id` | profanity, roles, support, system | optional, additive; folder may be removed |
+| `languages/cs` | profanity, roles, support, system | optional, additive; folder may be removed |
+| `languages/vi` | profanity, roles, support, system | optional, additive; folder may be removed |
+| `languages/hu` | profanity, roles, support, system | optional, additive; folder may be removed |
+| `languages/sv` | profanity, roles, support, system | optional, additive; folder may be removed |
+| `languages/ro` | profanity, roles, support, system | optional, additive; folder may be removed |
 | `global` | brands, technology | always loaded |
 
 Localized dataset documents declare their language explicitly where possible:
@@ -726,6 +749,14 @@ data/
     es/
     it/
     pt/
+    pl/
+    tr/
+    id/
+    cs/
+    vi/
+    hu/
+    sv/
+    ro/
 platforms/dotnet/src/Unclaimable/
   Languages/
 platforms/dotnet/src/Unclaimable.AspNetCore/

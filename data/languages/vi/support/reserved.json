@@ -1,0 +1,32 @@
+{
+  "schema": 1,
+  "category": "support",
+  "language": "vi",
+  "description": "Vietnamese support names and expressions.",
+  "values": [
+    "báo cáo lạm dụng",
+    "báo cáo lừa đảo",
+    "báo cáo sự cố",
+    "bảo mật tài khoản",
+    "bảo vệ tài khoản",
+    "bộ phận thanh toán",
+    "chăm sóc khách hàng",
+    "dịch vụ khách hàng",
+    "hoàn tiền",
+    "hỗ trợ bảo mật",
+    "hỗ trợ kỹ thuật",
+    "hỗ trợ thanh toán",
+    "hủy đăng ký",
+    "khiếu nại",
+    "kháng nghị",
+    "khôi phục tài khoản",
+    "mất quyền truy cập",
+    "theo dõi vận đơn",
+    "trung tâm trợ giúp",
+    "trạng thái đơn hàng",
+    "tài khoản bị khóa",
+    "xác minh danh tính",
+    "yêu cầu xóa dữ liệu",
+    "đặt lại mật khẩu"
+  ]
+}
