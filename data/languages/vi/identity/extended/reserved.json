@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "identity",
+  "language": "vi",
+  "description": "Các biến thể tài khoản, hồ sơ và danh tính bằng tiếng Việt.",
+  "combinations": [
+    {
+      "roots": ["danhtínhtàikhoản","danhtínhhồsơ","hồsơngườidùng","hồsơthànhviên","hồsơkháchhàng","hồsơngườiđăngký","hồsơđăngký"],
+      "suffixes": ["nhóm","bộphận","dịchvụ","quảntrị","quảnlý","cổng","vậnhành","hỗtrợ","vănphòng","trungtâm"]
+    }
+  ]
+}
