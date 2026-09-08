@@ -1,0 +1,160 @@
+name: API naming cleanup
+
+on:
+  push:
+    branches:
+      - api-naming-cleanup
+
+permissions:
+  contents: write
+
+jobs:
+  rename-api:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rename public API identifiers
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          replacements = [
+              ("IUnclaimableChecker", "IChecker"),
+              ("IUnclaimablePolicy", "IPolicy"),
+              ("UnclaimableDetailedResult", "DetailedResult"),
+              ("UnclaimableValidationMessages", "ValidationMessages"),
+              ("UnclaimableMatchKind", "MatchKind"),
+              ("UnclaimableDiagnostic", "Diagnostic"),
+              ("UnclaimableStrictness", "Strictness"),
+              ("UnclaimableLanguage", "Language"),
+              ("UnclaimableOptions", "Options"),
+              ("UnclaimablePolicy", "Policy"),
+              ("UnclaimableChecker", "Checker"),
+              ("UnclaimableResult", "Result"),
+              ("UnclaimableRule", "Rule"),
+          ]
+
+          text_extensions = {
+              ".cs", ".md", ".csproj", ".props", ".targets",
+              ".yml", ".yaml", ".json", ".sln", ".ps1", ".sh"
+          }
+          excluded = Path(".github/workflows/api-naming-cleanup.yml")
+
+          for path in Path(".").rglob("*"):
+              if not path.is_file() or path == excluded or path.suffix.lower() not in text_extensions:
+                  continue
+
+              try:
+                  text = path.read_text(encoding="utf-8")
+              except UnicodeDecodeError:
+                  continue
+
+              updated = text
+              for old, new in replacements:
+                  updated = updated.replace(old, new)
+
+              if updated != text:
+                  path.write_text(updated, encoding="utf-8")
+
+          renames = {
+              "platforms/dotnet/src/Unclaimable/IUnclaimableChecker.cs":
+                  "platforms/dotnet/src/Unclaimable/IChecker.cs",
+              "platforms/dotnet/src/Unclaimable/IUnclaimablePolicy.cs":
+                  "platforms/dotnet/src/Unclaimable/IPolicy.cs",
+              "platforms/dotnet/src/Unclaimable/Languages/UnclaimableLanguage.cs":
+                  "platforms/dotnet/src/Unclaimable/Languages/Language.cs",
+              "platforms/dotnet/src/Unclaimable/UnclaimableChecker.cs":
+                  "platforms/dotnet/src/Unclaimable/Checker.cs",
+              "platforms/dotnet/src/Unclaimable/UnclaimableDetailedResult.cs":
+                  "platforms/dotnet/src/Unclaimable/DetailedResult.cs",
+              "platforms/dotnet/src/Unclaimable/UnclaimableOptions.cs":
+                  "platforms/dotnet/src/Unclaimable/Options.cs",
+              "platforms/dotnet/src/Unclaimable/UnclaimablePolicy.cs":
+                  "platforms/dotnet/src/Unclaimable/Policy.cs",
+              "platforms/dotnet/src/Unclaimable/UnclaimableResult.cs":
+                  "platforms/dotnet/src/Unclaimable/Result.cs",
+              "platforms/dotnet/src/Unclaimable/UnclaimableRule.cs":
+                  "platforms/dotnet/src/Unclaimable/Rule.cs",
+              "platforms/dotnet/src/Unclaimable/UnclaimableStrictness.cs":
+                  "platforms/dotnet/src/Unclaimable/Strictness.cs",
+              "platforms/dotnet/src/Unclaimable/UnclaimableValidationMessages.cs":
+                  "platforms/dotnet/src/Unclaimable/ValidationMessages.cs",
+              "platforms/dotnet/tests/Unclaimable.Tests/UnclaimableCheckerTests.cs":
+                  "platforms/dotnet/tests/Unclaimable.Tests/CheckerTests.cs",
+          }
+
+          for old_name, new_name in renames.items():
+              old_path = Path(old_name)
+              if old_path.exists():
+                  new_path = Path(new_name)
+                  new_path.parent.mkdir(parents=True, exist_ok=True)
+                  old_path.rename(new_path)
+          PY
+
+      - name: Verify old API identifiers are gone
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import sys
+
+          old_identifiers = [
+              "IUnclaimableChecker",
+              "IUnclaimablePolicy",
+              "UnclaimableDetailedResult",
+              "UnclaimableValidationMessages",
+              "UnclaimableMatchKind",
+              "UnclaimableDiagnostic",
+              "UnclaimableStrictness",
+              "UnclaimableLanguage",
+              "UnclaimableOptions",
+              "UnclaimablePolicy",
+              "UnclaimableChecker",
+              "UnclaimableResult",
+              "UnclaimableRule",
+          ]
+
+          text_extensions = {
+              ".cs", ".md", ".csproj", ".props", ".targets",
+              ".json", ".sln", ".ps1", ".sh"
+          }
+          failures = []
+
+          for path in Path(".").rglob("*"):
+              if not path.is_file() or path.suffix.lower() not in text_extensions:
+                  continue
+              try:
+                  text = path.read_text(encoding="utf-8")
+              except UnicodeDecodeError:
+                  continue
+              for identifier in old_identifiers:
+                  if identifier in text:
+                      failures.append(f"{path}: {identifier}")
+
+          if failures:
+              print("Old API identifiers remain:")
+              print("\n".join(failures))
+              sys.exit(1)
+          PY
+
+      - name: Test
+        run: dotnet test platforms/dotnet/tests/Unclaimable.Tests/Unclaimable.Tests.csproj --configuration Release
+
+      - name: Commit cleanup
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "refactor: simplify public API type names"
+          git push origin HEAD:api-naming-cleanup
