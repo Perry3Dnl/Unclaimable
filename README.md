@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://www.nuget.org/packages/Unclaimable"><strong>Available on NuGet</strong></a>
+  <a href="https://www.nuget.org/packages/Unclaimable"><strong>Available on NuGet · v0.3.0</strong></a>
 </p>
 
 Unclaimable answers one question: **should this identifier be claimable?**
@@ -34,13 +34,13 @@ English localized data is enabled by default. Additional language packs are addi
 Install the core package from NuGet:
 
 ```bash
-dotnet add package Unclaimable
+dotnet add package Unclaimable --version 0.3.0
 ```
 
 For ASP.NET Core:
 
 ```bash
-dotnet add package Unclaimable.AspNetCore
+dotnet add package Unclaimable.AspNetCore --version 0.3.0
 ```
 
 ## What Unclaimable provides
@@ -53,8 +53,9 @@ The default policy includes:
 - English localized datasets by default;
 - additive localized datasets for 15 languages using the Latin alphabet;
 - global brand and technology impersonation datasets regardless of enabled languages;
-- global security, automation, legal, commerce, community, and other reserved-name categories;
+- global identity, authentication, moderation, finance, communications, operations, infrastructure, developer, governance, official, security, automation, legal, commerce, community, and other reserved-name categories;
 - strict embedded/partial reserved-name matching;
+- explicitly curated safe compound matching;
 - separator and punctuation normalization for reserved-name matching;
 - common leetspeak and symbol substitutions;
 - selected Unicode-confusable and lookalike detection;
@@ -75,15 +76,25 @@ The default policy includes:
 
 ## Dataset coverage
 
-The current built-in datasets contain **5,181 filter entries across 12 categories**, representing **5,085 unique values within those categories**. Localized language packs can contain the same literal value in more than one language, so entry counts can be higher than unique-value counts.
+Version 0.3.0 contains **10,731 filter entries across 22 categories**, representing **10,633 unique values within those categories**. Localized language packs can contain the same literal value in more than one language, so entry counts can be higher than unique-value counts.
 
 | Category | Filter entries | Unique values |
 | --- | ---: | ---: |
+| `authentication` | 450 | 450 |
 | `automation` | 32 | 32 |
 | `brands` | 556 | 556 |
 | `commerce` | 31 | 31 |
+| `communications` | 450 | 450 |
 | `community` | 22 | 22 |
+| `developer` | 450 | 450 |
+| `finance` | 450 | 450 |
+| `governance` | 450 | 450 |
+| `identity` | 1,500 | 1,498 |
+| `infrastructure` | 450 | 450 |
 | `legal` | 34 | 34 |
+| `moderation` | 450 | 450 |
+| `official` | 450 | 450 |
+| `operations` | 450 | 450 |
 | `other` | 24 | 24 |
 | `profanity` | 861 | 848 |
 | `roles` | 813 | 757 |
@@ -91,9 +102,9 @@ The current built-in datasets contain **5,181 filter entries across 12 categorie
 | `support` | 1,010 | 1,001 |
 | `system` | 1,349 | 1,331 |
 | `technology` | 416 | 416 |
-| **Total** | **5,181** | **5,085** |
+| **Total** | **10,731** | **10,633** |
 
-These are stored dataset values, not the total number of strings Unclaimable can detect. Compact matching, partial matching, obfuscation detection, and Unicode-confusable detection can reject additional variants without storing every variant separately.
+The totals include concrete entries expanded from schema-v2 `roots × suffixes` combinations. These are dataset entries, not the total number of strings Unclaimable can detect. Compact matching, partial matching, safe compound matching, obfuscation detection, and Unicode-confusable detection can reject additional variants without storing every variant separately.
 
 ## Strict defaults
 
@@ -152,10 +163,11 @@ Localized datasets currently support:
 
 The language selection covers the 15 most-used website content languages written in the Latin alphabet in the [W3Techs survey of 8 September 2026](https://w3techs.com/technologies/overview/content_language). Native Latin letters and accents are preserved in the datasets.
 
-The eight additional packs provide an initial set of 24 role names, 24 support terms, 32 system names and a small profanity list each.
+The eight additional packs provide an initial set of 24 role names, 24 support terms, 32 system names and a small profanity list each. Version 0.3.0 also adds localized identity combinations across all 15 supported languages.
 
-Each language pack uses the same localized dataset categories:
+Localized dataset categories include:
 
+- `identity`;
 - `roles`;
 - `support`;
 - `system`;
@@ -163,6 +175,16 @@ Each language pack uses the same localized dataset categories:
 
 Global datasets contain language-independent protected names. Current global categories are:
 
+- `identity`;
+- `authentication`;
+- `moderation`;
+- `finance`;
+- `communications`;
+- `operations`;
+- `infrastructure`;
+- `developer`;
+- `governance`;
+- `official`;
 - `brands`;
 - `technology`;
 - `security`;
@@ -420,6 +442,8 @@ builder.Services.AddUnclaimable(options =>
 });
 ```
 
+Schema-v2 datasets can also explicitly mark individual values as safe for compound matching. This is used where a term can safely be detected inside a larger identifier without enabling broad substring matching for every value in the same category.
+
 ### Obfuscation and leetspeak
 
 Common substitutions are bounded and normalized during matching, including mappings such as:
@@ -487,7 +511,7 @@ Applications can disable it independently:
 options.DisabledRules = Rule.Profanity;
 ```
 
-Substring matching for profanity is deliberately configurable separately because it is substantially more aggressive:
+General substring matching for profanity remains deliberately configurable separately because it is substantially more aggressive:
 
 ```csharp
 builder.Services.AddUnclaimable(options =>
@@ -495,6 +519,8 @@ builder.Services.AddUnclaimable(options =>
     options.ProfanityPartialMatching = true;
 });
 ```
+
+Version 0.3.0 adds explicit safe compound values. Those curated entries can participate in partial matching without enabling generic profanity substring matching. Short ambiguous entries such as `ass` remain exact-only under the default policy, avoiding false positives such as `classic`.
 
 ## Application-specific reserved names
 
