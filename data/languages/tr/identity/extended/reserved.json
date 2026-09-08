@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "identity",
+  "language": "tr",
+  "description": "Türkçe hesap, profil ve kimlik varyantları.",
+  "combinations": [
+    {
+      "roots": ["hesapkimliği","profilkimliği","kullanıcıprofili","üyeprofili","müşteriprofili","aboneprofili","kayıtprofili"],
+      "suffixes": ["ekip","masa","hizmet","yönetim","yönetici","portal","operasyon","destek","ofis","merkez"]
+    }
+  ]
+}
