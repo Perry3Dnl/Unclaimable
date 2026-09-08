@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "communications",
+  "language": "global",
+  "description": "Mail, messaging, announcements, media and official communications identities.",
+  "combinations": [
+    {
+      "roots": ["mail","email","messaging","message","notifications","notification","announcement","announcements","broadcast","broadcasting","newsletter","newsletters","press","pressroom","newsroom","mediarelations","publicrelations","communications","contact","contactcenter","inbox","outbox","mailer","mailservice","maildelivery","deliverynotice","systemmessage","servicemessage","statusmessage","alert","alerts","pushnotification","sms","textmessage","directmessage","chat","livechat","communitymessage","supportmessage","officialmessage","presscontact","mediacontact","communicationdesk","bulletin","bulletins"],
+      "suffixes": ["team","desk","service","admin","manager","portal","operations","support","office","center"]
+    }
+  ]
+}
