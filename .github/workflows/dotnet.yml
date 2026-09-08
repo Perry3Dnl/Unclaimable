@@ -45,6 +45,14 @@ jobs:
       - name: Test
         run: dotnet test platforms/dotnet/tests/Unclaimable.Tests/Unclaimable.Tests.csproj --configuration Release
 
+      - name: Verify source build without language packs
+        run: |
+          trimmed_dir="$(mktemp -d)"
+          git archive HEAD | tar -x -C "$trimmed_dir"
+          rm -rf "$trimmed_dir/data/languages"
+          dotnet build "$trimmed_dir/platforms/dotnet/src/Unclaimable/Unclaimable.csproj" --configuration Release
+          dotnet build "$trimmed_dir/platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj" --configuration Release
+
       - name: Pack core
         run: dotnet pack platforms/dotnet/src/Unclaimable/Unclaimable.csproj --configuration Release --output artifacts
 
