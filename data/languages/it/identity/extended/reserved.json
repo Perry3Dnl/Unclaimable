@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "identity",
+  "language": "it",
+  "description": "Varianti italiane per account, profili e identità.",
+  "combinations": [
+    {
+      "roots": ["identitàaccount","identitàprofilo","profiloutente","profilomembro","profilocliente","profiloabbonato","profiloregistrazione"],
+      "suffixes": ["team","sportello","servizio","amministrazione","responsabile","portale","operazioni","supporto","ufficio","centro"]
+    }
+  ]
+}
