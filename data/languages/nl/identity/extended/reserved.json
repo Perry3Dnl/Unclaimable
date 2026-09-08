@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "identity",
+  "language": "nl",
+  "description": "Nederlandse account-, profiel- en identiteitsvarianten.",
+  "combinations": [
+    {
+      "roots": ["accountidentiteit","profielidentiteit","gebruikersprofiel","ledenprofiel","klantprofiel","abonneeprofiel","registratieprofiel"],
+      "suffixes": ["team","balie","dienst","beheer","manager","portaal","operatie","ondersteuning","kantoor","centrum"]
+    }
+  ]
+}
