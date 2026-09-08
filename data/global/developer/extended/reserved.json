@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "developer",
+  "language": "global",
+  "description": "Developer, API, integration, build, package and source-management identities.",
+  "combinations": [
+    {
+      "roots": ["developer","developers","development","devtools","api","apis","sdk","sdks","webhook","webhooks","integration","integrations","sandbox","staging","testenvironment","developerportal","apigateway","apimanagement","apiclient","apiclients","apikey","apikeys","developerkey","accesskey","secretkey","clientsecret","clientid","repository","repositories","sourcecode","build","builds","pipeline","pipelines","cicd","automationapi","graphql","restapi","openapi","swagger","package","packages","registry","artifact","artifacts"],
+      "suffixes": ["team","desk","service","admin","manager","portal","operations","support","office","center"]
+    }
+  ]
+}
