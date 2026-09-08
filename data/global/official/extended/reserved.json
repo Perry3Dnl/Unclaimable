@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "official",
+  "language": "global",
+  "description": "Official, verified, authorized and representative-facing identities.",
+  "combinations": [
+    {
+      "roots": ["official","verified","authorized","authorised","certified","approved","platformofficial","siteofficial","appofficial","companyofficial","businessofficial","organizationofficial","corporateofficial","enterpriseofficial","brandofficial","staffofficial","teamofficial","supportofficial","securityofficial","billingofficial","developerofficial","communityofficial","moderatorofficial","adminofficial","serviceofficial","systemofficial","verifiedstaff","verifiedteam","verifiedsupport","verifiedsecurity","verifiedadmin","verifiedservice","authorizedstaff","authorizedteam","authorizedsupport","authorizedadmin","certifiedstaff","certifiedsupport","approvedstaff","approvedteam","officialrepresentative","officialcontact","officialoffice","officialdesk","officialchannel"],
+      "suffixes": ["team","desk","service","admin","manager","portal","operations","support","office","center"]
+    }
+  ]
+}
