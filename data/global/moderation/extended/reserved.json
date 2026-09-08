@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "moderation",
+  "language": "global",
+  "description": "Moderation, trust-and-safety, abuse handling, enforcement and integrity identities.",
+  "combinations": [
+    {
+      "roots": ["moderation","moderator","contentmoderation","communitymoderation","trustandsafety","safetyreview","abusereport","abuseprevention","abusehandling","reportreview","contentreview","accountreview","userreview","memberreview","profilereview","appeals","appealreview","enforcement","policyenforcement","ruleenforcement","contentenforcement","accountenforcement","userenforcement","banreview","suspensionreview","sanctionreview","violationreview","harassmentreport","spamreport","impersonationreport","identityreport","safetyincident","contentincident","communitysafety","platformsafety","integrity","platformintegrity","communityintegrity","accountintegrity","userintegrity","moderationqueue","reviewqueue","casereview","moderationcase","abusecase"],
+      "suffixes": ["team","desk","service","admin","manager","portal","operations","support","office","center"]
+    }
+  ]
+}
