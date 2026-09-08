@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "governance",
+  "language": "global",
+  "description": "Governance, compliance, audit, risk, privacy and oversight identities.",
+  "combinations": [
+    {
+      "roots": ["governance","compliance","audit","auditing","policy","policies","regulatory","regulation","regulations","legalops","dataprotection","privacyoffice","privacyops","risk","riskmanagement","control","controls","internalcontrol","assurance","ethics","ethicsoffice","conduct","codeofconduct","standards","standardsboard","oversight","reviewboard","appealsboard","advisoryboard","governanceboard","complianceboard","auditcommittee","riskcommittee","privacycommittee","securitycommittee","policycommittee","governanceoffice","complianceoffice","auditoffice","riskoffice","legaloffice","regulatoryoffice","dataoffice","recordsmanagement","retention"],
+      "suffixes": ["team","desk","service","admin","manager","portal","operations","support","office","center"]
+    }
+  ]
+}
