@@ -1,0 +1,12 @@
+{
+  "schema": 2,
+  "category": "identity",
+  "language": "hu",
+  "description": "Magyar fiók-, profil- és azonosítási változatok.",
+  "combinations": [
+    {
+      "roots": ["fiókazonosság","profilazonosság","felhasználóiprofil","tagprofil","ügyfélprofil","előfizetőiprofil","regisztrációsprofil"],
+      "suffixes": ["csapat","ügyfélszolgálat","szolgáltatás","adminisztráció","vezető","portál","műveletek","támogatás","iroda","központ"]
+    }
+  ]
+}
