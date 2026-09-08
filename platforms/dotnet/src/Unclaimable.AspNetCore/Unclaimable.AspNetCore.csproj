@@ -19,7 +19,7 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="../Unclaimable/Unclaimable.csproj" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    <None Include="../../../../README.md" Pack="true" PackagePath="/" Link="README.md" />
+    <None Include="../../../../README.NUGET.md" Pack="true" PackagePath="/" Link="README.md" />
     <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
   </ItemGroup>
 
