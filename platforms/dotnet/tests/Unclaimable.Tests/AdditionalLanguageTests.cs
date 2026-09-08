@@ -23,7 +23,7 @@ public sealed class AdditionalLanguageTests
         yield return new object[] { Language.Romanian, "ro", "serviciul clienți", "sugi pula" };
     }
 
-    /// <summary>Verifies that every embedded value loads under its own language and category.</summary>
+    /// <summary>Verifies that every embedded concrete value loads under its own language and category.</summary>
     [Theory]
     [MemberData(nameof(LanguageCases))]
     public void EveryNewDatasetValueIsRecognized(
@@ -46,7 +46,9 @@ public sealed class AdditionalLanguageTests
             count++;
         }
 
-        Assert.Equal(new[] { "profanity", "roles", "support", "system" }, categories.OrderBy(value => value));
+        Assert.Equal(
+            new[] { "identity", "profanity", "roles", "support", "system" },
+            categories.OrderBy(value => value));
         Assert.True(count >= 80, $"Incomplete language pack: {code}");
         Assert.Equal("support", checker.Check(support).Category);
         Assert.Equal("profanity", checker.Check(profanity).Category);
@@ -60,14 +62,18 @@ public sealed class AdditionalLanguageTests
     {
         var options = CreateOptions();
         Assert.True(new Checker(options).IsClaimable(support), code);
+        Assert.True(new Checker(options).IsClaimable(profanity), code);
 
         options.AddLanguage(language);
         var enabled = new Checker(options);
         Assert.Equal("support", enabled.Check(support).Category);
+        Assert.Equal("profanity", enabled.Check(profanity).Category);
         Assert.True(enabled.IsReserved("customersupport"));
 
         options.RemoveLanguage(language);
-        Assert.True(new Checker(options).IsClaimable(support));
+        var removed = new Checker(options);
+        Assert.True(removed.IsClaimable(support));
+        Assert.True(removed.IsClaimable(profanity));
         Assert.Contains(Language.English, options.Languages);
     }
 
@@ -169,9 +175,64 @@ public sealed class AdditionalLanguageTests
             }
 
             var category = root.GetProperty("category").GetString()!;
-            foreach (var value in root.GetProperty("values").EnumerateArray())
+
+            if (root.TryGetProperty("values", out var values))
             {
-                yield return (category, value.GetString()!);
+                foreach (var value in values.EnumerateArray())
+                {
+                    var text = value.GetString();
+                    if (!string.IsNullOrWhiteSpace(text))
+                    {
+                        yield return (category, text);
+                    }
+                }
+            }
+
+            if (root.TryGetProperty("partialValues", out var partialValues))
+            {
+                foreach (var value in partialValues.EnumerateArray())
+                {
+                    var text = value.GetString();
+                    if (!string.IsNullOrWhiteSpace(text))
+                    {
+                        yield return (category, text);
+                    }
+                }
+            }
+
+            if (!root.TryGetProperty("combinations", out var combinations))
+            {
+                continue;
+            }
+
+            foreach (var combination in combinations.EnumerateArray())
+            {
+                if (!combination.TryGetProperty("roots", out var roots)
+                    || !combination.TryGetProperty("suffixes", out var suffixes))
+                {
+                    continue;
+                }
+
+                var suffixValues = suffixes
+                    .EnumerateArray()
+                    .Select(value => value.GetString())
+                    .Where(value => !string.IsNullOrWhiteSpace(value))
+                    .Cast<string>()
+                    .ToArray();
+
+                foreach (var rootValue in roots.EnumerateArray())
+                {
+                    var rootText = rootValue.GetString();
+                    if (string.IsNullOrWhiteSpace(rootText))
+                    {
+                        continue;
+                    }
+
+                    foreach (var suffixText in suffixValues)
+                    {
+                        yield return (category, rootText + suffixText);
+                    }
+                }
             }
         }
     }
