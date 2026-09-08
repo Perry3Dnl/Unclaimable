@@ -4,14 +4,14 @@ namespace Unclaimable.Tests;
 
 public sealed class ExpandedDatasetTests
 {
-    private static readonly UnclaimableChecker DatasetChecker = new UnclaimableChecker(new UnclaimableOptions
+    private static readonly Checker DatasetChecker = new Checker(new Options
     {
-        Strictness = UnclaimableStrictness.Standard,
-        DisabledRules = UnclaimableRule.Numbers
-                        | UnclaimableRule.BlockedCharacters
-                        | UnclaimableRule.Whitespace
-                        | UnclaimableRule.LeadingSeparator
-                        | UnclaimableRule.TrailingSeparator
+        Strictness = Strictness.Standard,
+        DisabledRules = Rule.Numbers
+                        | Rule.BlockedCharacters
+                        | Rule.Whitespace
+                        | Rule.LeadingSeparator
+                        | Rule.TrailingSeparator
     });
 
     [Theory]

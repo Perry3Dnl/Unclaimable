@@ -9,9 +9,9 @@ Initial public NuGet release.
 ### Added
 
 - Strict-by-default validation so `AddUnclaimable()` enables the recommended protection set without additional configuration.
-- `UnclaimableRule` flags and `DisabledRules` for selectively relaxing individual checks while keeping all other protections enabled.
+- `Rule` flags and `DisabledRules` for selectively relaxing individual checks while keeping all other protections enabled.
 - Localized built-in datasets for English, Dutch, German, French, Spanish, Italian, and Portuguese across profanity, roles, support/trust identities, and system names.
-- English as the default localized language, with additive language configuration through `AddLanguage(...)` and `RemoveLanguage(...)`; `UnclaimableOptions.Languages` is exposed read-only for inspection.
+- English as the default localized language, with additive language configuration through `AddLanguage(...)` and `RemoveLanguage(...)`; `Options.Languages` is exposed read-only for inspection.
 - Language packs organized below `data/languages/<code>/`, with wildcard resource discovery so unused language folders can be physically removed from source builds without creating compile-time dependencies.
 - CI verification that the core and ASP.NET Core projects still compile with the entire `data/languages/` directory removed.
 - Language-independent global datasets for technology names and broadly recognizable brands.
@@ -19,7 +19,7 @@ Initial public NuGet release.
 - Exact matching with Unicode NFKC normalization and invariant case normalization.
 - Compact matching for separator and punctuation variants.
 - Strict embedded/partial reserved-name matching by default, with configurable `PartialMatchMinimumLength`.
-- `UnclaimableStrictness.Standard` as an explicit more-permissive reserved-name mode and `UnclaimableStrictness.Strict` as the default.
+- `Strictness.Standard` as an explicit more-permissive reserved-name mode and `Strictness.Strict` as the default.
 - Bounded leetspeak and symbol-obfuscation matching.
 - Selected Unicode-confusable and diacritic normalization for common impersonation attempts.
 - Localized profanity matching enabled by default for every enabled language, with separate opt-in `ProfanityPartialMatching` for more aggressive substring filtering.
@@ -28,13 +28,13 @@ Initial public NuGet release.
 - Whitespace restrictions and a default blocked-character policy for `-` and `_`.
 - Leading and trailing separator validation.
 - Application-specific blocked characters through `AdditionalBlockedCharacters(...)`.
-- Thread-safe runtime character policy through `IUnclaimablePolicy` and `UnclaimablePolicy`, including `BlockCharacter(s)` and `AllowCharacter(s)` operations.
+- Thread-safe runtime character policy through `IPolicy` and `Policy`, including `BlockCharacter(s)` and `AllowCharacter(s)` operations.
 - Application-specific reservations through `AdditionalReserved`.
 - Optional printable-ASCII-only policy through `AsciiOnly`.
 - Fast boolean checks through `IsClaimable` and `IsReserved`.
 - Structured fail-fast results through `Check`, including structural rejection reasons and offending-character metadata.
 - Multi-diagnostic validation through `CheckDetailed`, with optional user-facing diagnostic messages.
-- ASP.NET Core dependency-injection integration with a live runtime `IUnclaimablePolicy` singleton.
+- ASP.NET Core dependency-injection integration with a live runtime `IPolicy` singleton.
 - `[ClaimableUsername]` model-validation attribute.
 - Application-wide ASP.NET validation-message configuration with attribute-level overrides.
 - Reason-specific ASP.NET validation messages with placeholders for `{FieldName}`, `{MatchedValue}`, `{Category}`, `{Character}`, `{Index}`, `{Length}`, `{MinimumLength}`, and `{MaximumLength}`.

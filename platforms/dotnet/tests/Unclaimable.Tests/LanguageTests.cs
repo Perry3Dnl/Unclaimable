@@ -7,23 +7,23 @@ public sealed class LanguageTests
     [Fact]
     public void EnglishIsEnabledByDefault()
     {
-        var options = new UnclaimableOptions();
+        var options = new Options();
 
-        Assert.Contains(UnclaimableLanguage.English, options.Languages);
+        Assert.Contains(Language.English, options.Languages);
         Assert.Single(options.Languages);
-        Assert.True(UnclaimableChecker.Default.IsReserved("customersupport"));
-        Assert.True(UnclaimableChecker.Default.IsReserved("fuckwaffle"));
-        Assert.True(UnclaimableChecker.Default.IsClaimable("facturatiehulp"));
-        Assert.True(UnclaimableChecker.Default.IsClaimable("abrechnungshilfe"));
-        Assert.True(UnclaimableChecker.Default.IsClaimable("motdepasseoublie"));
+        Assert.True(Checker.Default.IsReserved("customersupport"));
+        Assert.True(Checker.Default.IsReserved("fuckwaffle"));
+        Assert.True(Checker.Default.IsClaimable("facturatiehulp"));
+        Assert.True(Checker.Default.IsClaimable("abrechnungshilfe"));
+        Assert.True(Checker.Default.IsClaimable("motdepasseoublie"));
     }
 
     [Fact]
     public void AddingDutchKeepsEnglishEnabled()
     {
-        var options = new UnclaimableOptions();
-        options.AddLanguage(UnclaimableLanguage.Dutch);
-        var checker = new UnclaimableChecker(options);
+        var options = new Options();
+        options.AddLanguage(Language.Dutch);
+        var checker = new Checker(options);
 
         Assert.True(checker.IsReserved("customersupport"));
         Assert.Equal("support", checker.Check("facturatiehulp").Category);
@@ -36,10 +36,10 @@ public sealed class LanguageTests
     [Fact]
     public void EnglishCanBeRemovedForDutchOnlyFiltering()
     {
-        var options = new UnclaimableOptions();
-        options.RemoveLanguage(UnclaimableLanguage.English);
-        options.AddLanguage(UnclaimableLanguage.Dutch);
-        var checker = new UnclaimableChecker(options);
+        var options = new Options();
+        options.RemoveLanguage(Language.English);
+        options.AddLanguage(Language.Dutch);
+        var checker = new Checker(options);
 
         Assert.Equal("support", checker.Check("facturatiehulp").Category);
         Assert.True(checker.IsClaimable("customersupport"));
@@ -47,21 +47,21 @@ public sealed class LanguageTests
     }
 
     [Theory]
-    [InlineData(UnclaimableLanguage.German, "abrechnungshilfe", "systemverwalter", "passwortvergessen", "scheiße")]
-    [InlineData(UnclaimableLanguage.French, "serviceclient", "administrateursysteme", "motdepasseoublie", "connard")]
-    [InlineData(UnclaimableLanguage.Spanish, "servicioalcliente", "administradorsistema", "contrasenaolvidada", "gilipollas")]
-    [InlineData(UnclaimableLanguage.Italian, "servizioclienti", "amministratoresistema", "passworddimenticata", "vaffanculo")]
-    [InlineData(UnclaimableLanguage.Portuguese, "atendimentocliente", "administradorsistema", "senhaesquecida", "caralho")]
+    [InlineData(Language.German, "abrechnungshilfe", "systemverwalter", "passwortvergessen", "scheiße")]
+    [InlineData(Language.French, "serviceclient", "administrateursysteme", "motdepasseoublie", "connard")]
+    [InlineData(Language.Spanish, "servicioalcliente", "administradorsistema", "contrasenaolvidada", "gilipollas")]
+    [InlineData(Language.Italian, "servizioclienti", "amministratoresistema", "passworddimenticata", "vaffanculo")]
+    [InlineData(Language.Portuguese, "atendimentocliente", "administradorsistema", "senhaesquecida", "caralho")]
     public void LocalizedDatasetsCanBeAdded(
-        UnclaimableLanguage language,
+        Language language,
         string support,
         string role,
         string system,
         string profanity)
     {
-        var options = new UnclaimableOptions();
+        var options = new Options();
         options.AddLanguage(language);
-        var checker = new UnclaimableChecker(options);
+        var checker = new Checker(options);
 
         Assert.Equal("support", checker.Check(support).Category);
         Assert.Equal("roles", checker.Check(role).Category);
@@ -73,14 +73,14 @@ public sealed class LanguageTests
     [Fact]
     public void MultipleLanguagesAreAdditiveWithoutSeparateMode()
     {
-        var options = new UnclaimableOptions();
-        options.AddLanguage(UnclaimableLanguage.Dutch);
-        options.AddLanguage(UnclaimableLanguage.German);
-        options.AddLanguage(UnclaimableLanguage.French);
-        options.AddLanguage(UnclaimableLanguage.Spanish);
-        options.AddLanguage(UnclaimableLanguage.Italian);
-        options.AddLanguage(UnclaimableLanguage.Portuguese);
-        var checker = new UnclaimableChecker(options);
+        var options = new Options();
+        options.AddLanguage(Language.Dutch);
+        options.AddLanguage(Language.German);
+        options.AddLanguage(Language.French);
+        options.AddLanguage(Language.Spanish);
+        options.AddLanguage(Language.Italian);
+        options.AddLanguage(Language.Portuguese);
+        var checker = new Checker(options);
 
         Assert.True(checker.IsReserved("customersupport"));
         Assert.True(checker.IsReserved("facturatiehulp"));
@@ -92,19 +92,19 @@ public sealed class LanguageTests
     }
 
     [Theory]
-    [InlineData(UnclaimableLanguage.English)]
-    [InlineData(UnclaimableLanguage.Dutch)]
-    [InlineData(UnclaimableLanguage.German)]
-    [InlineData(UnclaimableLanguage.French)]
-    [InlineData(UnclaimableLanguage.Spanish)]
-    [InlineData(UnclaimableLanguage.Italian)]
-    [InlineData(UnclaimableLanguage.Portuguese)]
-    public void GlobalDatasetsAreAlwaysIncluded(UnclaimableLanguage language)
+    [InlineData(Language.English)]
+    [InlineData(Language.Dutch)]
+    [InlineData(Language.German)]
+    [InlineData(Language.French)]
+    [InlineData(Language.Spanish)]
+    [InlineData(Language.Italian)]
+    [InlineData(Language.Portuguese)]
+    public void GlobalDatasetsAreAlwaysIncluded(Language language)
     {
-        var options = new UnclaimableOptions();
-        options.RemoveLanguage(UnclaimableLanguage.English);
+        var options = new Options();
+        options.RemoveLanguage(Language.English);
         options.AddLanguage(language);
-        var checker = new UnclaimableChecker(options);
+        var checker = new Checker(options);
 
         Assert.Equal("brands", checker.Check("rituals").Category);
         Assert.Equal("technology", checker.Check("homeassistant").Category);
@@ -113,9 +113,9 @@ public sealed class LanguageTests
     [Fact]
     public void RemovingDefaultEnglishStillKeepsGlobalDatasets()
     {
-        var options = new UnclaimableOptions();
-        options.RemoveLanguage(UnclaimableLanguage.English);
-        var checker = new UnclaimableChecker(options);
+        var options = new Options();
+        options.RemoveLanguage(Language.English);
+        var checker = new Checker(options);
 
         Assert.True(checker.IsClaimable("customersupport"));
         Assert.Equal("brands", checker.Check("rituals").Category);
@@ -125,22 +125,22 @@ public sealed class LanguageTests
     [Fact]
     public void MixedLanguageValuesStillMatchEnabledProtectedSubstrings()
     {
-        var checker = new UnclaimableChecker(new UnclaimableOptions());
+        var checker = new Checker(new Options());
 
         var result = checker.Check("klantenservice");
 
         Assert.True(result.IsReserved);
         Assert.Equal("service", result.MatchedValue);
         Assert.Equal("system", result.Category);
-        Assert.Equal(UnclaimableMatchKind.Partial, result.MatchKind);
+        Assert.Equal(MatchKind.Partial, result.MatchKind);
     }
 
     [Fact]
     public void InvalidLanguageFailsFast()
     {
-        var options = new UnclaimableOptions();
+        var options = new Options();
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => options.AddLanguage((UnclaimableLanguage)999));
-        Assert.Throws<ArgumentOutOfRangeException>(() => options.RemoveLanguage((UnclaimableLanguage)999));
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.AddLanguage((Language)999));
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.RemoveLanguage((Language)999));
     }
 }

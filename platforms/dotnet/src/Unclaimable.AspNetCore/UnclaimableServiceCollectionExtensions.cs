@@ -6,20 +6,20 @@ public static class UnclaimableServiceCollectionExtensions
 {
     public static IServiceCollection AddUnclaimable(
         this IServiceCollection services,
-        Action<UnclaimableOptions>? configure = null)
+        Action<Unclaimable.Options>? configure = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        var options = new UnclaimableOptions();
+        var options = new Unclaimable.Options();
         configure?.Invoke(options);
 
         services.AddSingleton(options);
-        services.AddSingleton<IUnclaimablePolicy>(_ =>
-            new UnclaimablePolicy(options.ConfiguredBlockedCharacters));
-        services.AddSingleton<IUnclaimableChecker>(serviceProvider =>
-            new UnclaimableChecker(
+        services.AddSingleton<IPolicy>(_ =>
+            new Policy(options.ConfiguredBlockedCharacters));
+        services.AddSingleton<IChecker>(serviceProvider =>
+            new Checker(
                 options,
-                serviceProvider.GetRequiredService<IUnclaimablePolicy>()));
+                serviceProvider.GetRequiredService<IPolicy>()));
 
         return services;
     }

@@ -5,7 +5,7 @@ namespace Unclaimable;
 /// All rules are enabled by default unless explicitly disabled.
 /// </summary>
 [Flags]
-public enum UnclaimableRule
+public enum Rule
 {
     None = 0,
     MinimumLength = 1 << 0,

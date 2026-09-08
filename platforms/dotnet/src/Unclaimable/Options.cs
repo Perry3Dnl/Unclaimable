@@ -1,24 +1,24 @@
 namespace Unclaimable;
 
-public sealed class UnclaimableOptions
+public sealed class Options
 {
     private bool _partialMatching;
     private readonly HashSet<string> _additionalBlockedCharacters = new HashSet<string>(StringComparer.Ordinal);
-    private readonly HashSet<UnclaimableLanguage> _languages = new HashSet<UnclaimableLanguage>
+    private readonly HashSet<Language> _languages = new HashSet<Language>
     {
-        UnclaimableLanguage.English
+        Language.English
     };
 
     /// <summary>
     /// Controls how aggressively reserved-name rules are applied.
     /// Strict is the default and enables embedded/partial reserved-name matching.
     /// </summary>
-    public UnclaimableStrictness Strictness { get; set; } = UnclaimableStrictness.Strict;
+    public Strictness Strictness { get; set; } = Strictness.Strict;
 
     /// <summary>
     /// Built-in rules to disable. No rules are disabled by default.
     /// </summary>
-    public UnclaimableRule DisabledRules { get; set; } = UnclaimableRule.None;
+    public Rule DisabledRules { get; set; } = Rule.None;
 
     /// <summary>
     /// Localized built-in datasets currently enabled for this checker. English is enabled by default.
@@ -26,10 +26,10 @@ public sealed class UnclaimableOptions
     /// Removing language-pack folders from a source checkout is also supported; missing packs simply
     /// contribute no embedded entries. Global datasets such as brands and technology are always included.
     /// </summary>
-    public IReadOnlyCollection<UnclaimableLanguage> Languages => _languages;
+    public IReadOnlyCollection<Language> Languages => _languages;
 
     /// <summary>Adds a localized built-in language dataset while keeping currently enabled languages.</summary>
-    public UnclaimableOptions AddLanguage(UnclaimableLanguage language)
+    public Options AddLanguage(Language language)
     {
         ValidateLanguage(language, nameof(language));
         _languages.Add(language);
@@ -37,7 +37,7 @@ public sealed class UnclaimableOptions
     }
 
     /// <summary>Removes a localized built-in language dataset.</summary>
-    public UnclaimableOptions RemoveLanguage(UnclaimableLanguage language)
+    public Options RemoveLanguage(Language language)
     {
         ValidateLanguage(language, nameof(language));
         _languages.Remove(language);
@@ -52,18 +52,18 @@ public sealed class UnclaimableOptions
 
     /// <summary>
     /// Also compare a compact form with separators and punctuation removed.
-    /// Kept for compatibility; prefer disabling UnclaimableRule.CompactMatching.
+    /// Kept for compatibility; prefer disabling Rule.CompactMatching.
     /// </summary>
     public bool CompactMatching { get; set; } = true;
 
     /// <summary>
     /// Also reject usernames that contain a reserved value as part of a larger value.
     /// Strict mode enables this automatically. Kept for compatibility; prefer
-    /// disabling UnclaimableRule.PartialMatching when relaxation is required.
+    /// disabling Rule.PartialMatching when relaxation is required.
     /// </summary>
     public bool PartialMatching
     {
-        get => _partialMatching || Strictness == UnclaimableStrictness.Strict;
+        get => _partialMatching || Strictness == Strictness.Strict;
         set => _partialMatching = value;
     }
 
@@ -72,7 +72,7 @@ public sealed class UnclaimableOptions
 
     /// <summary>
     /// Include profanity from the enabled localized dataset or datasets. Enabled by default.
-    /// Kept for compatibility; prefer disabling UnclaimableRule.Profanity.
+    /// Kept for compatibility; prefer disabling Rule.Profanity.
     /// </summary>
     public bool ProfanityMatching { get; set; } = true;
 
@@ -84,19 +84,19 @@ public sealed class UnclaimableOptions
 
     /// <summary>
     /// Detect common username obfuscation and leetspeak substitutions.
-    /// Kept for compatibility; prefer disabling UnclaimableRule.ObfuscationMatching.
+    /// Kept for compatibility; prefer disabling Rule.ObfuscationMatching.
     /// </summary>
     public bool ObfuscationMatching { get; set; } = true;
 
     /// <summary>
     /// Detect common Unicode lookalikes and diacritic-based impersonation.
-    /// Kept for compatibility; prefer disabling UnclaimableRule.UnicodeConfusableMatching.
+    /// Kept for compatibility; prefer disabling Rule.UnicodeConfusableMatching.
     /// </summary>
     public bool UnicodeConfusableMatching { get; set; } = true;
 
     /// <summary>
     /// Allow Unicode decimal digits. Numbers are rejected by default.
-    /// Kept for compatibility; prefer disabling UnclaimableRule.Numbers.
+    /// Kept for compatibility; prefer disabling Rule.Numbers.
     /// </summary>
     public bool AllowNumbers { get; set; }
 
@@ -112,7 +112,7 @@ public sealed class UnclaimableOptions
     public string? ValidationMessage { get; set; }
 
     /// <summary>Optional reason-specific validation messages.</summary>
-    public UnclaimableValidationMessages Messages { get; } = new UnclaimableValidationMessages();
+    public ValidationMessages Messages { get; } = new ValidationMessages();
 
     /// <summary>Application-specific names to reserve in addition to the shared dataset.</summary>
     public ICollection<string> AdditionalReserved { get; } = new List<string>();
@@ -125,7 +125,7 @@ public sealed class UnclaimableOptions
     /// <summary>
     /// Adds application-specific blocked characters to the strict built-in character policy.
     /// </summary>
-    public UnclaimableOptions AdditionalBlockedCharacters(params string[] characters)
+    public Options AdditionalBlockedCharacters(params string[] characters)
     {
         if (characters is null)
         {
@@ -141,13 +141,13 @@ public sealed class UnclaimableOptions
         return this;
     }
 
-    internal bool IsRuleEnabled(UnclaimableRule rule) => (DisabledRules & rule) == 0;
+    internal bool IsRuleEnabled(Rule rule) => (DisabledRules & rule) == 0;
 
-    private static void ValidateLanguage(UnclaimableLanguage language, string parameterName)
+    private static void ValidateLanguage(Language language, string parameterName)
     {
-        if (!Enum.IsDefined(typeof(UnclaimableLanguage), language))
+        if (!Enum.IsDefined(typeof(Language), language))
         {
-            throw new ArgumentOutOfRangeException(parameterName, "Language must be a supported UnclaimableLanguage value.");
+            throw new ArgumentOutOfRangeException(parameterName, "Language must be a supported Language value.");
         }
     }
 
