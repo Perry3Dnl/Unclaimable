@@ -20,14 +20,14 @@ public sealed class ConformanceTests
         public string? Category { get; init; }
     }
 
-    public static IEnumerable<object[]> Cases()
+    public static IEnumerable<object?[]> Cases()
     {
         var path = Path.Combine(AppContext.BaseDirectory, "conformance-cases.json");
         var json = File.ReadAllText(path);
         var cases = JsonSerializer.Deserialize<ConformanceCase[]>(json)
                     ?? throw new InvalidOperationException("Conformance cases could not be loaded.");
 
-        return cases.Select(testCase => new object[]
+        return cases.Select(testCase => new object?[]
         {
             testCase.Value,
             testCase.Reserved,
