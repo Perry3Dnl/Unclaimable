@@ -6,7 +6,6 @@ namespace Unclaimable.Tests;
 
 public sealed class ConfigurationSwitch050Tests
 {
-    private static readonly Checker DefaultChecker = new Checker();
     private static readonly Lazy<IReadOnlyDictionary<string, IReadOnlyList<string>>> ExclusiveCategoryValues =
         new Lazy<IReadOnlyDictionary<string, IReadOnlyList<string>>>(BuildExclusiveCategoryValues);
 
@@ -20,24 +19,27 @@ public sealed class ConfigurationSwitch050Tests
         var categoryName = category.ToString().ToLowerInvariant();
         Assert.True(ExclusiveCategoryValues.Value.TryGetValue(categoryName, out var candidates));
 
-        var options = new Options();
+        // Standard mode isolates exact category membership from valid cross-category partial matches.
+        var options = new Options { Strictness = Strictness.Standard };
+        var enabledChecker = new Checker(options);
+
         options.DisableCategory(category);
         Assert.Contains(category, options.DisabledCategories);
-
         var disabledChecker = new Checker(options);
+
         var candidate = candidates!.FirstOrDefault(value =>
         {
-            var defaultResult = DefaultChecker.Check(value);
-            return defaultResult.MatchKind == MatchKind.Exact
-                   && defaultResult.Category == categoryName
+            var enabledResult = enabledChecker.Check(value);
+            return enabledResult.MatchKind == MatchKind.Exact
+                   && enabledResult.Category == categoryName
                    && disabledChecker.IsClaimable(value);
         });
 
         Assert.False(
             string.IsNullOrEmpty(candidate),
-            $"Disabling '{categoryName}' did not make an exclusive exact value claimable.");
+            $"Disabling '{categoryName}' did not make an exclusive exact value claimable in Standard mode.");
 
-        var enabledResult = DefaultChecker.Check(candidate);
+        var enabledResult = enabledChecker.Check(candidate);
         Assert.True(enabledResult.IsReserved);
         Assert.Equal(MatchKind.Exact, enabledResult.MatchKind);
         Assert.Equal(categoryName, enabledResult.Category);
@@ -51,7 +53,8 @@ public sealed class ConfigurationSwitch050Tests
         Assert.Equal(MatchKind.Exact, restoredResult.MatchKind);
         Assert.Equal(categoryName, restoredResult.Category);
 
-        // A checker captures category configuration at construction time.
+        // Both already-constructed checkers keep the category state they captured.
+        Assert.Equal(categoryName, enabledChecker.Check(candidate).Category);
         Assert.True(disabledChecker.IsClaimable(candidate));
     }
 
@@ -86,7 +89,6 @@ public sealed class ConfigurationSwitch050Tests
         Assert.True(restored.IsReserved, $"Rule '{rule}' was not restored after re-enable.");
         Assert.Equal(testCase.ExpectedKind, restored.MatchKind);
 
-        // A checker captures rule configuration at construction time.
         Assert.True(disabledChecker.IsClaimable(testCase.Input));
     }
 
@@ -351,10 +353,7 @@ public sealed class ConfigurationSwitch050Tests
                     DisabledRules = Rule.BlockedCharacters
                 };
                 options.AdditionalReserved.Add("qzxvorn");
-                return new ToggleCase(
-                    options,
-                    "qzx-vorn",
-                    MatchKind.Compact,
+                return new ToggleCase(options, "qzx-vorn", MatchKind.Compact,
                     value => value.CompactMatching = false,
                     value => value.CompactMatching = true);
             }
@@ -366,18 +365,12 @@ public sealed class ConfigurationSwitch050Tests
                     PartialMatching = true
                 };
                 options.AdditionalReserved.Add("qzxvorn");
-                return new ToggleCase(
-                    options,
-                    "preqzxvornpost",
-                    MatchKind.Partial,
+                return new ToggleCase(options, "preqzxvornpost", MatchKind.Partial,
                     value => value.PartialMatching = false,
                     value => value.PartialMatching = true);
             }
             case ToggleOption.ProfanityMatching:
-                return new ToggleCase(
-                    new Options { Strictness = Strictness.Standard },
-                    "fuck",
-                    MatchKind.Exact,
+                return new ToggleCase(new Options { Strictness = Strictness.Standard }, "fuck", MatchKind.Exact,
                     value => value.ProfanityMatching = false,
                     value => value.ProfanityMatching = true);
             case ToggleOption.ObfuscationMatching:
@@ -388,10 +381,7 @@ public sealed class ConfigurationSwitch050Tests
                     DisabledRules = Rule.Numbers
                 };
                 options.AdditionalReserved.Add("qzxvorn");
-                return new ToggleCase(
-                    options,
-                    "qzxv0rn",
-                    MatchKind.Obfuscated,
+                return new ToggleCase(options, "qzxv0rn", MatchKind.Obfuscated,
                     value => value.ObfuscationMatching = false,
                     value => value.ObfuscationMatching = true);
             }
@@ -399,39 +389,24 @@ public sealed class ConfigurationSwitch050Tests
             {
                 var options = new Options { Strictness = Strictness.Standard };
                 options.AdditionalReserved.Add("qaq");
-                return new ToggleCase(
-                    options,
-                    "q\u0430q",
-                    MatchKind.UnicodeConfusable,
+                return new ToggleCase(options, "q\u0430q", MatchKind.UnicodeConfusable,
                     value => value.UnicodeConfusableMatching = false,
                     value => value.UnicodeConfusableMatching = true);
             }
             case ToggleOption.NumberRestriction:
-                return new ToggleCase(
-                    new Options(),
-                    "qzxvorn2",
-                    MatchKind.NumbersNotAllowed,
+                return new ToggleCase(new Options(), "qzxvorn2", MatchKind.NumbersNotAllowed,
                     value => value.AllowNumbers = true,
                     value => value.AllowNumbers = false);
             case ToggleOption.InvisibleOnlyProtection:
-                return new ToggleCase(
-                    new Options(),
-                    "\u0301\u0301\u0301",
-                    MatchKind.InvalidCharacters,
+                return new ToggleCase(new Options(), "\u0301\u0301\u0301", MatchKind.InvalidCharacters,
                     value => value.RejectInvisibleOnlyIdentifiers = false,
                     value => value.RejectInvisibleOnlyIdentifiers = true);
             case ToggleOption.ControlCharacterProtection:
-                return new ToggleCase(
-                    new Options(),
-                    "qz\u0001vx",
-                    MatchKind.InvalidCharacters,
+                return new ToggleCase(new Options(), "qz\u0001vx", MatchKind.InvalidCharacters,
                     value => value.RejectControlCharacters = false,
                     value => value.RejectControlCharacters = true);
             case ToggleOption.FormatCharacterProtection:
-                return new ToggleCase(
-                    new Options(),
-                    "qz\u200Dvx",
-                    MatchKind.InvalidCharacters,
+                return new ToggleCase(new Options(), "qz\u200Dvx", MatchKind.InvalidCharacters,
                     value => value.RejectFormatCharacters = false,
                     value => value.RejectFormatCharacters = true);
             default:
@@ -608,12 +583,7 @@ public sealed class ConfigurationSwitch050Tests
 
     private sealed class ToggleCase
     {
-        public ToggleCase(
-            Options options,
-            string input,
-            MatchKind expectedKind,
-            Action<Options> disable,
-            Action<Options> enable)
+        public ToggleCase(Options options, string input, MatchKind expectedKind, Action<Options> disable, Action<Options> enable)
         {
             Options = options;
             Input = input;
