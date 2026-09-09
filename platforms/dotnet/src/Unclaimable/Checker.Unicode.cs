@@ -39,6 +39,48 @@ public sealed partial class Checker
 
     private static InputMapping? TryCreateInputMapping(string input, string exact)
     {
+        // The overwhelmingly common identifier path is ASCII with no trimming or
+        // compatibility-normalization expansion. Build its positional maps directly
+        // instead of allocating and normalizing one temporary string per code unit.
+        if (input.Length == exact.Length)
+        {
+            var simpleAscii = true;
+            var compactLength = 0;
+
+            for (var index = 0; index < input.Length; index++)
+            {
+                var character = input[index];
+                if (character > 0x7F || char.ToLowerInvariant(character) != exact[index])
+                {
+                    simpleAscii = false;
+                    break;
+                }
+
+                if (char.IsLetterOrDigit(character))
+                {
+                    compactLength++;
+                }
+            }
+
+            if (simpleAscii)
+            {
+                var exactToOriginal = new int[input.Length];
+                var compactToOriginal = new int[compactLength];
+                var compactIndex = 0;
+
+                for (var index = 0; index < input.Length; index++)
+                {
+                    exactToOriginal[index] = index;
+                    if (char.IsLetterOrDigit(input[index]))
+                    {
+                        compactToOriginal[compactIndex++] = index;
+                    }
+                }
+
+                return new InputMapping(exactToOriginal, compactToOriginal);
+            }
+        }
+
         var trimStart = 0;
         while (trimStart < input.Length && char.IsWhiteSpace(input[trimStart]))
         {
@@ -52,7 +94,7 @@ public sealed partial class Checker
         }
 
         var exactBuilder = new StringBuilder(trimEnd - trimStart);
-        var exactToOriginal = new List<int>(trimEnd - trimStart);
+        var exactToOriginalFallback = new List<int>(trimEnd - trimStart);
 
         for (var index = trimStart; index < trimEnd; index++)
         {
@@ -81,7 +123,7 @@ public sealed partial class Checker
             exactBuilder.Append(normalizedScalar);
             for (var offset = 0; offset < scalarLength; offset++)
             {
-                exactToOriginal.Add(index + offset);
+                exactToOriginalFallback.Add(index + offset);
             }
 
             if (scalarLength == 2)
@@ -95,7 +137,7 @@ public sealed partial class Checker
             return null;
         }
 
-        var compactToOriginal = new List<int>();
+        var compactToOriginalFallback = new List<int>();
         for (var index = 0; index < exact.Length; index++)
         {
             var character = exact[index];
@@ -107,8 +149,8 @@ public sealed partial class Checker
                 var category = CharUnicodeInfo.GetUnicodeCategory(exact, index);
                 if (IsLetterOrDigit(category))
                 {
-                    compactToOriginal.Add(exactToOriginal[index]);
-                    compactToOriginal.Add(exactToOriginal[index + 1]);
+                    compactToOriginalFallback.Add(exactToOriginalFallback[index]);
+                    compactToOriginalFallback.Add(exactToOriginalFallback[index + 1]);
                 }
 
                 index++;
@@ -117,11 +159,11 @@ public sealed partial class Checker
 
             if (char.IsLetterOrDigit(character))
             {
-                compactToOriginal.Add(exactToOriginal[index]);
+                compactToOriginalFallback.Add(exactToOriginalFallback[index]);
             }
         }
 
-        return new InputMapping(exactToOriginal.ToArray(), compactToOriginal.ToArray());
+        return new InputMapping(exactToOriginalFallback.ToArray(), compactToOriginalFallback.ToArray());
     }
 
     private static bool TryMapOriginalSpan(
