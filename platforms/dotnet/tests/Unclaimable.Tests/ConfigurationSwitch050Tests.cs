@@ -55,7 +55,6 @@ public sealed class ConfigurationSwitch050Tests
         Assert.Equal(MatchKind.Exact, reenabledResult.MatchKind);
         Assert.Equal(categoryName, reenabledResult.Category);
 
-        // Existing checkers keep the configuration captured at construction time.
         Assert.True(disabledChecker.IsClaimable(candidate));
     }
 
@@ -94,7 +93,6 @@ public sealed class ConfigurationSwitch050Tests
         Assert.True(reenabledResult.IsReserved, $"Rule '{rule}' was not restored after being re-enabled.");
         Assert.Equal(testCase.ExpectedKind, reenabledResult.MatchKind);
 
-        // Re-enabling the options object must not mutate an already-constructed checker.
         Assert.True(disabledChecker.IsClaimable(testCase.Input));
     }
 
@@ -422,16 +420,16 @@ public sealed class ConfigurationSwitch050Tests
         {
             DisabledRules = Rule.Numbers | Rule.BlockedCharacters
         };
-        options.Reserve("nike", ReservedMatchMode.Exact);
-        options.Reserve("apple", ReservedMatchMode.Exact);
+        options.Reserve("qzxvorn", ReservedMatchMode.Exact);
+        options.Reserve("qaq", ReservedMatchMode.Exact);
 
         var checker = new Checker(options);
 
-        Assert.True(checker.IsReserved("NIKE"));
-        Assert.True(checker.IsClaimable("n.i.k.e"));
-        Assert.True(checker.IsClaimable("N1k3"));
-        Assert.True(checker.IsReserved("apple"));
-        Assert.True(checker.IsClaimable("\u0430pple"));
+        Assert.True(checker.IsReserved("QZXVORN"));
+        Assert.True(checker.IsClaimable("qzx-vorn"));
+        Assert.True(checker.IsClaimable("qzxv0rn"));
+        Assert.True(checker.IsReserved("QAQ"));
+        Assert.True(checker.IsClaimable("q\u0430q"));
     }
 
     private static RuleCase CreateRuleCase(Rule rule)
