@@ -2,6 +2,34 @@
 
 All notable changes to Unclaimable are documented here.
 
+## 0.4.0 - 2026-09-09
+
+Compatibility-focused release that preserves the 0.3.0 public API, defaults, enabled datasets, enum values, and valid-Unicode outcomes while adding opt-in validation hardening and correcting exception/message behavior.
+
+### Added
+
+- Opt-in `RejectInvisibleOnlyIdentifiers`, `RejectControlCharacters`, and `RejectFormatCharacters` settings. All default to `false` so existing valid Unicode input keeps the 0.3.0 acceptance behavior.
+- Opt-in `ConsistentCompactMatching` to apply `Rule.CompactMatching` consistently to partial and obfuscation matching. The legacy rule interaction remains the default for compatibility.
+- `OriginalMatchStartIndex` and `OriginalMatchLength` on `Result` and `Diagnostic` for reliable original-input UTF-16 spans. These values are nullable when normalization makes mapping uncertain; existing `MatchStartIndex` and `MatchLength` retain their transformed-text meaning.
+- `Result.LengthLimit`, populated by `Checker` for minimum- and maximum-length failures from the configuration captured at construction time.
+- Regression coverage for malformed UTF-16, Unicode strictness opt-ins, compact/partial/obfuscation/Unicode rule combinations, original spans, captured length thresholds, and DataAnnotations without dependency injection.
+- A release compatibility gate that builds tag `v0.3.0` and the current source side by side, checks the exported public API and enum values, and compares a deterministic valid-Unicode default-behavior corpus.
+- Benchmark coverage for checker construction, ordinary accepted input, exact rejection, obfuscation, and all languages enabled, with a recorded 0.3.0 baseline.
+
+### Changed
+
+- Options continue to be captured when a `Checker` is constructed, while runtime `IPolicy` character updates remain live.
+- Public XML documentation now explicitly describes null handling, structural `IsReserved` failures, strictness-driven partial matching, captured options, live runtime policy updates, transformed legacy offsets, and UTF-16 index/length units.
+- No built-in datasets were expanded in this release; 0.4.0 intentionally retains the 0.3.0 dataset contents and defaults.
+
+### Fixed
+
+- Malformed UTF-16 input is now rejected as `MatchKind.InvalidCharacters` before normalization or character-policy calls instead of potentially throwing. `IsClaimable` returns `false`, and `CheckDetailed` reports the invalid UTF-16 code-unit index and skips reserved-name normalization. This is an intentional exception-behavior fix; normal valid-Unicode outcomes are preserved.
+- `[ClaimableUsername]` fallback minimum/maximum-length messages now include the effective threshold, including when the attribute runs without dependency injection.
+- Length placeholders prefer the checker result's captured `LengthLimit`, preventing later mutations to registered `Options` from changing the message for a checker that already captured different settings.
+
+Stricter Unicode validation and consistent compact-rule handling are available through opt-in settings; existing defaults and public APIs are preserved; malformed Unicode now produces a validation failure; and fallback length messages are corrected.
+
 ## 0.3.0 - 2026-09-08
 
 Third public NuGet release, focused on broader semantic coverage, maintainable dataset expansion, and safer compound matching.

@@ -2,6 +2,7 @@ namespace Unclaimable;
 
 /// <summary>
 /// Default in-memory runtime policy. Built-in blocked characters can be relaxed or extended at runtime.
+/// Runtime updates remain visible to every checker using the same policy instance.
 /// </summary>
 public sealed class Policy : IPolicy
 {
@@ -11,10 +12,12 @@ public sealed class Policy : IPolicy
     private readonly HashSet<string> _blocked = new HashSet<string>(StringComparer.Ordinal);
     private readonly HashSet<string> _allowed = new HashSet<string>(StringComparer.Ordinal);
 
+    /// <summary>Creates a policy with only the built-in blocked characters.</summary>
     public Policy()
     {
     }
 
+    /// <summary>Creates a policy and adds application-specific blocked Unicode scalar values.</summary>
     public Policy(IEnumerable<string> additionalBlockedCharacters)
     {
         if (additionalBlockedCharacters is null)
@@ -29,6 +32,7 @@ public sealed class Policy : IPolicy
         }
     }
 
+    /// <summary>Gets currently blocked characters after explicit allowances are applied.</summary>
     public IReadOnlyCollection<string> BlockedCharacters
     {
         get
@@ -45,6 +49,7 @@ public sealed class Policy : IPolicy
         }
     }
 
+    /// <summary>Blocks one Unicode scalar value.</summary>
     public void BlockCharacter(string value)
     {
         ValidateCharacter(value, nameof(value));
@@ -56,6 +61,7 @@ public sealed class Policy : IPolicy
         }
     }
 
+    /// <summary>Blocks one or more Unicode scalar values.</summary>
     public void BlockCharacters(params string[] values)
     {
         if (values is null)
@@ -69,6 +75,7 @@ public sealed class Policy : IPolicy
         }
     }
 
+    /// <summary>Explicitly allows one Unicode scalar value and returns whether the allowed set changed.</summary>
     public bool AllowCharacter(string value)
     {
         ValidateCharacter(value, nameof(value));
@@ -80,6 +87,7 @@ public sealed class Policy : IPolicy
         }
     }
 
+    /// <summary>Explicitly allows one or more Unicode scalar values.</summary>
     public void AllowCharacters(params string[] values)
     {
         if (values is null)
@@ -93,6 +101,7 @@ public sealed class Policy : IPolicy
         }
     }
 
+    /// <summary>Returns whether a Unicode scalar value is currently blocked.</summary>
     public bool IsCharacterBlocked(string value)
     {
         ValidateCharacter(value, nameof(value));
@@ -109,6 +118,7 @@ public sealed class Policy : IPolicy
         }
     }
 
+    /// <summary>Returns whether a Unicode scalar value is explicitly allowed.</summary>
     public bool IsCharacterExplicitlyAllowed(string value)
     {
         ValidateCharacter(value, nameof(value));

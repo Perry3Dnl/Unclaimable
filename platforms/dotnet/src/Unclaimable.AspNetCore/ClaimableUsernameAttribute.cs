@@ -2,9 +2,14 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Unclaimable.AspNetCore;
 
+/// <summary>
+/// Validates that a string identifier is claimable according to the registered <see cref="IChecker"/>.
+/// Null values are accepted so required-field validation can be handled independently.
+/// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
 public sealed class ClaimableUsernameAttribute : ValidationAttribute
 {
+    /// <summary>Validates one value using the registered checker or <see cref="Checker.Default"/>.</summary>
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
         if (value is null)
@@ -17,8 +22,9 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
             return new ValidationResult($"{validationContext.DisplayName} must be a string.");
         }
 
-        var checker = validationContext.GetService(typeof(IChecker)) as IChecker
-                      ?? Checker.Default;
+        var registeredChecker = validationContext.GetService(typeof(IChecker)) as IChecker;
+        var checker = registeredChecker ?? Checker.Default;
+        var usingDefaultChecker = registeredChecker is null;
 
         var result = checker.Check(text);
         if (!result.IsReserved)
@@ -26,9 +32,10 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
             return ValidationResult.Success;
         }
 
-        var options = validationContext.GetService(typeof(Options)) as Options;
-        var message = ResolveMessage(result, options);
-        message = ApplyPlaceholders(message, validationContext.DisplayName, result, options);
+        var registeredOptions = validationContext.GetService(typeof(Options)) as Options;
+        var placeholderOptions = registeredOptions ?? (usingDefaultChecker ? new Options() : null);
+        var message = ResolveMessage(result, registeredOptions);
+        message = ApplyPlaceholders(message, validationContext.DisplayName, result, placeholderOptions);
 
         return new ValidationResult(message);
     }
@@ -117,6 +124,14 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
         Result result,
         Options? options)
     {
+        var minimumLength = result.MatchKind == MatchKind.TooShort && result.LengthLimit.HasValue
+            ? result.LengthLimit.Value.ToString()
+            : options?.MinimumLength.ToString() ?? string.Empty;
+
+        var maximumLength = result.MatchKind == MatchKind.TooLong && result.LengthLimit.HasValue
+            ? result.LengthLimit.Value.ToString()
+            : options?.MaximumLength.ToString() ?? string.Empty;
+
         return message
             .Replace("{FieldName}", fieldName, StringComparison.Ordinal)
             .Replace("{MatchedValue}", result.MatchedValue ?? string.Empty, StringComparison.Ordinal)
@@ -124,7 +139,7 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
             .Replace("{Character}", result.OffendingCharacter ?? string.Empty, StringComparison.Ordinal)
             .Replace("{Index}", result.OffendingCharacterIndex?.ToString() ?? string.Empty, StringComparison.Ordinal)
             .Replace("{Length}", result.InputLength.ToString(), StringComparison.Ordinal)
-            .Replace("{MinimumLength}", options?.MinimumLength.ToString() ?? string.Empty, StringComparison.Ordinal)
-            .Replace("{MaximumLength}", options?.MaximumLength.ToString() ?? string.Empty, StringComparison.Ordinal);
+            .Replace("{MinimumLength}", minimumLength, StringComparison.Ordinal)
+            .Replace("{MaximumLength}", maximumLength, StringComparison.Ordinal);
     }
 }

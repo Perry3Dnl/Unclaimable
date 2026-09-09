@@ -1,7 +1,17 @@
 namespace Unclaimable;
 
+/// <summary>
+/// Configures a <see cref="Checker"/>. Option values are captured when the checker is constructed;
+/// later mutations to this object do not change that checker's matching configuration.
+/// Runtime character-policy updates remain live through the checker's <see cref="IPolicy"/> instance.
+/// </summary>
 public sealed class Options
 {
+    /// <summary>Creates options using the compatibility-preserving default configuration.</summary>
+    public Options()
+    {
+    }
+
     private bool _partialMatching;
     private readonly HashSet<string> _additionalBlockedCharacters = new HashSet<string>(StringComparer.Ordinal);
     private readonly HashSet<Language> _languages = new HashSet<Language>
@@ -11,13 +21,12 @@ public sealed class Options
 
     /// <summary>
     /// Controls how aggressively reserved-name rules are applied.
-    /// Strict is the default and enables embedded/partial reserved-name matching.
+    /// Strict is the default and enables embedded/partial reserved-name matching even when
+    /// <see cref="PartialMatching"/> is set to <see langword="false"/>.
     /// </summary>
     public Strictness Strictness { get; set; } = Strictness.Strict;
 
-    /// <summary>
-    /// Built-in rules to disable. No rules are disabled by default.
-    /// </summary>
+    /// <summary>Built-in rules to disable. No rules are disabled by default.</summary>
     public Rule DisabledRules { get; set; } = Rule.None;
 
     /// <summary>
@@ -29,6 +38,8 @@ public sealed class Options
     public IReadOnlyCollection<Language> Languages => _languages;
 
     /// <summary>Adds a localized built-in language dataset while keeping currently enabled languages.</summary>
+    /// <param name="language">The supported language dataset to enable.</param>
+    /// <returns>This options instance.</returns>
     public Options AddLanguage(Language language)
     {
         ValidateLanguage(language, nameof(language));
@@ -37,6 +48,8 @@ public sealed class Options
     }
 
     /// <summary>Removes a localized built-in language dataset.</summary>
+    /// <param name="language">The supported language dataset to disable.</param>
+    /// <returns>This options instance.</returns>
     public Options RemoveLanguage(Language language)
     {
         ValidateLanguage(language, nameof(language));
@@ -44,22 +57,29 @@ public sealed class Options
         return this;
     }
 
-    /// <summary>Minimum accepted identifier length. Defaults to 3.</summary>
+    /// <summary>Minimum accepted identifier length in UTF-16 code units. Defaults to 3.</summary>
     public int MinimumLength { get; set; } = 3;
 
-    /// <summary>Maximum accepted identifier length. Defaults to 32.</summary>
+    /// <summary>Maximum accepted identifier length in UTF-16 code units. Defaults to 32.</summary>
     public int MaximumLength { get; set; } = 32;
 
     /// <summary>
     /// Also compare a compact form with separators and punctuation removed.
-    /// Kept for compatibility; prefer disabling Rule.CompactMatching.
+    /// Kept for compatibility; prefer disabling <see cref="Rule.CompactMatching"/>.
     /// </summary>
     public bool CompactMatching { get; set; } = true;
 
     /// <summary>
+    /// Applies <see cref="Rule.CompactMatching"/> to partial and obfuscation matching
+    /// as well as direct compact matching. Disabled by default to preserve
+    /// earlier matching behavior.
+    /// </summary>
+    public bool ConsistentCompactMatching { get; set; }
+
+    /// <summary>
     /// Also reject usernames that contain a reserved value as part of a larger value.
-    /// Strict mode enables this automatically. Kept for compatibility; prefer
-    /// disabling Rule.PartialMatching when relaxation is required.
+    /// Strict mode enables this automatically even when this property is set to <see langword="false"/>.
+    /// Kept for compatibility; prefer disabling <see cref="Rule.PartialMatching"/> when relaxation is required.
     /// </summary>
     public bool PartialMatching
     {
@@ -72,7 +92,7 @@ public sealed class Options
 
     /// <summary>
     /// Include profanity from the enabled localized dataset or datasets. Enabled by default.
-    /// Kept for compatibility; prefer disabling Rule.Profanity.
+    /// Kept for compatibility; prefer disabling <see cref="Rule.Profanity"/>.
     /// </summary>
     public bool ProfanityMatching { get; set; } = true;
 
@@ -84,19 +104,19 @@ public sealed class Options
 
     /// <summary>
     /// Detect common username obfuscation and leetspeak substitutions.
-    /// Kept for compatibility; prefer disabling Rule.ObfuscationMatching.
+    /// Kept for compatibility; prefer disabling <see cref="Rule.ObfuscationMatching"/>.
     /// </summary>
     public bool ObfuscationMatching { get; set; } = true;
 
     /// <summary>
     /// Detect common Unicode lookalikes and diacritic-based impersonation.
-    /// Kept for compatibility; prefer disabling Rule.UnicodeConfusableMatching.
+    /// Kept for compatibility; prefer disabling <see cref="Rule.UnicodeConfusableMatching"/>.
     /// </summary>
     public bool UnicodeConfusableMatching { get; set; } = true;
 
     /// <summary>
     /// Allow Unicode decimal digits. Numbers are rejected by default.
-    /// Kept for compatibility; prefer disabling Rule.Numbers.
+    /// Kept for compatibility; prefer disabling <see cref="Rule.Numbers"/>.
     /// </summary>
     public bool AllowNumbers { get; set; }
 
@@ -107,8 +127,23 @@ public sealed class Options
     public bool AsciiOnly { get; set; }
 
     /// <summary>
-    /// Optional application-wide fallback validation message used by the ASP.NET Core attribute.
+    /// Rejects identifiers containing only whitespace, formatting characters,
+    /// control characters, or combining marks. Disabled by default.
+    /// This is an approximation of visible content based on Unicode categories and does not determine actual rendering.
     /// </summary>
+    public bool RejectInvisibleOnlyIdentifiers { get; set; }
+
+    /// <summary>Rejects Unicode control characters. Disabled by default.</summary>
+    public bool RejectControlCharacters { get; set; }
+
+    /// <summary>
+    /// Rejects Unicode formatting characters, including zero-width and
+    /// bidirectional formatting characters. Disabled by default.
+    /// Keep this separate from other Unicode strictness because formatting characters can be legitimate in some languages.
+    /// </summary>
+    public bool RejectFormatCharacters { get; set; }
+
+    /// <summary>Optional application-wide fallback validation message used by the ASP.NET Core attribute.</summary>
     public string? ValidationMessage { get; set; }
 
     /// <summary>Optional reason-specific validation messages.</summary>
@@ -117,14 +152,12 @@ public sealed class Options
     /// <summary>Application-specific names to reserve in addition to the shared dataset.</summary>
     public ICollection<string> AdditionalReserved { get; } = new List<string>();
 
-    /// <summary>
-    /// Characters configured at startup in addition to Unclaimable's built-in blocked characters.
-    /// </summary>
+    /// <summary>Characters configured at startup in addition to Unclaimable's built-in blocked characters.</summary>
     public IReadOnlyCollection<string> ConfiguredBlockedCharacters => _additionalBlockedCharacters;
 
-    /// <summary>
-    /// Adds application-specific blocked characters to the strict built-in character policy.
-    /// </summary>
+    /// <summary>Adds application-specific blocked Unicode scalar values to the strict built-in character policy.</summary>
+    /// <param name="characters">Unicode scalar values to block.</param>
+    /// <returns>This options instance.</returns>
     public Options AdditionalBlockedCharacters(params string[] characters)
     {
         if (characters is null)

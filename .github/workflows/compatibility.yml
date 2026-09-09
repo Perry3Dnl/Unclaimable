@@ -1,0 +1,63 @@
+name: .NET 0.4.0 Compatibility
+
+on:
+  push:
+    paths:
+      - "Directory.Build.props"
+      - "data/**"
+      - "platforms/dotnet/**"
+      - ".github/workflows/compatibility.yml"
+  pull_request:
+    paths:
+      - "Directory.Build.props"
+      - "data/**"
+      - "platforms/dotnet/**"
+      - ".github/workflows/compatibility.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  compatibility:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Compare public API and default behavior with v0.3.0
+        shell: bash
+        run: |
+          set -euo pipefail
+          baseline_source="$(mktemp -d)"
+          baseline_out="$RUNNER_TEMP/unclaimable-v0.3.0"
+          current_out="$RUNNER_TEMP/unclaimable-current"
+
+          cleanup() {
+            git worktree remove --force "$baseline_source" >/dev/null 2>&1 || true
+          }
+          trap cleanup EXIT
+
+          git worktree add --detach "$baseline_source" v0.3.0
+
+          dotnet build \
+            "$baseline_source/platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj" \
+            --configuration Release \
+            --output "$baseline_out"
+
+          dotnet build \
+            platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj \
+            --configuration Release \
+            --output "$current_out"
+
+          dotnet run \
+            --project platforms/dotnet/compat/Unclaimable.ReleaseChecks/Unclaimable.ReleaseChecks.csproj \
+            --configuration Release \
+            -- "$baseline_out" "$current_out"
