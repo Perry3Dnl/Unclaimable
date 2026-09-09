@@ -6,7 +6,12 @@ using System.Text;
 
 namespace Unclaimable;
 
-public sealed class Checker : IChecker
+/// <summary>
+/// Validates identifier structure and checks normalized values against Unclaimable's reserved-name datasets.
+/// Configuration from <see cref="Options"/> is captured at construction time, while updates to the supplied
+/// <see cref="IPolicy"/> remain live. Null values are accepted; required-field validation remains separate.
+/// </summary>
+public sealed partial class Checker : IChecker
 {
     private const int MaxObfuscationCandidates = 32;
 
@@ -38,6 +43,18 @@ public sealed class Checker : IChecker
         public string Exact { get; }
         public string Compact { get; }
         public ReservedEntry Entry { get; }
+    }
+
+    private sealed class InputMapping
+    {
+        public InputMapping(int[] exactToOriginal, int[] compactToOriginal)
+        {
+            ExactToOriginal = exactToOriginal;
+            CompactToOriginal = compactToOriginal;
+        }
+
+        public int[] ExactToOriginal { get; }
+        public int[] CompactToOriginal { get; }
     }
 
     [DataContract]
@@ -91,25 +108,39 @@ public sealed class Checker : IChecker
     private readonly int _minimumLength;
     private readonly int _maximumLength;
     private readonly bool _compactMatching;
+    private readonly bool _consistentCompactMatching;
     private readonly bool _partialMatching;
     private readonly int _partialMatchMinimumLength;
     private readonly bool _obfuscationMatching;
     private readonly bool _unicodeConfusableMatching;
     private readonly bool _allowNumbers;
     private readonly bool _asciiOnly;
+    private readonly bool _rejectInvisibleOnlyIdentifiers;
+    private readonly bool _rejectControlCharacters;
+    private readonly bool _rejectFormatCharacters;
 
+    /// <summary>Gets the shared checker using default options and its own live runtime policy.</summary>
     public static Checker Default { get; } = new Checker();
 
+    /// <summary>Creates a checker using default options.</summary>
     public Checker()
         : this(new Options())
     {
     }
 
+    /// <summary>
+    /// Creates a checker from options. All option values are captured during construction.
+    /// The created runtime character policy remains mutable and live.
+    /// </summary>
     public Checker(Options options)
         : this(options, new Policy(options?.ConfiguredBlockedCharacters ?? Array.Empty<string>()))
     {
     }
 
+    /// <summary>
+    /// Creates a checker from captured options and a runtime-adjustable character policy.
+    /// Option mutations after construction do not affect this checker; policy mutations do.
+    /// </summary>
     public Checker(Options options, IPolicy policy)
     {
         if (options is null)
@@ -162,12 +193,16 @@ public sealed class Checker : IChecker
         _minimumLength = options.MinimumLength;
         _maximumLength = options.MaximumLength;
         _compactMatching = options.CompactMatching && options.IsRuleEnabled(Rule.CompactMatching);
+        _consistentCompactMatching = options.ConsistentCompactMatching;
         _partialMatching = options.PartialMatching && options.IsRuleEnabled(Rule.PartialMatching);
         _partialMatchMinimumLength = options.PartialMatchMinimumLength;
         _obfuscationMatching = options.ObfuscationMatching && options.IsRuleEnabled(Rule.ObfuscationMatching);
         _unicodeConfusableMatching = options.UnicodeConfusableMatching && options.IsRuleEnabled(Rule.UnicodeConfusableMatching);
         _allowNumbers = options.AllowNumbers || !options.IsRuleEnabled(Rule.Numbers);
         _asciiOnly = options.AsciiOnly;
+        _rejectInvisibleOnlyIdentifiers = options.RejectInvisibleOnlyIdentifiers;
+        _rejectControlCharacters = options.RejectControlCharacters;
+        _rejectFormatCharacters = options.RejectFormatCharacters;
 
         var profanityMatching = options.ProfanityMatching && options.IsRuleEnabled(Rule.Profanity);
 
@@ -197,10 +232,18 @@ public sealed class Checker : IChecker
         _partialEntries.Sort((left, right) => right.Compact.Length.CompareTo(left.Compact.Length));
     }
 
+    /// <summary>
+    /// Returns whether the value is rejected. Structural validation failures are included.
+    /// Null is accepted; use required-field validation separately when null is not allowed.
+    /// </summary>
     public bool IsReserved(string? value) => Check(value).IsReserved;
 
+    /// <summary>
+    /// Returns whether the value is claimable. Null is accepted; required-field validation remains separate.
+    /// </summary>
     public bool IsClaimable(string? value) => !Check(value).IsReserved;
 
+    /// <summary>Returns the first validation or reserved-name result.</summary>
     public Result Check(string? value)
     {
         Result? policyViolation;
@@ -212,9 +255,27 @@ public sealed class Checker : IChecker
         return CheckReservedName(value);
     }
 
+    /// <summary>
+    /// Returns all validation diagnostics plus the reserved-name result, if any.
+    /// Existing match offsets refer to transformed matching text; original-input spans are supplied separately when reliable.
+    /// </summary>
     public DetailedResult CheckDetailed(string? value, bool includeMessages = false)
     {
         var diagnostics = new List<Diagnostic>();
+
+        if (value is not null && TryFindMalformedUtf16(value, out var invalidIndex, out var invalidCharacter))
+        {
+            diagnostics.Add(new Diagnostic(
+                MatchKind.InvalidCharacters,
+                offendingCharacterIndex: invalidIndex,
+                offendingCharacter: invalidCharacter,
+                message: includeMessages
+                    ? $"Character '{invalidCharacter}' at index {invalidIndex} is not a valid UTF-16 sequence."
+                    : null));
+
+            return new DetailedResult(value, diagnostics);
+        }
+
         CollectPolicyDiagnostics(value, includeMessages, diagnostics);
 
         var reservedResult = CheckReservedName(value);
@@ -234,10 +295,20 @@ public sealed class Checker : IChecker
             return Result.Allowed(value);
         }
 
+        var mapping = value is null ? null : TryCreateInputMapping(value, exact);
+
         ReservedEntry? exactMatch;
         if (_exact.TryGetValue(exact, out exactMatch))
         {
-            return CreateReservedResult(value, exactMatch, MatchKind.Exact, 0, exact.Length);
+            TryMapOriginalSpan(mapping?.ExactToOriginal, 0, exact.Length, out var originalStart, out var originalLength);
+            return CreateReservedResult(
+                value,
+                exactMatch,
+                MatchKind.Exact,
+                0,
+                exact.Length,
+                originalStart,
+                originalLength);
         }
 
         var compact = NormalizeCompact(exact);
@@ -246,7 +317,15 @@ public sealed class Checker : IChecker
             ReservedEntry? compactMatch;
             if (compact.Length > 0 && _compact.TryGetValue(compact, out compactMatch))
             {
-                return CreateReservedResult(value, compactMatch, MatchKind.Compact, 0, compact.Length);
+                TryMapOriginalSpan(mapping?.CompactToOriginal, 0, compact.Length, out var originalStart, out var originalLength);
+                return CreateReservedResult(
+                    value,
+                    compactMatch,
+                    MatchKind.Compact,
+                    0,
+                    compact.Length,
+                    originalStart,
+                    originalLength);
             }
         }
 
@@ -255,9 +334,19 @@ public sealed class Checker : IChecker
             ReservedEntry? partialMatch;
             int partialStart;
             int partialLength;
-            if (TryMatchPartial(exact, compact, out partialMatch, out partialStart, out partialLength))
+            bool usedCompact;
+            if (TryMatchPartial(exact, compact, out partialMatch, out partialStart, out partialLength, out usedCompact))
             {
-                return CreateReservedResult(value, partialMatch!, MatchKind.Partial, partialStart, partialLength);
+                var sourceMap = usedCompact ? mapping?.CompactToOriginal : mapping?.ExactToOriginal;
+                TryMapOriginalSpan(sourceMap, partialStart, partialLength, out var originalStart, out var originalLength);
+                return CreateReservedResult(
+                    value,
+                    partialMatch!,
+                    MatchKind.Partial,
+                    partialStart,
+                    partialLength,
+                    originalStart,
+                    originalLength);
             }
         }
 
@@ -303,7 +392,9 @@ public sealed class Checker : IChecker
         ReservedEntry match,
         MatchKind matchKind,
         int? matchStartIndex = null,
-        int? matchLength = null)
+        int? matchLength = null,
+        int? originalMatchStartIndex = null,
+        int? originalMatchLength = null)
     {
         return new Result(
             true,
@@ -314,815 +405,10 @@ public sealed class Checker : IChecker
             null,
             null,
             matchStartIndex,
-            matchLength);
+            matchLength,
+            originalMatchStartIndex,
+            originalMatchLength,
+            null);
     }
 
-    private void Add(ReservedEntry entry, bool includeInPartialMatching = true)
-    {
-        var exact = NormalizeExact(entry.Value);
-        if (exact is null)
-        {
-            return;
-        }
-
-        if (!_exact.ContainsKey(exact))
-        {
-            _exact.Add(exact, entry);
-        }
-
-        var compact = NormalizeCompact(exact);
-        if (compact.Length > 0 && !_compact.ContainsKey(compact))
-        {
-            _compact.Add(compact, entry);
-        }
-
-        if (includeInPartialMatching && compact.Length >= _partialMatchMinimumLength)
-        {
-            _partialEntries.Add(new PartialEntry(exact, compact, entry));
-        }
-    }
-
-    private bool TryMatchPartial(
-        string exact,
-        string compact,
-        out ReservedEntry? match,
-        out int startIndex,
-        out int matchLength)
-    {
-        foreach (var partial in _partialEntries)
-        {
-            var exactIndex = exact.IndexOf(partial.Exact, StringComparison.Ordinal);
-            if (exactIndex >= 0 && exact.Length > partial.Exact.Length)
-            {
-                match = partial.Entry;
-                startIndex = exactIndex;
-                matchLength = partial.Exact.Length;
-                return true;
-            }
-
-            if (compact.Length > partial.Compact.Length)
-            {
-                var compactIndex = compact.IndexOf(partial.Compact, StringComparison.Ordinal);
-                if (compactIndex >= 0)
-                {
-                    match = partial.Entry;
-                    startIndex = compactIndex;
-                    matchLength = partial.Compact.Length;
-                    return true;
-                }
-            }
-        }
-
-        match = null;
-        startIndex = -1;
-        matchLength = 0;
-        return false;
-    }
-
-    private bool TryMatchUnicodeConfusable(
-        string value,
-        out ReservedEntry? match,
-        out MatchKind matchKind,
-        out int? matchStartIndex,
-        out int? matchLength)
-    {
-        bool changed;
-        var skeleton = NormalizeUnicodeConfusables(value, out changed);
-        if (!changed)
-        {
-            match = null;
-            matchKind = MatchKind.None;
-            matchStartIndex = null;
-            matchLength = null;
-            return false;
-        }
-
-        if (_exact.TryGetValue(skeleton, out match))
-        {
-            matchKind = MatchKind.UnicodeConfusable;
-            matchStartIndex = 0;
-            matchLength = skeleton.Length;
-            return true;
-        }
-
-        var compact = NormalizeCompact(skeleton);
-        if (_compactMatching && compact.Length > 0 && _compact.TryGetValue(compact, out match))
-        {
-            matchKind = MatchKind.UnicodeConfusable;
-            matchStartIndex = 0;
-            matchLength = compact.Length;
-            return true;
-        }
-
-        if (_partialMatching)
-        {
-            int partialStart;
-            int partialLength;
-            if (TryMatchPartial(skeleton, compact, out match, out partialStart, out partialLength))
-            {
-                matchKind = MatchKind.Partial;
-                matchStartIndex = partialStart;
-                matchLength = partialLength;
-                return true;
-            }
-        }
-
-        if (_obfuscationMatching
-            && TryMatchObfuscated(skeleton, out match, out matchKind, out matchStartIndex, out matchLength))
-        {
-            return true;
-        }
-
-        match = null;
-        matchKind = MatchKind.None;
-        matchStartIndex = null;
-        matchLength = null;
-        return false;
-    }
-
-    private bool TryMatchObfuscated(
-        string value,
-        out ReservedEntry? match,
-        out MatchKind matchKind,
-        out int? matchStartIndex,
-        out int? matchLength)
-    {
-        var candidates = new List<string> { string.Empty };
-        var usedSubstitution = false;
-
-        for (var index = 0; index < value.Length; index++)
-        {
-            var character = value[index];
-            string[]? substitutions;
-
-            if (TryGetObfuscationSubstitutions(character, out substitutions))
-            {
-                usedSubstitution = true;
-                candidates = ExpandCandidates(candidates, substitutions!);
-                continue;
-            }
-
-            if (char.IsHighSurrogate(character)
-                && index + 1 < value.Length
-                && char.IsLowSurrogate(value[index + 1]))
-            {
-                var category = CharUnicodeInfo.GetUnicodeCategory(value, index);
-                if (IsLetterOrDigit(category))
-                {
-                    AppendToCandidates(candidates, new string(new[] { character, value[index + 1] }));
-                }
-
-                index++;
-                continue;
-            }
-
-            if (char.IsLetterOrDigit(character))
-            {
-                AppendToCandidates(candidates, character.ToString());
-            }
-        }
-
-        if (!usedSubstitution)
-        {
-            match = null;
-            matchKind = MatchKind.None;
-            matchStartIndex = null;
-            matchLength = null;
-            return false;
-        }
-
-        foreach (var candidate in candidates)
-        {
-            if (candidate.Length > 0 && _compact.TryGetValue(candidate, out match))
-            {
-                matchKind = MatchKind.Obfuscated;
-                matchStartIndex = 0;
-                matchLength = candidate.Length;
-                return true;
-            }
-
-            if (_partialMatching)
-            {
-                foreach (var partial in _partialEntries)
-                {
-                    if (candidate.Length <= partial.Compact.Length)
-                    {
-                        continue;
-                    }
-
-                    var partialIndex = candidate.IndexOf(partial.Compact, StringComparison.Ordinal);
-                    if (partialIndex >= 0)
-                    {
-                        match = partial.Entry;
-                        matchKind = MatchKind.Partial;
-                        matchStartIndex = partialIndex;
-                        matchLength = partial.Compact.Length;
-                        return true;
-                    }
-                }
-            }
-        }
-
-        match = null;
-        matchKind = MatchKind.None;
-        matchStartIndex = null;
-        matchLength = null;
-        return false;
-    }
-
-    private bool TryFindFirstPolicyViolation(string? value, out Result? violation)
-    {
-        violation = null;
-        if (value is null)
-        {
-            return false;
-        }
-
-        if (_minimumLengthEnabled && value.Length < _minimumLength)
-        {
-            violation = Result.TooShort(value);
-            return true;
-        }
-
-        if (_maximumLengthEnabled && value.Length > _maximumLength)
-        {
-            violation = Result.TooLong(value);
-            return true;
-        }
-
-        if (value.Length == 0)
-        {
-            return false;
-        }
-
-        if (_leadingSeparatorEnabled && IsSeparator(value[0]))
-        {
-            violation = Result.LeadingSeparator(value, 0, value[0].ToString());
-            return true;
-        }
-
-        if (_trailingSeparatorEnabled && IsSeparator(value[value.Length - 1]))
-        {
-            violation = Result.TrailingSeparator(value, value.Length - 1, value[value.Length - 1].ToString());
-            return true;
-        }
-
-        for (var index = 0; index < value.Length; index++)
-        {
-            var character = value[index];
-            var characterText = character.ToString();
-            var category = CharUnicodeInfo.GetUnicodeCategory(value, index);
-
-            if (char.IsHighSurrogate(character)
-                && index + 1 < value.Length
-                && char.IsLowSurrogate(value[index + 1]))
-            {
-                characterText = new string(new[] { character, value[index + 1] });
-            }
-
-            if (!_allowNumbers && category == UnicodeCategory.DecimalDigitNumber)
-            {
-                violation = Result.NumbersNotAllowed(value, index, characterText);
-                return true;
-            }
-
-            if (_asciiOnly && (character < 0x20 || character > 0x7E))
-            {
-                violation = Result.InvalidCharacters(value, index, characterText);
-                return true;
-            }
-
-            var explicitlyAllowed = _policy.IsCharacterExplicitlyAllowed(characterText);
-            if (!explicitlyAllowed && _whitespaceEnabled && IsWhitespace(category, character))
-            {
-                violation = Result.BlockedCharacter(value, index, characterText);
-                return true;
-            }
-
-            if (!explicitlyAllowed && _blockedCharactersEnabled && _policy.IsCharacterBlocked(characterText))
-            {
-                violation = Result.BlockedCharacter(value, index, characterText);
-                return true;
-            }
-
-            if (characterText.Length == 2)
-            {
-                index++;
-            }
-        }
-
-        return false;
-    }
-
-    private void CollectPolicyDiagnostics(
-        string? value,
-        bool includeMessages,
-        List<Diagnostic> diagnostics)
-    {
-        if (value is null)
-        {
-            return;
-        }
-
-        if (_minimumLengthEnabled && value.Length < _minimumLength)
-        {
-            diagnostics.Add(new Diagnostic(
-                MatchKind.TooShort,
-                message: includeMessages ? $"Value must be at least {_minimumLength} characters long." : null));
-        }
-
-        if (_maximumLengthEnabled && value.Length > _maximumLength)
-        {
-            diagnostics.Add(new Diagnostic(
-                MatchKind.TooLong,
-                message: includeMessages ? $"Value must be no more than {_maximumLength} characters long." : null));
-        }
-
-        if (value.Length == 0)
-        {
-            return;
-        }
-
-        if (_leadingSeparatorEnabled && IsSeparator(value[0]))
-        {
-            diagnostics.Add(new Diagnostic(
-                MatchKind.LeadingSeparator,
-                offendingCharacterIndex: 0,
-                offendingCharacter: value[0].ToString(),
-                message: includeMessages ? "Leading separators are not allowed." : null));
-        }
-
-        if (_trailingSeparatorEnabled && IsSeparator(value[value.Length - 1]))
-        {
-            diagnostics.Add(new Diagnostic(
-                MatchKind.TrailingSeparator,
-                offendingCharacterIndex: value.Length - 1,
-                offendingCharacter: value[value.Length - 1].ToString(),
-                message: includeMessages ? "Trailing separators are not allowed." : null));
-        }
-
-        for (var index = 0; index < value.Length; index++)
-        {
-            var character = value[index];
-            var characterText = character.ToString();
-            var category = CharUnicodeInfo.GetUnicodeCategory(value, index);
-
-            if (char.IsHighSurrogate(character)
-                && index + 1 < value.Length
-                && char.IsLowSurrogate(value[index + 1]))
-            {
-                characterText = new string(new[] { character, value[index + 1] });
-            }
-
-            if (!_allowNumbers && category == UnicodeCategory.DecimalDigitNumber)
-            {
-                diagnostics.Add(new Diagnostic(
-                    MatchKind.NumbersNotAllowed,
-                    offendingCharacterIndex: index,
-                    offendingCharacter: characterText,
-                    message: includeMessages
-                        ? $"Numbers are not allowed; '{characterText}' at index {index} is not permitted."
-                        : null));
-            }
-
-            if (_asciiOnly && (character < 0x20 || character > 0x7E))
-            {
-                diagnostics.Add(new Diagnostic(
-                    MatchKind.InvalidCharacters,
-                    offendingCharacterIndex: index,
-                    offendingCharacter: characterText,
-                    message: includeMessages
-                        ? $"Character '{characterText}' at index {index} is not allowed by the ASCII-only policy."
-                        : null));
-            }
-
-            var explicitlyAllowed = _policy.IsCharacterExplicitlyAllowed(characterText);
-            if (!explicitlyAllowed && _whitespaceEnabled && IsWhitespace(category, character))
-            {
-                diagnostics.Add(new Diagnostic(
-                    MatchKind.BlockedCharacter,
-                    offendingCharacterIndex: index,
-                    offendingCharacter: characterText,
-                    message: includeMessages ? $"Character '{characterText}' at index {index} is blocked." : null));
-            }
-            else if (!explicitlyAllowed && _blockedCharactersEnabled && _policy.IsCharacterBlocked(characterText))
-            {
-                diagnostics.Add(new Diagnostic(
-                    MatchKind.BlockedCharacter,
-                    offendingCharacterIndex: index,
-                    offendingCharacter: characterText,
-                    message: includeMessages ? $"Character '{characterText}' at index {index} is blocked." : null));
-            }
-
-            if (characterText.Length == 2)
-            {
-                index++;
-            }
-        }
-    }
-
-    private static Diagnostic ToDiagnostic(Result result, bool includeMessage)
-    {
-        return new Diagnostic(
-            result.MatchKind,
-            result.MatchedValue,
-            result.Category,
-            result.OffendingCharacterIndex,
-            result.OffendingCharacter,
-            result.MatchStartIndex,
-            result.MatchLength,
-            includeMessage ? BuildMessage(result) : null);
-    }
-
-    private static string BuildMessage(Result result)
-    {
-        switch (result.MatchKind)
-        {
-            case MatchKind.Exact:
-                return $"'{result.MatchedValue}' is reserved and cannot be claimed.";
-            case MatchKind.Compact:
-                return $"This value resolves to the reserved value '{result.MatchedValue}' after separators or punctuation are ignored.";
-            case MatchKind.Partial:
-                return $"This value contains the reserved value '{result.MatchedValue}'.";
-            case MatchKind.Obfuscated:
-                return $"This value appears to obfuscate the reserved value '{result.MatchedValue}'.";
-            case MatchKind.UnicodeConfusable:
-                return $"This value contains Unicode lookalikes that resolve to the reserved value '{result.MatchedValue}'.";
-            case MatchKind.NumbersNotAllowed:
-                return $"Numbers are not allowed; '{result.OffendingCharacter}' at index {result.OffendingCharacterIndex} is not permitted.";
-            case MatchKind.InvalidCharacters:
-                return $"Character '{result.OffendingCharacter}' at index {result.OffendingCharacterIndex} is not allowed.";
-            case MatchKind.TooShort:
-                return "This value is shorter than the configured minimum length.";
-            case MatchKind.TooLong:
-                return "This value is longer than the configured maximum length.";
-            case MatchKind.BlockedCharacter:
-                return $"Character '{result.OffendingCharacter}' at index {result.OffendingCharacterIndex} is blocked.";
-            case MatchKind.LeadingSeparator:
-                return "Leading separators are not allowed.";
-            case MatchKind.TrailingSeparator:
-                return "Trailing separators are not allowed.";
-            default:
-                return "This value is not allowed.";
-        }
-    }
-
-    private static bool IsSeparator(char character) =>
-        character == '-' || character == '_' || character == '.';
-
-    private static bool IsWhitespace(UnicodeCategory category, char character) =>
-        char.IsWhiteSpace(character)
-        || category == UnicodeCategory.SpaceSeparator
-        || category == UnicodeCategory.LineSeparator
-        || category == UnicodeCategory.ParagraphSeparator;
-
-    private static string NormalizeUnicodeConfusables(string value, out bool changed)
-    {
-        var decomposed = value.Normalize(NormalizationForm.FormD);
-        var builder = new StringBuilder(decomposed.Length);
-        changed = false;
-
-        for (var index = 0; index < decomposed.Length; index++)
-        {
-            var character = decomposed[index];
-            var category = CharUnicodeInfo.GetUnicodeCategory(decomposed, index);
-
-            if (category == UnicodeCategory.NonSpacingMark
-                || category == UnicodeCategory.SpacingCombiningMark
-                || category == UnicodeCategory.EnclosingMark)
-            {
-                changed = true;
-                continue;
-            }
-
-            char mapped;
-            if (TryMapUnicodeConfusable(character, out mapped))
-            {
-                builder.Append(mapped);
-                changed = true;
-            }
-            else
-            {
-                builder.Append(character);
-            }
-
-            if (char.IsHighSurrogate(character)
-                && index + 1 < decomposed.Length
-                && char.IsLowSurrogate(decomposed[index + 1]))
-            {
-                builder.Append(decomposed[index + 1]);
-                index++;
-            }
-        }
-
-        return builder.ToString().Normalize(NormalizationForm.FormC);
-    }
-
-    private static bool TryMapUnicodeConfusable(char character, out char mapped)
-    {
-        switch (character)
-        {
-            case (char)0x0430: mapped = 'a'; return true;
-            case (char)0x0432: mapped = 'b'; return true;
-            case (char)0x0435: mapped = 'e'; return true;
-            case (char)0x043A: mapped = 'k'; return true;
-            case (char)0x043C: mapped = 'm'; return true;
-            case (char)0x043D: mapped = 'h'; return true;
-            case (char)0x043E: mapped = 'o'; return true;
-            case (char)0x0440: mapped = 'p'; return true;
-            case (char)0x0441: mapped = 'c'; return true;
-            case (char)0x0442: mapped = 't'; return true;
-            case (char)0x0443: mapped = 'y'; return true;
-            case (char)0x0445: mapped = 'x'; return true;
-            case (char)0x0455: mapped = 's'; return true;
-            case (char)0x0456: mapped = 'i'; return true;
-            case (char)0x0458: mapped = 'j'; return true;
-            case (char)0x04CF: mapped = 'l'; return true;
-            case (char)0x03B1: mapped = 'a'; return true;
-            case (char)0x03B2: mapped = 'b'; return true;
-            case (char)0x03B5: mapped = 'e'; return true;
-            case (char)0x03B9: mapped = 'i'; return true;
-            case (char)0x03BA: mapped = 'k'; return true;
-            case (char)0x03BC: mapped = 'm'; return true;
-            case (char)0x03BD: mapped = 'v'; return true;
-            case (char)0x03BF: mapped = 'o'; return true;
-            case (char)0x03C1: mapped = 'p'; return true;
-            case (char)0x03C4: mapped = 't'; return true;
-            case (char)0x03C5: mapped = 'y'; return true;
-            case (char)0x03C7: mapped = 'x'; return true;
-            case (char)0x03F2: mapped = 'c'; return true;
-            case (char)0x0131: mapped = 'i'; return true;
-            default:
-                mapped = (char)0;
-                return false;
-        }
-    }
-
-    private static List<string> ExpandCandidates(List<string> candidates, string[] substitutions)
-    {
-        var expanded = new List<string>(Math.Min(MaxObfuscationCandidates, candidates.Count * substitutions.Length));
-
-        foreach (var candidate in candidates)
-        {
-            foreach (var substitution in substitutions)
-            {
-                if (expanded.Count >= MaxObfuscationCandidates)
-                {
-                    return expanded;
-                }
-
-                expanded.Add(candidate + substitution);
-            }
-        }
-
-        return expanded;
-    }
-
-    private static void AppendToCandidates(List<string> candidates, string value)
-    {
-        for (var index = 0; index < candidates.Count; index++)
-        {
-            candidates[index] += value;
-        }
-    }
-
-    private static bool TryGetObfuscationSubstitutions(char character, out string[]? substitutions)
-    {
-        switch (character)
-        {
-            case '0': substitutions = new[] { "o" }; return true;
-            case '1': substitutions = new[] { "i", "l" }; return true;
-            case '2': substitutions = new[] { "z" }; return true;
-            case '3': substitutions = new[] { "e" }; return true;
-            case '4': substitutions = new[] { "a" }; return true;
-            case '5': substitutions = new[] { "s" }; return true;
-            case '6':
-            case '9': substitutions = new[] { "g" }; return true;
-            case '7': substitutions = new[] { "t" }; return true;
-            case '8': substitutions = new[] { "b" }; return true;
-            case '@': substitutions = new[] { "a" }; return true;
-            case '$': substitutions = new[] { "s" }; return true;
-            case '!':
-            case '|': substitutions = new[] { "i", "l" }; return true;
-            case '+': substitutions = new[] { "t" }; return true;
-            default:
-                substitutions = null;
-                return false;
-        }
-    }
-
-    private static string? NormalizeExact(string? value)
-    {
-        if (value is null || string.IsNullOrWhiteSpace(value))
-        {
-            return null;
-        }
-
-        return value.Trim().Normalize(NormalizationForm.FormKC).ToLowerInvariant();
-    }
-
-    private static string NormalizeCompact(string value)
-    {
-        var builder = new StringBuilder(value.Length);
-
-        for (var index = 0; index < value.Length; index++)
-        {
-            var character = value[index];
-
-            if (char.IsHighSurrogate(character)
-                && index + 1 < value.Length
-                && char.IsLowSurrogate(value[index + 1]))
-            {
-                var category = CharUnicodeInfo.GetUnicodeCategory(value, index);
-                if (IsLetterOrDigit(category))
-                {
-                    builder.Append(character);
-                    builder.Append(value[index + 1]);
-                }
-
-                index++;
-                continue;
-            }
-
-            if (char.IsLetterOrDigit(character))
-            {
-                builder.Append(character);
-            }
-        }
-
-        return builder.ToString();
-    }
-
-    private static bool IsLetterOrDigit(UnicodeCategory category)
-    {
-        return category == UnicodeCategory.UppercaseLetter
-               || category == UnicodeCategory.LowercaseLetter
-               || category == UnicodeCategory.TitlecaseLetter
-               || category == UnicodeCategory.ModifierLetter
-               || category == UnicodeCategory.OtherLetter
-               || category == UnicodeCategory.DecimalDigitNumber;
-    }
-
-    private static IReadOnlyList<ReservedEntry> LoadBuiltInEntries()
-    {
-        var assembly = typeof(Checker).Assembly;
-        var entries = new List<ReservedEntry>();
-        var serializer = new DataContractJsonSerializer(typeof(ReservedListDocument));
-
-        foreach (var resourceName in assembly.GetManifestResourceNames()
-                     .Where(name => name.StartsWith("Unclaimable.Data.", StringComparison.Ordinal)
-                                    && name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
-                     .OrderBy(name => name, StringComparer.Ordinal))
-        {
-            using (var stream = assembly.GetManifestResourceStream(resourceName))
-            {
-                if (stream is null)
-                {
-                    throw new InvalidOperationException($"Embedded dataset '{resourceName}' could not be opened.");
-                }
-
-                var document = serializer.ReadObject(stream) as ReservedListDocument;
-                if (document is null)
-                {
-                    throw new InvalidOperationException($"Embedded dataset '{resourceName}' is invalid.");
-                }
-
-                if ((document.Schema != 1 && document.Schema != 2) || string.IsNullOrWhiteSpace(document.Category))
-                {
-                    throw new InvalidOperationException($"Embedded dataset '{resourceName}' has an unsupported schema.");
-                }
-
-                var language = ResolveDatasetLanguage(document, resourceName);
-
-                entries.AddRange((document.Values ?? Array.Empty<string>())
-                    .Where(value => !string.IsNullOrWhiteSpace(value))
-                    .Select(value => new ReservedEntry(value, document.Category, language)));
-
-                if (document.Schema >= 2)
-                {
-                    entries.AddRange((document.PartialValues ?? Array.Empty<string>())
-                        .Where(value => !string.IsNullOrWhiteSpace(value))
-                        .Select(value => new ReservedEntry(value, document.Category, language, safePartial: true)));
-
-                    foreach (var combination in document.Combinations ?? Array.Empty<CombinationDocument>())
-                    {
-                        if (combination is null)
-                        {
-                            continue;
-                        }
-
-                        foreach (var root in (combination.Roots ?? Array.Empty<string>())
-                                     .Where(root => !string.IsNullOrWhiteSpace(root)))
-                        {
-                            foreach (var suffix in (combination.Suffixes ?? Array.Empty<string>())
-                                         .Where(suffix => !string.IsNullOrWhiteSpace(suffix)))
-                            {
-                                entries.Add(new ReservedEntry(
-                                    root + suffix,
-                                    document.Category,
-                                    language,
-                                    safePartial: combination.Partial));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        return entries;
-    }
-
-    private static Language? ResolveDatasetLanguage(ReservedListDocument document, string resourceName)
-    {
-        var language = document.Language?.Trim().ToLowerInvariant();
-
-        if (string.IsNullOrEmpty(language))
-        {
-            if (string.Equals(document.Category, "brands", StringComparison.Ordinal)
-                || string.Equals(document.Category, "technology", StringComparison.Ordinal))
-            {
-                return null;
-            }
-
-            return Language.English;
-        }
-
-        switch (language)
-        {
-            case "global":
-                return null;
-            case "en":
-            case "eng":
-            case "english":
-                return Language.English;
-            case "nl":
-            case "nld":
-            case "dutch":
-                return Language.Dutch;
-            case "de":
-            case "deu":
-            case "ger":
-            case "german":
-            case "deutsch":
-                return Language.German;
-            case "fr":
-            case "fra":
-            case "fre":
-            case "french":
-            case "francais":
-                return Language.French;
-            case "es":
-            case "spa":
-            case "spanish":
-            case "espanol":
-                return Language.Spanish;
-            case "it":
-            case "ita":
-            case "italian":
-            case "italiano":
-                return Language.Italian;
-            case "pt":
-            case "por":
-            case "portuguese":
-            case "portugues":
-                return Language.Portuguese;
-            case "pl":
-            case "pol":
-            case "polish":
-                return Language.Polish;
-            case "tr":
-            case "tur":
-            case "turkish":
-                return Language.Turkish;
-            case "id":
-            case "ind":
-            case "indonesian":
-                return Language.Indonesian;
-            case "cs":
-            case "ces":
-            case "cze":
-            case "czech":
-                return Language.Czech;
-            case "vi":
-            case "vie":
-            case "vietnamese":
-                return Language.Vietnamese;
-            case "hu":
-            case "hun":
-            case "hungarian":
-                return Language.Hungarian;
-            case "sv":
-            case "swe":
-            case "swedish":
-                return Language.Swedish;
-            case "ro":
-            case "ron":
-            case "rum":
-            case "romanian":
-                return Language.Romanian;
-            default:
-                throw new InvalidOperationException(
-                    $"Embedded dataset '{resourceName}' declares unsupported language '{language}'.");
-        }
-    }
 }
