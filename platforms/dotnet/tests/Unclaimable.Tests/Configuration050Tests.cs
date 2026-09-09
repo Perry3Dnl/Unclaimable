@@ -65,6 +65,21 @@ public sealed class Configuration050Tests
     }
 
     [Fact]
+    public void AllowedIdentifierUsesTrimNfkcAndInvariantCaseNormalization()
+    {
+        var options = new Options
+        {
+            DisabledRules = Rule.Whitespace
+        };
+        options.AllowedIdentifiers.Add("apple");
+
+        var checker = new Checker(options);
+
+        Assert.True(checker.Check("ＡＰＰＬＥ").IsClaimable);
+        Assert.True(checker.Check(" APPLE ").IsClaimable);
+    }
+
+    [Fact]
     public void AllowedIdentifierDoesNotAllowObfuscatedVariants()
     {
         var options = new Options
@@ -125,15 +140,21 @@ public sealed class Configuration050Tests
     }
 
     [Fact]
-    public void ExactReservationUsesCaseAndUnicodeNormalizationWithoutBroadeningTheMatch()
+    public void ExactReservationUsesTrimNfkcAndInvariantCaseNormalizationWithoutBroadeningTheMatch()
     {
-        var options = new Options();
+        var options = new Options
+        {
+            DisabledRules = Rule.Whitespace
+        };
         options.Reserve("café", matching: ReservedMatchMode.Exact);
         options.Reserve("acme.bot", matching: ReservedMatchMode.Exact);
+        options.Reserve("acme", matching: ReservedMatchMode.Exact);
 
         var checker = new Checker(options);
 
         Assert.True(checker.Check("CAFE\u0301").IsReserved);
+        Assert.True(checker.Check("ＡＣＭＥ").IsReserved);
+        Assert.True(checker.Check(" acme ").IsReserved);
         Assert.True(checker.Check("ACME.BOT").IsReserved);
         Assert.True(checker.Check("caféteria").IsClaimable);
         Assert.True(checker.Check("acmebot").IsClaimable);
@@ -188,6 +209,41 @@ public sealed class Configuration050Tests
         Assert.True(result.IsReserved);
         Assert.NotEqual(defaultResult.Category, result.Category);
         Assert.Contains(result.Category!, duplicate.Value.Categories);
+    }
+
+    [Fact]
+    public void BuiltInDatasetCategoriesExactlyMatchCategoryEnum()
+    {
+        var actualCategories = new HashSet<string>(StringComparer.Ordinal);
+        var assembly = typeof(Checker).Assembly;
+
+        foreach (var resourceName in assembly.GetManifestResourceNames()
+                     .Where(name => name.StartsWith("Unclaimable.Data.", StringComparison.Ordinal)
+                                    && name.EndsWith(".json", StringComparison.OrdinalIgnoreCase)))
+        {
+            using var stream = assembly.GetManifestResourceStream(resourceName);
+            Assert.NotNull(stream);
+
+            using var document = JsonDocument.Parse(stream!);
+            if (!document.RootElement.TryGetProperty("category", out var categoryElement))
+            {
+                continue;
+            }
+
+            var category = categoryElement.GetString();
+            if (!string.IsNullOrWhiteSpace(category))
+            {
+                actualCategories.Add(category);
+            }
+        }
+
+        var expectedCategories = Enum.GetNames<Category>()
+            .Select(name => name.ToLowerInvariant())
+            .ToHashSet(StringComparer.Ordinal);
+
+        Assert.Equal(
+            expectedCategories.OrderBy(value => value, StringComparer.Ordinal),
+            actualCategories.OrderBy(value => value, StringComparer.Ordinal));
     }
 
     [Fact]

@@ -245,9 +245,9 @@ If the same value exists in more than one category, disabling one category does 
 
 ### Exact allowed identifiers
 
-`AllowedIdentifiers` is a narrow exception mechanism for complete identifiers. Values use the same case and Unicode normalization as exact reserved-name matching.
+`AllowedIdentifiers` is a narrow exception mechanism for complete identifiers. Exact normalization trims leading/trailing whitespace, applies Unicode NFKC normalization, and then lowercases using invariant casing.
 
-An allowed identifier bypasses **built-in reserved-name matching only**. Structural rules such as length, blocked characters, numbers, malformed Unicode, and other character restrictions still run first. Explicit application reservations also take precedence.
+An allowed identifier bypasses **built-in reserved-name matching only**. Structural rules such as length, blocked characters, numbers, malformed Unicode, whitespace, and other character restrictions still run first. In particular, the default whitespace rule is not bypassed by normalization; trimming only matters when whitespace validation has been relaxed. Explicit application reservations also take precedence.
 
 Allowing `supportive` does not automatically allow `supportiveadmin`, punctuation variants, Unicode lookalikes, or disguised/obfuscated variants.
 
@@ -260,7 +260,7 @@ options.Reserve("acme", matching: ReservedMatchMode.Exact);
 options.Reserve("internalbot", matching: ReservedMatchMode.Default);
 ```
 
-`ReservedMatchMode.Exact` means whole-identifier matching after exact case/Unicode normalization only. It does not participate in compact, partial, Unicode-confusable, or obfuscation matching.
+`ReservedMatchMode.Exact` means whole-identifier matching after the same trim → NFKC → invariant-lowercase normalization. It does not participate in compact, partial, Unicode-confusable, or obfuscation matching.
 
 `ReservedMatchMode.Default` follows the checker's existing configured matching pipeline. `AdditionalReserved` is preserved unchanged and continues to use that existing default pipeline.
 
@@ -316,7 +316,7 @@ The checks are separate so applications can relax format handling without also a
 
 ### Exact matching
 
-Case and normalization differences resolve to the same protected value where applicable.
+Exact matching trims leading/trailing whitespace, applies Unicode NFKC normalization, and then lowercases using invariant casing before comparison. Structural validation still runs before reserved-name matching.
 
 ### Compact matching
 

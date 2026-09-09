@@ -193,9 +193,9 @@ builder.Services.AddUnclaimable(options =>
 
 Every built-in category remains enabled unless explicitly disabled. Category selection applies to exact, compact, partial, Unicode-confusable, and obfuscation matching. If a value belongs to more than one category, an enabled category can still reserve it.
 
-`AllowedIdentifiers` applies only to the complete normalized identifier and bypasses built-in reserved-name matching only. Structural validation still applies, explicit application reservations take precedence, and compounds or disguised variants are not automatically allowed.
+`AllowedIdentifiers` applies only to the complete normalized identifier and bypasses built-in reserved-name matching only. Exact normalization trims leading/trailing whitespace, applies Unicode NFKC normalization, and then lowercases using invariant casing. Structural validation still runs first, so the default whitespace rule is not bypassed; trimming matters only when whitespace validation has been relaxed. Explicit application reservations take precedence, and compounds or disguised variants are not automatically allowed.
 
-`ReservedMatchMode.Exact` performs only whole-identifier matching after exact case/Unicode normalization. `ReservedMatchMode.Default` uses the existing configured matching pipeline. `AdditionalReserved` remains available and retains its existing behavior.
+`ReservedMatchMode.Exact` performs only whole-identifier matching after the same trim → NFKC → invariant-lowercase normalization. `ReservedMatchMode.Default` uses the existing configured matching pipeline. `AdditionalReserved` remains available and retains its existing behavior.
 
 Options are captured when a `Checker` is constructed. Runtime changes through `IPolicy` remain live.
 

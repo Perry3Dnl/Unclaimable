@@ -8,7 +8,8 @@ public sealed partial class Options
     /// <summary>
     /// Complete identifiers that are allowed to bypass built-in reserved-name matches.
     /// Structural validation and explicit application reservations still apply.
-    /// Values are captured and normalized when a <see cref="Checker"/> is constructed.
+    /// Values are captured when a <see cref="Checker"/> is constructed and use exact normalization:
+    /// leading/trailing whitespace is trimmed, Unicode NFKC normalization is applied, and casing is lowered invariantly.
     /// </summary>
     public ICollection<string> AllowedIdentifiers { get; } = new List<string>();
 
