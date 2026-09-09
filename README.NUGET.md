@@ -2,20 +2,20 @@
 
 Strict, fast username and identifier validation for .NET.
 
-**Current version: 0.4.0**
+**Current version: 0.5.0**
 
-Unclaimable helps decide whether a username, handle, slug, account name, tenant name, or similar identifier should be claimable. It combines curated reserved-name datasets with structural validation, impersonation protection, partial and compact matching, obfuscation detection, Unicode lookalikes, localized filtering, and application-specific rules.
+Unclaimable helps decide whether a username, handle, slug, account name, tenant name, or similar identifier should be claimable. It combines curated reserved-name datasets with structural validation, impersonation protection, partial and compact matching, obfuscation detection, Unicode lookalikes, localized filtering, category selection, exact exceptions, and application-specific rules.
 
 ## Install
 
 ```bash
-dotnet add package Unclaimable --version 0.4.0
+dotnet add package Unclaimable --version 0.5.0
 ```
 
 ASP.NET Core integration:
 
 ```bash
-dotnet add package Unclaimable.AspNetCore --version 0.4.0
+dotnet add package Unclaimable.AspNetCore --version 0.5.0
 ```
 
 ## Quick start
@@ -74,7 +74,7 @@ The default policy includes:
 
 ## Dataset coverage
 
-Version 0.4.0 contains **10,731 filter entries across 22 categories**, representing **10,633 unique values within those categories**.
+Version 0.5.0 contains **10,731 filter entries across 22 categories**, representing **10,633 unique values within those categories**. The built-in dataset contents are unchanged from 0.4.0.
 
 | Category | Filter entries | Unique values |
 | --- | ---: | ---: |
@@ -137,6 +137,7 @@ var checker = new Checker(options);
 
 `new Options()` uses a defensive baseline:
 
+- all 22 built-in categories enabled;
 - `Strictness.Strict`;
 - compact matching enabled;
 - consistent compact-rule handling enabled;
@@ -174,12 +175,27 @@ builder.Services.AddUnclaimable(options =>
     options.MinimumLength = 4;
     options.MaximumLength = 24;
 
+    options.DisableCategory(Category.Brands);
+    options.DisableCategory(Category.Technology);
+
+    options.AllowedIdentifiers.Add("supportive");
+
+    options.Reserve("acme", matching: ReservedMatchMode.Exact);
+    options.Reserve("internalbot", matching: ReservedMatchMode.Default);
+
+    // Existing API remains supported with its existing matching behavior.
     options.AdditionalReserved.Add("examplebrand");
     options.AdditionalBlockedCharacters("^", "$");
 
     options.DisabledRules = Rule.Numbers;
 });
 ```
+
+Every built-in category remains enabled unless explicitly disabled. Category selection applies to exact, compact, partial, Unicode-confusable, and obfuscation matching. If a value belongs to more than one category, an enabled category can still reserve it.
+
+`AllowedIdentifiers` applies only to the complete normalized identifier and bypasses built-in reserved-name matching only. Structural validation still applies, explicit application reservations take precedence, and compounds or disguised variants are not automatically allowed.
+
+`ReservedMatchMode.Exact` performs only whole-identifier matching after exact case/Unicode normalization. `ReservedMatchMode.Default` uses the existing configured matching pipeline. `AdditionalReserved` remains available and retains its existing behavior.
 
 Options are captured when a `Checker` is constructed. Runtime changes through `IPolicy` remain live.
 
@@ -195,7 +211,7 @@ Console.WriteLine(result.MatchKind);
 
 `MatchStartIndex` and `MatchLength` refer to the transformed matching text and use UTF-16 code units.
 
-0.4.0 also exposes nullable original-input spans:
+Nullable original-input spans are also available:
 
 ```csharp
 Console.WriteLine(result.OriginalMatchStartIndex);
@@ -226,11 +242,11 @@ public sealed class SignupModel
 }
 ```
 
-0.4.0 also ensures fallback minimum/maximum-length messages contain the effective captured threshold, including when `[ClaimableUsername]` runs without dependency injection.
+Fallback minimum/maximum-length messages contain the effective captured threshold, including when `[ClaimableUsername]` runs without dependency injection.
 
-## 0.4.0
+## 0.5.0
 
-0.4.0 strengthens the default validation policy while preserving the established public API, enum numeric values, and built-in dataset contents. It adds explicit malformed UTF-16 handling, strict invisible/control/format-character protection, consistent compact-rule behavior, original-input spans, captured length limits, and stronger package/release regression checks.
+0.5.0 adds category selection, exact built-in exceptions, and per-reservation matching modes without changing the strict defaults or built-in dataset contents from 0.4.0. `AdditionalReserved` remains compatible, structural validation still precedes allowed-identifier exceptions, and the release compatibility gate verifies unchanged default outcomes directly against 0.4.0.
 
 Full documentation and source:
 

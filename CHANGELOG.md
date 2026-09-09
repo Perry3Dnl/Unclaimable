@@ -2,6 +2,31 @@
 
 All notable changes to Unclaimable are documented here.
 
+## 0.5.0 - 2026-09-09
+
+Configurability release that keeps the 0.4.0 strict defaults and built-in dataset contents unchanged while making the existing 22 categories and application-specific overrides substantially more practical.
+
+### Added
+
+- `Category` with all 22 built-in reserved-name dataset categories and `Options.DisableCategory(...)` / `EnableCategory(...)` for per-checker category selection. Every category remains enabled by default.
+- `Options.AllowedIdentifiers` for exact complete-identifier exceptions to built-in reserved-name matching. Structural validation still runs first, explicit application reservations take precedence, and compounds or disguised variants are not automatically allowed.
+- `ReservedMatchMode` and `Options.Reserve(...)` for application reservations that need either `Exact` whole-identifier matching or `Default` matching through the existing configured pipeline.
+- Regression coverage for disabled categories across exact, compact, partial, obfuscation, and Unicode-confusable matching; exact allowed identifiers; structural-validation precedence; custom exact reservations; case/Unicode normalization; punctuation; option capture; and values that occur in multiple categories.
+- A v0.4.0 default-behavior release gate that compares fail-fast and detailed results across a deterministic Unicode corpus, including malformed UTF-16, while retaining the existing v0.3.0 legacy-compatible behavior check.
+
+### Changed
+
+- Built-in entries from disabled categories are excluded before the checker's exact, compact, partial, Unicode-confusable, and obfuscation indexes are constructed, so category selection has consistent semantics across the entire reserved-name pipeline.
+- The release compatibility workflow now checks the exported public API against `v0.4.0`, verifies unchanged default behavior against `v0.4.0`, and separately verifies the 0.3-style valid-Unicode behavior available through the 0.4.0 opt-outs.
+- GitHub and NuGet documentation now describes category selection, exact built-in exceptions, application-reservation matching modes, and their precedence rules.
+
+### Compatibility
+
+- No existing public types, methods, constructors, properties, or enum numeric values are removed or changed.
+- `AdditionalReserved` is preserved with its existing matching behavior.
+- With no new 0.5.0 configuration, checker defaults and results remain identical to 0.4.0 across the compatibility corpus.
+- No built-in datasets are expanded or reclassified in this release.
+
 ## 0.4.0 - 2026-09-09
 
 Validation-quality release that keeps the 0.3.0 public API, enum numeric values, enabled datasets, and dataset contents while intentionally strengthening the default security policy.
