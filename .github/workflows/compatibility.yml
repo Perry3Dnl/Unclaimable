@@ -32,7 +32,7 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Compare public API and default behavior with v0.3.0
+      - name: Compare public API and legacy-compatible behavior with v0.3.0
         shell: bash
         run: |
           set -euo pipefail
