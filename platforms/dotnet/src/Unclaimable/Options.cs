@@ -7,7 +7,7 @@ namespace Unclaimable;
 /// </summary>
 public sealed class Options
 {
-    /// <summary>Creates options using the compatibility-preserving default configuration.</summary>
+    /// <summary>Creates options using the strict default configuration.</summary>
     public Options()
     {
     }
@@ -70,11 +70,11 @@ public sealed class Options
     public bool CompactMatching { get; set; } = true;
 
     /// <summary>
-    /// Applies <see cref="Rule.CompactMatching"/> to partial and obfuscation matching
-    /// as well as direct compact matching. Disabled by default to preserve
-    /// earlier matching behavior.
+    /// Applies <see cref="Rule.CompactMatching"/> consistently to partial and obfuscation matching
+    /// as well as direct compact matching. Enabled by default as part of the strict 0.4.0 policy.
+    /// Set this to <see langword="false"/> only when legacy compact-rule interaction is required.
     /// </summary>
-    public bool ConsistentCompactMatching { get; set; }
+    public bool ConsistentCompactMatching { get; set; } = true;
 
     /// <summary>
     /// Also reject usernames that contain a reserved value as part of a larger value.
@@ -128,20 +128,20 @@ public sealed class Options
 
     /// <summary>
     /// Rejects identifiers containing only whitespace, formatting characters,
-    /// control characters, or combining marks. Disabled by default.
+    /// control characters, or combining marks. Enabled by default.
     /// This is an approximation of visible content based on Unicode categories and does not determine actual rendering.
     /// </summary>
-    public bool RejectInvisibleOnlyIdentifiers { get; set; }
+    public bool RejectInvisibleOnlyIdentifiers { get; set; } = true;
 
-    /// <summary>Rejects Unicode control characters. Disabled by default.</summary>
-    public bool RejectControlCharacters { get; set; }
+    /// <summary>Rejects Unicode control characters. Enabled by default.</summary>
+    public bool RejectControlCharacters { get; set; } = true;
 
     /// <summary>
     /// Rejects Unicode formatting characters, including zero-width and
-    /// bidirectional formatting characters. Disabled by default.
-    /// Keep this separate from other Unicode strictness because formatting characters can be legitimate in some languages.
+    /// bidirectional formatting characters. Enabled by default as part of the strict policy.
+    /// This remains separately configurable because formatting characters can be legitimate in some languages.
     /// </summary>
-    public bool RejectFormatCharacters { get; set; }
+    public bool RejectFormatCharacters { get; set; } = true;
 
     /// <summary>Optional application-wide fallback validation message used by the ASP.NET Core attribute.</summary>
     public string? ValidationMessage { get; set; }

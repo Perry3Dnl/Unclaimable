@@ -17,7 +17,7 @@ var currentDirectory = Path.GetFullPath(args[1]);
 var failures = new List<string>();
 CompareAssemblyApi("Unclaimable.dll", baselineDirectory, currentDirectory, failures);
 CompareAssemblyApi("Unclaimable.AspNetCore.dll", baselineDirectory, currentDirectory, failures);
-CompareDefaultBehavior(baselineDirectory, currentDirectory, failures);
+CompareLegacyCompatibleBehavior(baselineDirectory, currentDirectory, failures);
 
 if (failures.Count > 0)
 {
@@ -36,7 +36,7 @@ if (failures.Count > 0)
 }
 
 Console.WriteLine("Public API comparison against v0.3.0 passed.");
-Console.WriteLine("Default valid-Unicode behavior regression corpus matched v0.3.0.");
+Console.WriteLine("Legacy-compatible valid-Unicode behavior matched v0.3.0 when the new 0.4.0 strict defaults were explicitly disabled.");
 return 0;
 
 static void CompareAssemblyApi(
@@ -191,10 +191,10 @@ static string FormatDefault(object? value)
     };
 }
 
-static void CompareDefaultBehavior(string baselineDirectory, string currentDirectory, List<string> failures)
+static void CompareLegacyCompatibleBehavior(string baselineDirectory, string currentDirectory, List<string> failures)
 {
     using var baseline = new CheckerRuntime(baselineDirectory);
-    using var current = new CheckerRuntime(currentDirectory);
+    using var current = new CheckerRuntime(currentDirectory, useLegacy040Settings: true);
 
     var corpus = BuildValidUnicodeCorpus();
     foreach (var value in corpus)
@@ -205,7 +205,7 @@ static void CompareDefaultBehavior(string baselineDirectory, string currentDirec
         if (!string.Equals(baselineSnapshot, currentSnapshot, StringComparison.Ordinal))
         {
             failures.Add(
-                $"default behavior changed for {JsonSerializer.Serialize(value)}: v0.3.0={baselineSnapshot}; current={currentSnapshot}");
+                $"legacy-compatible behavior changed for {JsonSerializer.Serialize(value)}: v0.3.0={baselineSnapshot}; current={currentSnapshot}");
         }
     }
 }
@@ -293,12 +293,27 @@ sealed class CheckerRuntime : IDisposable
     private readonly MethodInfo _check;
     private readonly MethodInfo _checkDetailed;
 
-    public CheckerRuntime(string directory)
+    public CheckerRuntime(string directory, bool useLegacy040Settings = false)
     {
         _context = new IsolatedLoadContext(directory);
         var assembly = _context.LoadFromAssemblyPath(Path.Combine(directory, "Unclaimable.dll"));
         var checkerType = assembly.GetType("Unclaimable.Checker", throwOnError: true)!;
-        _checker = Activator.CreateInstance(checkerType)!;
+
+        if (useLegacy040Settings)
+        {
+            var optionsType = assembly.GetType("Unclaimable.Options", throwOnError: true)!;
+            var options = Activator.CreateInstance(optionsType)!;
+            optionsType.GetProperty("RejectInvisibleOnlyIdentifiers")!.SetValue(options, false);
+            optionsType.GetProperty("RejectControlCharacters")!.SetValue(options, false);
+            optionsType.GetProperty("RejectFormatCharacters")!.SetValue(options, false);
+            optionsType.GetProperty("ConsistentCompactMatching")!.SetValue(options, false);
+            _checker = checkerType.GetConstructor(new[] { optionsType })!.Invoke(new[] { options });
+        }
+        else
+        {
+            _checker = Activator.CreateInstance(checkerType)!;
+        }
+
         _check = checkerType.GetMethod("Check", new[] { typeof(string) })!;
         _checkDetailed = checkerType.GetMethod("CheckDetailed", new[] { typeof(string), typeof(bool) })!;
     }

@@ -5,7 +5,13 @@ namespace Unclaimable.Tests;
 public sealed class CompactConsistency040Tests
 {
     [Fact]
-    public void LegacyCompactPartialBehaviorIsPreservedByDefault()
+    public void ConsistentCompactMatchingIsEnabledByDefault()
+    {
+        Assert.True(new Options().ConsistentCompactMatching);
+    }
+
+    [Fact]
+    public void LegacyCompactPartialBehaviorCanBeRequestedExplicitly()
     {
         var checker = CreateChecker(consistent: false, compactEnabled: false, partialEnabled: true);
 
@@ -43,7 +49,7 @@ public sealed class CompactConsistency040Tests
     }
 
     [Fact]
-    public void LegacyObfuscationStillCompactsWhenCompactRuleIsDisabled()
+    public void LegacyObfuscationStillCompactsWhenExplicitlyRequested()
     {
         var checker = CreateChecker(consistent: false, compactEnabled: false, partialEnabled: false);
 
@@ -62,7 +68,7 @@ public sealed class CompactConsistency040Tests
     }
 
     [Fact]
-    public void ConsistentObfuscationUsesLegacyCompactionWhenCompactRuleIsEnabled()
+    public void ConsistentObfuscationUsesCompactionWhenCompactRuleIsEnabled()
     {
         var checker = CreateChecker(consistent: true, compactEnabled: true, partialEnabled: false);
 

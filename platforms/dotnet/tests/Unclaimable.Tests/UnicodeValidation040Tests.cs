@@ -5,14 +5,14 @@ namespace Unclaimable.Tests;
 public sealed class UnicodeValidation040Tests
 {
     [Fact]
-    public void NewStrictnessOptionsAreDisabledByDefault()
+    public void NewSecurityOptionsAreEnabledByDefault()
     {
         var options = new Options();
 
-        Assert.False(options.RejectInvisibleOnlyIdentifiers);
-        Assert.False(options.RejectControlCharacters);
-        Assert.False(options.RejectFormatCharacters);
-        Assert.False(options.ConsistentCompactMatching);
+        Assert.True(options.RejectInvisibleOnlyIdentifiers);
+        Assert.True(options.RejectControlCharacters);
+        Assert.True(options.RejectFormatCharacters);
+        Assert.True(options.ConsistentCompactMatching);
     }
 
     [Fact]
@@ -68,45 +68,53 @@ public sealed class UnicodeValidation040Tests
     }
 
     [Fact]
-    public void FormatCharacterRejectionIsOptIn()
+    public void FormatCharactersAreRejectedByDefaultAndCanBeAllowedExplicitly()
     {
         const string value = "ab\u200Dcd";
 
-        Assert.True(new Checker(new Options()).IsClaimable(value));
+        var strictResult = new Checker(new Options()).Check(value);
+        Assert.Equal(MatchKind.InvalidCharacters, strictResult.MatchKind);
+        Assert.Equal(2, strictResult.OffendingCharacterIndex);
+        Assert.Equal("\u200D", strictResult.OffendingCharacter);
 
-        var result = new Checker(new Options { RejectFormatCharacters = true }).Check(value);
-        Assert.Equal(MatchKind.InvalidCharacters, result.MatchKind);
-        Assert.Equal(2, result.OffendingCharacterIndex);
-        Assert.Equal("\u200D", result.OffendingCharacter);
+        var relaxed = new Checker(new Options { RejectFormatCharacters = false });
+        Assert.True(relaxed.IsClaimable(value));
     }
 
     [Fact]
-    public void ControlCharacterRejectionIsOptIn()
+    public void ControlCharactersAreRejectedByDefaultAndCanBeAllowedExplicitly()
     {
         const string value = "ab\u0001cd";
 
-        Assert.True(new Checker(new Options()).IsClaimable(value));
+        var strictResult = new Checker(new Options()).Check(value);
+        Assert.Equal(MatchKind.InvalidCharacters, strictResult.MatchKind);
+        Assert.Equal(2, strictResult.OffendingCharacterIndex);
 
-        var result = new Checker(new Options { RejectControlCharacters = true }).Check(value);
-        Assert.Equal(MatchKind.InvalidCharacters, result.MatchKind);
-        Assert.Equal(2, result.OffendingCharacterIndex);
+        var relaxed = new Checker(new Options { RejectControlCharacters = false });
+        Assert.True(relaxed.IsClaimable(value));
     }
 
     [Theory]
     [InlineData("\u0301\u0301\u0301")]
     [InlineData("\u200D\u200C\u2060")]
-    public void InvisibleOnlyRejectionIsOptIn(string value)
+    public void InvisibleOnlyIdentifiersAreRejectedByDefaultAndCanBeAllowedExplicitly(string value)
     {
-        Assert.True(new Checker(new Options()).IsClaimable(value));
+        Assert.Equal(MatchKind.InvalidCharacters, new Checker(new Options()).Check(value).MatchKind);
 
-        var result = new Checker(new Options { RejectInvisibleOnlyIdentifiers = true }).Check(value);
-        Assert.Equal(MatchKind.InvalidCharacters, result.MatchKind);
+        var relaxed = new Checker(new Options
+        {
+            RejectInvisibleOnlyIdentifiers = false,
+            RejectControlCharacters = false,
+            RejectFormatCharacters = false
+        });
+
+        Assert.True(relaxed.IsClaimable(value));
     }
 
     [Fact]
     public void InvisibleOnlyApproximationAllowsVisibleContentWithCombiningMarks()
     {
-        var checker = new Checker(new Options { RejectInvisibleOnlyIdentifiers = true });
+        var checker = new Checker(new Options());
 
         Assert.True(checker.IsClaimable("a\u0301bc"));
     }
@@ -116,9 +124,9 @@ public sealed class UnicodeValidation040Tests
     {
         var options = new Options();
         var checker = new Checker(options);
-        options.RejectFormatCharacters = true;
+        options.RejectFormatCharacters = false;
 
-        Assert.True(checker.IsClaimable("ab\u200Dcd"));
+        Assert.Equal(MatchKind.InvalidCharacters, checker.Check("ab\u200Dcd").MatchKind);
     }
 
     private sealed class ThrowingPolicy : IPolicy
