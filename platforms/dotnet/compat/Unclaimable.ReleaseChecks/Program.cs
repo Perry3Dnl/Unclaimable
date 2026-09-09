@@ -280,7 +280,7 @@ static IReadOnlyList<string?> BuildValidUnicodeCorpus()
         "moderator.test"
     };
 
-    var random = new Random(40500);
+    var random = new Random(40300);
     var atoms = new[]
     {
         "a", "b", "c", "x", "y", "z", "A", "M", "Q",
