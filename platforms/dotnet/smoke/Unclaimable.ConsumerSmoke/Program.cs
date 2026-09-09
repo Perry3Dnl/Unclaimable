@@ -83,6 +83,17 @@ var unicodeConfusable = checker.Check("\u0430pple");
 Require(unicodeConfusable.MatchedValue == "apple", "Cyrillic-a apple should resolve to apple.");
 Require(unicodeConfusable.MatchKind == MatchKind.UnicodeConfusable, "Cyrillic-a apple should use Unicode-confusable matching.");
 
+var configurableOptions = new Options();
+configurableOptions.DisableCategory(Category.Brands);
+configurableOptions.AllowedIdentifiers.Add("supportive");
+configurableOptions.Reserve("acme", matching: ReservedMatchMode.Exact);
+var configurableChecker = new Checker(configurableOptions);
+Require(configurableChecker.IsClaimable("nike"), "Packaged consumers should be able to disable a built-in category.");
+Require(configurableChecker.IsClaimable("supportive"), "Packaged consumers should be able to allow one complete built-in identifier.");
+Require(configurableChecker.IsReserved("supportiveadmin"), "Allowed identifiers should not automatically allow compounds.");
+Require(configurableChecker.IsReserved("ACME"), "Exact application reservations should use case/Unicode normalization.");
+Require(configurableChecker.IsClaimable("acmeorchid"), "Exact application reservations should not block ordinary compounds.");
+
 var startupOptions = new Options();
 startupOptions.AdditionalBlockedCharacters("^", "$");
 var startupChecker = new Checker(startupOptions);
