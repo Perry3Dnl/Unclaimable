@@ -295,11 +295,10 @@ public sealed partial class Checker : IChecker
             return Result.Allowed(value);
         }
 
-        var mapping = value is null ? null : TryCreateInputMapping(value, exact);
-
         ReservedEntry? exactMatch;
         if (_exact.TryGetValue(exact, out exactMatch))
         {
+            var mapping = value is null ? null : TryCreateInputMapping(value, exact);
             TryMapOriginalSpan(mapping?.ExactToOriginal, 0, exact.Length, out var originalStart, out var originalLength);
             return CreateReservedResult(
                 value,
@@ -317,6 +316,7 @@ public sealed partial class Checker : IChecker
             ReservedEntry? compactMatch;
             if (compact.Length > 0 && _compact.TryGetValue(compact, out compactMatch))
             {
+                var mapping = value is null ? null : TryCreateInputMapping(value, exact);
                 TryMapOriginalSpan(mapping?.CompactToOriginal, 0, compact.Length, out var originalStart, out var originalLength);
                 return CreateReservedResult(
                     value,
@@ -337,6 +337,7 @@ public sealed partial class Checker : IChecker
             bool usedCompact;
             if (TryMatchPartial(exact, compact, out partialMatch, out partialStart, out partialLength, out usedCompact))
             {
+                var mapping = value is null ? null : TryCreateInputMapping(value, exact);
                 var sourceMap = usedCompact ? mapping?.CompactToOriginal : mapping?.ExactToOriginal;
                 TryMapOriginalSpan(sourceMap, partialStart, partialLength, out var originalStart, out var originalLength);
                 return CreateReservedResult(
