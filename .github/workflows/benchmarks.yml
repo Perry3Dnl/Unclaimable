@@ -1,0 +1,40 @@
+name: .NET Benchmarks
+
+on:
+  push:
+    branches:
+      - "release/0.4.0"
+    paths:
+      - "platforms/dotnet/src/**"
+      - "platforms/dotnet/benchmarks/**"
+      - ".github/workflows/benchmarks.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Run benchmarks
+        run: dotnet run --project platforms/dotnet/benchmarks/Unclaimable.Benchmarks/Unclaimable.Benchmarks.csproj --configuration Release
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: unclaimable-benchmarks
+          path: BenchmarkDotNet.Artifacts/results/*
+          if-no-files-found: error
+          retention-days: 14
