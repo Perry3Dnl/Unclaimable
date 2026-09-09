@@ -18,27 +18,24 @@ public sealed class ConfigurationSwitch050Tests
     public void EveryCategoryCanBeDisabledAndReenabled(Category category)
     {
         var categoryName = category.ToString().ToLowerInvariant();
-        Assert.True(
-            ExclusiveCategoryValues.Value.TryGetValue(categoryName, out var candidates),
-            $"No exclusive test candidates were found for category '{categoryName}'.");
+        Assert.True(ExclusiveCategoryValues.Value.TryGetValue(categoryName, out var candidates));
 
         var options = new Options();
         options.DisableCategory(category);
         Assert.Contains(category, options.DisabledCategories);
 
         var disabledChecker = new Checker(options);
-        var candidate = candidates!
-            .FirstOrDefault(value =>
-            {
-                var defaultResult = DefaultChecker.Check(value);
-                return defaultResult.MatchKind == MatchKind.Exact
-                       && string.Equals(defaultResult.Category, categoryName, StringComparison.Ordinal)
-                       && disabledChecker.IsClaimable(value);
-            });
+        var candidate = candidates!.FirstOrDefault(value =>
+        {
+            var defaultResult = DefaultChecker.Check(value);
+            return defaultResult.MatchKind == MatchKind.Exact
+                   && defaultResult.Category == categoryName
+                   && disabledChecker.IsClaimable(value);
+        });
 
         Assert.False(
             string.IsNullOrEmpty(candidate),
-            $"Disabling category '{categoryName}' did not make any exclusive exact value claimable.");
+            $"Disabling '{categoryName}' did not make an exclusive exact value claimable.");
 
         var enabledResult = DefaultChecker.Check(candidate);
         Assert.True(enabledResult.IsReserved);
@@ -49,12 +46,12 @@ public sealed class ConfigurationSwitch050Tests
         options.EnableCategory(category);
         Assert.DoesNotContain(category, options.DisabledCategories);
 
-        var reenabledChecker = new Checker(options);
-        var reenabledResult = reenabledChecker.Check(candidate);
-        Assert.True(reenabledResult.IsReserved);
-        Assert.Equal(MatchKind.Exact, reenabledResult.MatchKind);
-        Assert.Equal(categoryName, reenabledResult.Category);
+        var restoredResult = new Checker(options).Check(candidate);
+        Assert.True(restoredResult.IsReserved);
+        Assert.Equal(MatchKind.Exact, restoredResult.MatchKind);
+        Assert.Equal(categoryName, restoredResult.Category);
 
+        // A checker captures category configuration at construction time.
         Assert.True(disabledChecker.IsClaimable(candidate));
     }
 
@@ -76,142 +73,56 @@ public sealed class ConfigurationSwitch050Tests
         var testCase = CreateRuleCase(rule);
         var options = testCase.Options;
 
-        var enabledChecker = new Checker(options);
-        var enabledResult = enabledChecker.Check(testCase.Input);
-        Assert.True(enabledResult.IsReserved, $"Rule '{rule}' should reject the enabled test case.");
-        Assert.Equal(testCase.ExpectedKind, enabledResult.MatchKind);
+        var enabled = new Checker(options).Check(testCase.Input);
+        Assert.True(enabled.IsReserved, $"Rule '{rule}' should reject its enabled case.");
+        Assert.Equal(testCase.ExpectedKind, enabled.MatchKind);
 
         options.DisabledRules |= rule;
         var disabledChecker = new Checker(options);
-        Assert.True(
-            disabledChecker.IsClaimable(testCase.Input),
-            $"Rule '{rule}' remained effective after being disabled.");
+        Assert.True(disabledChecker.IsClaimable(testCase.Input), $"Rule '{rule}' remained active after disable.");
 
         options.DisabledRules &= ~rule;
-        var reenabledChecker = new Checker(options);
-        var reenabledResult = reenabledChecker.Check(testCase.Input);
-        Assert.True(reenabledResult.IsReserved, $"Rule '{rule}' was not restored after being re-enabled.");
-        Assert.Equal(testCase.ExpectedKind, reenabledResult.MatchKind);
+        var restored = new Checker(options).Check(testCase.Input);
+        Assert.True(restored.IsReserved, $"Rule '{rule}' was not restored after re-enable.");
+        Assert.Equal(testCase.ExpectedKind, restored.MatchKind);
+
+        // A checker captures rule configuration at construction time.
+        Assert.True(disabledChecker.IsClaimable(testCase.Input));
+    }
+
+    [Theory]
+    [InlineData(ToggleOption.CompactMatching)]
+    [InlineData(ToggleOption.PartialMatching)]
+    [InlineData(ToggleOption.ProfanityMatching)]
+    [InlineData(ToggleOption.ObfuscationMatching)]
+    [InlineData(ToggleOption.UnicodeConfusableMatching)]
+    [InlineData(ToggleOption.NumberRestriction)]
+    [InlineData(ToggleOption.InvisibleOnlyProtection)]
+    [InlineData(ToggleOption.ControlCharacterProtection)]
+    [InlineData(ToggleOption.FormatCharacterProtection)]
+    public void BooleanProtectionOptionsCanBeDisabledAndReenabled(ToggleOption toggle)
+    {
+        var testCase = CreateToggleCase(toggle);
+        var options = testCase.Options;
+
+        var enabled = new Checker(options).Check(testCase.Input);
+        Assert.True(enabled.IsReserved, $"Option '{toggle}' should reject its enabled case.");
+        Assert.Equal(testCase.ExpectedKind, enabled.MatchKind);
+
+        testCase.Disable(options);
+        var disabledChecker = new Checker(options);
+        Assert.True(disabledChecker.IsClaimable(testCase.Input), $"Option '{toggle}' remained active after disable.");
+
+        testCase.Enable(options);
+        var restored = new Checker(options).Check(testCase.Input);
+        Assert.True(restored.IsReserved, $"Option '{toggle}' was not restored after re-enable.");
+        Assert.Equal(testCase.ExpectedKind, restored.MatchKind);
 
         Assert.True(disabledChecker.IsClaimable(testCase.Input));
     }
 
     [Fact]
-    public void CompactMatchingBooleanCanBeDisabledAndReenabled()
-    {
-        var options = new Options
-        {
-            Strictness = Strictness.Standard,
-            DisabledRules = Rule.BlockedCharacters
-        };
-        options.AdditionalReserved.Add("qzxvorn");
-
-        Assert.Equal(MatchKind.Compact, new Checker(options).Check("qzx-vorn").MatchKind);
-
-        options.CompactMatching = false;
-        var disabled = new Checker(options);
-        Assert.True(disabled.IsClaimable("qzx-vorn"));
-
-        options.CompactMatching = true;
-        Assert.Equal(MatchKind.Compact, new Checker(options).Check("qzx-vorn").MatchKind);
-        Assert.True(disabled.IsClaimable("qzx-vorn"));
-    }
-
-    [Fact]
-    public void PartialMatchingBooleanCanBeDisabledAndReenabledInStandardMode()
-    {
-        var options = new Options
-        {
-            Strictness = Strictness.Standard,
-            PartialMatching = true
-        };
-        options.AdditionalReserved.Add("qzxvorn");
-
-        Assert.Equal(MatchKind.Partial, new Checker(options).Check("preqzxvornpost").MatchKind);
-
-        options.PartialMatching = false;
-        var disabled = new Checker(options);
-        Assert.True(disabled.IsClaimable("preqzxvornpost"));
-
-        options.PartialMatching = true;
-        Assert.Equal(MatchKind.Partial, new Checker(options).Check("preqzxvornpost").MatchKind);
-        Assert.True(disabled.IsClaimable("preqzxvornpost"));
-    }
-
-    [Fact]
-    public void ProfanityMatchingBooleanCanBeDisabledAndReenabled()
-    {
-        var options = new Options { Strictness = Strictness.Standard };
-
-        Assert.Equal("profanity", new Checker(options).Check("fuck").Category);
-
-        options.ProfanityMatching = false;
-        var disabled = new Checker(options);
-        Assert.True(disabled.IsClaimable("fuck"));
-
-        options.ProfanityMatching = true;
-        Assert.Equal("profanity", new Checker(options).Check("fuck").Category);
-        Assert.True(disabled.IsClaimable("fuck"));
-    }
-
-    [Fact]
-    public void ObfuscationMatchingBooleanCanBeDisabledAndReenabled()
-    {
-        var options = new Options
-        {
-            Strictness = Strictness.Standard,
-            DisabledRules = Rule.Numbers
-        };
-        options.AdditionalReserved.Add("qzxvorn");
-
-        Assert.Equal(MatchKind.Obfuscated, new Checker(options).Check("qzxv0rn").MatchKind);
-
-        options.ObfuscationMatching = false;
-        var disabled = new Checker(options);
-        Assert.True(disabled.IsClaimable("qzxv0rn"));
-
-        options.ObfuscationMatching = true;
-        Assert.Equal(MatchKind.Obfuscated, new Checker(options).Check("qzxv0rn").MatchKind);
-        Assert.True(disabled.IsClaimable("qzxv0rn"));
-    }
-
-    [Fact]
-    public void UnicodeConfusableMatchingBooleanCanBeDisabledAndReenabled()
-    {
-        var options = new Options { Strictness = Strictness.Standard };
-        options.AdditionalReserved.Add("qaq");
-        const string confusable = "q\u0430q";
-
-        Assert.Equal(MatchKind.UnicodeConfusable, new Checker(options).Check(confusable).MatchKind);
-
-        options.UnicodeConfusableMatching = false;
-        var disabled = new Checker(options);
-        Assert.True(disabled.IsClaimable(confusable));
-
-        options.UnicodeConfusableMatching = true;
-        Assert.Equal(MatchKind.UnicodeConfusable, new Checker(options).Check(confusable).MatchKind);
-        Assert.True(disabled.IsClaimable(confusable));
-    }
-
-    [Fact]
-    public void NumberOptionCanBeEnabledAndDisabled()
-    {
-        var options = new Options();
-        const string value = "qzxvorn2";
-
-        Assert.Equal(MatchKind.NumbersNotAllowed, new Checker(options).Check(value).MatchKind);
-
-        options.AllowNumbers = true;
-        var allowed = new Checker(options);
-        Assert.True(allowed.IsClaimable(value));
-
-        options.AllowNumbers = false;
-        Assert.Equal(MatchKind.NumbersNotAllowed, new Checker(options).Check(value).MatchKind);
-        Assert.True(allowed.IsClaimable(value));
-    }
-
-    [Fact]
-    public void AsciiOnlyOptionCanBeEnabledAndDisabled()
+    public void AsciiOnlyCanBeEnabledAndDisabled()
     {
         var options = new Options();
         const string value = "qzxé";
@@ -228,61 +139,9 @@ public sealed class ConfigurationSwitch050Tests
     }
 
     [Fact]
-    public void InvisibleOnlyProtectionCanBeDisabledAndReenabled()
-    {
-        var options = new Options();
-        const string value = "\u0301\u0301\u0301";
-
-        Assert.Equal(MatchKind.InvalidCharacters, new Checker(options).Check(value).MatchKind);
-
-        options.RejectInvisibleOnlyIdentifiers = false;
-        var relaxed = new Checker(options);
-        Assert.True(relaxed.IsClaimable(value));
-
-        options.RejectInvisibleOnlyIdentifiers = true;
-        Assert.Equal(MatchKind.InvalidCharacters, new Checker(options).Check(value).MatchKind);
-        Assert.True(relaxed.IsClaimable(value));
-    }
-
-    [Fact]
-    public void ControlCharacterProtectionCanBeDisabledAndReenabled()
-    {
-        var options = new Options();
-        const string value = "qz\u0001vx";
-
-        Assert.Equal(MatchKind.InvalidCharacters, new Checker(options).Check(value).MatchKind);
-
-        options.RejectControlCharacters = false;
-        var relaxed = new Checker(options);
-        Assert.True(relaxed.IsClaimable(value));
-
-        options.RejectControlCharacters = true;
-        Assert.Equal(MatchKind.InvalidCharacters, new Checker(options).Check(value).MatchKind);
-        Assert.True(relaxed.IsClaimable(value));
-    }
-
-    [Fact]
-    public void FormatCharacterProtectionCanBeDisabledAndReenabled()
-    {
-        var options = new Options();
-        const string value = "qz\u200Dvx";
-
-        Assert.Equal(MatchKind.InvalidCharacters, new Checker(options).Check(value).MatchKind);
-
-        options.RejectFormatCharacters = false;
-        var relaxed = new Checker(options);
-        Assert.True(relaxed.IsClaimable(value));
-
-        options.RejectFormatCharacters = true;
-        Assert.Equal(MatchKind.InvalidCharacters, new Checker(options).Check(value).MatchKind);
-        Assert.True(relaxed.IsClaimable(value));
-    }
-
-    [Fact]
     public void StrictnessCanBeChangedInBothDirections()
     {
         var options = new Options { Strictness = Strictness.Strict };
-
         Assert.Equal(MatchKind.Partial, new Checker(options).Check("supportive").MatchKind);
 
         options.Strictness = Strictness.Standard;
@@ -320,7 +179,6 @@ public sealed class ConfigurationSwitch050Tests
     public void ProfanityPartialMatchingCanBeEnabledAndDisabled()
     {
         var options = new Options();
-
         Assert.True(new Checker(options).IsClaimable("cocktail"));
 
         options.ProfanityPartialMatching = true;
@@ -337,7 +195,6 @@ public sealed class ConfigurationSwitch050Tests
     {
         var options = new Options();
         const string dutchOnlyValue = "facturatiehulp";
-
         Assert.True(new Checker(options).IsClaimable(dutchOnlyValue));
 
         options.AddLanguage(Language.Dutch);
@@ -359,7 +216,6 @@ public sealed class ConfigurationSwitch050Tests
     {
         var options = new Options();
         options.AllowedIdentifiers.Add("supportive");
-
         var allowed = new Checker(options);
         Assert.True(allowed.IsClaimable("supportive"));
 
@@ -378,7 +234,6 @@ public sealed class ConfigurationSwitch050Tests
     {
         var options = new Options();
         const string value = "qzxvorn";
-
         Assert.True(new Checker(options).IsClaimable(value));
 
         options.AdditionalReserved.Add(value);
@@ -398,13 +253,9 @@ public sealed class ConfigurationSwitch050Tests
     [Fact]
     public void AllowedIdentifierDoesNotDisableCompactOrUnicodeConfusableProtection()
     {
-        var options = new Options
-        {
-            DisabledRules = Rule.BlockedCharacters
-        };
+        var options = new Options { DisabledRules = Rule.BlockedCharacters };
         options.AllowedIdentifiers.Add("nike");
         options.AllowedIdentifiers.Add("apple");
-
         var checker = new Checker(options);
 
         Assert.True(checker.IsClaimable("nike"));
@@ -414,7 +265,7 @@ public sealed class ConfigurationSwitch050Tests
     }
 
     [Fact]
-    public void ExactCustomReservationDoesNotEnableCompactObfuscationOrUnicodeConfusableMatching()
+    public void ExactCustomReservationStaysExactOnly()
     {
         var options = new Options
         {
@@ -422,7 +273,6 @@ public sealed class ConfigurationSwitch050Tests
         };
         options.Reserve("qzxvorn", ReservedMatchMode.Exact);
         options.Reserve("qaq", ReservedMatchMode.Exact);
-
         var checker = new Checker(options);
 
         Assert.True(checker.IsReserved("QZXVORN"));
@@ -486,6 +336,106 @@ public sealed class ConfigurationSwitch050Tests
             }
             default:
                 throw new ArgumentOutOfRangeException(nameof(rule), rule, "Unsupported rule toggle case.");
+        }
+    }
+
+    private static ToggleCase CreateToggleCase(ToggleOption toggle)
+    {
+        switch (toggle)
+        {
+            case ToggleOption.CompactMatching:
+            {
+                var options = new Options
+                {
+                    Strictness = Strictness.Standard,
+                    DisabledRules = Rule.BlockedCharacters
+                };
+                options.AdditionalReserved.Add("qzxvorn");
+                return new ToggleCase(
+                    options,
+                    "qzx-vorn",
+                    MatchKind.Compact,
+                    value => value.CompactMatching = false,
+                    value => value.CompactMatching = true);
+            }
+            case ToggleOption.PartialMatching:
+            {
+                var options = new Options
+                {
+                    Strictness = Strictness.Standard,
+                    PartialMatching = true
+                };
+                options.AdditionalReserved.Add("qzxvorn");
+                return new ToggleCase(
+                    options,
+                    "preqzxvornpost",
+                    MatchKind.Partial,
+                    value => value.PartialMatching = false,
+                    value => value.PartialMatching = true);
+            }
+            case ToggleOption.ProfanityMatching:
+                return new ToggleCase(
+                    new Options { Strictness = Strictness.Standard },
+                    "fuck",
+                    MatchKind.Exact,
+                    value => value.ProfanityMatching = false,
+                    value => value.ProfanityMatching = true);
+            case ToggleOption.ObfuscationMatching:
+            {
+                var options = new Options
+                {
+                    Strictness = Strictness.Standard,
+                    DisabledRules = Rule.Numbers
+                };
+                options.AdditionalReserved.Add("qzxvorn");
+                return new ToggleCase(
+                    options,
+                    "qzxv0rn",
+                    MatchKind.Obfuscated,
+                    value => value.ObfuscationMatching = false,
+                    value => value.ObfuscationMatching = true);
+            }
+            case ToggleOption.UnicodeConfusableMatching:
+            {
+                var options = new Options { Strictness = Strictness.Standard };
+                options.AdditionalReserved.Add("qaq");
+                return new ToggleCase(
+                    options,
+                    "q\u0430q",
+                    MatchKind.UnicodeConfusable,
+                    value => value.UnicodeConfusableMatching = false,
+                    value => value.UnicodeConfusableMatching = true);
+            }
+            case ToggleOption.NumberRestriction:
+                return new ToggleCase(
+                    new Options(),
+                    "qzxvorn2",
+                    MatchKind.NumbersNotAllowed,
+                    value => value.AllowNumbers = true,
+                    value => value.AllowNumbers = false);
+            case ToggleOption.InvisibleOnlyProtection:
+                return new ToggleCase(
+                    new Options(),
+                    "\u0301\u0301\u0301",
+                    MatchKind.InvalidCharacters,
+                    value => value.RejectInvisibleOnlyIdentifiers = false,
+                    value => value.RejectInvisibleOnlyIdentifiers = true);
+            case ToggleOption.ControlCharacterProtection:
+                return new ToggleCase(
+                    new Options(),
+                    "qz\u0001vx",
+                    MatchKind.InvalidCharacters,
+                    value => value.RejectControlCharacters = false,
+                    value => value.RejectControlCharacters = true);
+            case ToggleOption.FormatCharacterProtection:
+                return new ToggleCase(
+                    new Options(),
+                    "qz\u200Dvx",
+                    MatchKind.InvalidCharacters,
+                    value => value.RejectFormatCharacters = false,
+                    value => value.RejectFormatCharacters = true);
+            default:
+                throw new ArgumentOutOfRangeException(nameof(toggle), toggle, "Unsupported option toggle case.");
         }
     }
 
@@ -561,9 +511,9 @@ public sealed class ConfigurationSwitch050Tests
             StringComparer.Ordinal);
     }
 
-    private static IEnumerable<string> EnumerateDatasetValues(JsonElement root)
+    private static IEnumerable<string> EnumerateDatasetValues(JsonElement rootElement)
     {
-        if (root.TryGetProperty("values", out var values))
+        if (rootElement.TryGetProperty("values", out var values))
         {
             foreach (var value in values.EnumerateArray())
             {
@@ -575,7 +525,7 @@ public sealed class ConfigurationSwitch050Tests
             }
         }
 
-        if (root.TryGetProperty("partialValues", out var partialValues))
+        if (rootElement.TryGetProperty("partialValues", out var partialValues))
         {
             foreach (var value in partialValues.EnumerateArray())
             {
@@ -587,7 +537,7 @@ public sealed class ConfigurationSwitch050Tests
             }
         }
 
-        if (!root.TryGetProperty("combinations", out var combinations))
+        if (!rootElement.TryGetProperty("combinations", out var combinations))
         {
             yield break;
         }
@@ -606,9 +556,9 @@ public sealed class ConfigurationSwitch050Tests
                 .Cast<string>()
                 .ToArray();
 
-            foreach (var root in roots.EnumerateArray())
+            foreach (var rootValue in roots.EnumerateArray())
             {
-                var rootText = root.GetString();
+                var rootText = rootValue.GetString();
                 if (string.IsNullOrWhiteSpace(rootText))
                 {
                     continue;
@@ -629,6 +579,19 @@ public sealed class ConfigurationSwitch050Tests
             (character >= 'a' && character <= 'z')
             || (character >= 'A' && character <= 'Z'));
 
+    public enum ToggleOption
+    {
+        CompactMatching,
+        PartialMatching,
+        ProfanityMatching,
+        ObfuscationMatching,
+        UnicodeConfusableMatching,
+        NumberRestriction,
+        InvisibleOnlyProtection,
+        ControlCharacterProtection,
+        FormatCharacterProtection
+    }
+
     private sealed class RuleCase
     {
         public RuleCase(Options options, string input, MatchKind expectedKind)
@@ -641,5 +604,28 @@ public sealed class ConfigurationSwitch050Tests
         public Options Options { get; }
         public string Input { get; }
         public MatchKind ExpectedKind { get; }
+    }
+
+    private sealed class ToggleCase
+    {
+        public ToggleCase(
+            Options options,
+            string input,
+            MatchKind expectedKind,
+            Action<Options> disable,
+            Action<Options> enable)
+        {
+            Options = options;
+            Input = input;
+            ExpectedKind = expectedKind;
+            Disable = disable;
+            Enable = enable;
+        }
+
+        public Options Options { get; }
+        public string Input { get; }
+        public MatchKind ExpectedKind { get; }
+        public Action<Options> Disable { get; }
+        public Action<Options> Enable { get; }
     }
 }
