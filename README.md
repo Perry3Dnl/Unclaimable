@@ -16,7 +16,7 @@
 
 Unclaimable answers one question: **should this identifier be claimable?**
 
-It provides a strong default policy for usernames, handles, slugs, account names, tenant names, public identifiers, and similar user-claimable values. It combines large curated reserved-name datasets with structural validation, impersonation protection, partial matching, compact matching, bounded obfuscation detection, Unicode lookalike handling, localized filtering, and application-specific rules.
+It provides a strong default policy for usernames, handles, slugs, account names, tenant names, public identifiers, and similar user-claimable values. It combines large curated reserved-name datasets with structural validation, impersonation protection, partial matching, compact matching, bounded obfuscation detection, Unicode lookalike handling, localized filtering, category selection, exact exceptions, and application-specific rules.
 
 For most applications, the strict default is enough:
 
@@ -73,13 +73,13 @@ Unclaimable checks more than literal equality. Its default pipeline includes:
 Install the core package:
 
 ```bash
-dotnet add package Unclaimable --version 0.4.0
+dotnet add package Unclaimable --version 0.5.0
 ```
 
 For ASP.NET Core:
 
 ```bash
-dotnet add package Unclaimable.AspNetCore --version 0.4.0
+dotnet add package Unclaimable.AspNetCore --version 0.5.0
 ```
 
 ## Quick start
@@ -102,9 +102,9 @@ if (result.IsClaimable)
 
 ## Dataset coverage
 
-Version 0.4.0 contains **10,731 filter entries across 22 categories**, representing **10,633 unique values within those categories**.
+Version 0.5.0 contains **10,731 filter entries across 22 categories**, representing **10,633 unique values within those categories**.
 
-0.4.0 intentionally keeps the same curated dataset contents as 0.3.0; this release improves validation behavior and diagnostics rather than inflating the lists for the sake of a larger number.
+0.5.0 intentionally keeps the same curated dataset contents and strict defaults as 0.4.0. This release adds configuration controls around the existing data rather than changing which identifiers are rejected by default.
 
 | Category | Filter entries | Unique values |
 | --- | ---: | ---: |
@@ -177,7 +177,7 @@ builder.Services.AddUnclaimable(options =>
 });
 ```
 
-Global categories such as brands, technology, infrastructure, security, and authentication remain active independently of localized language selection.
+Global categories such as brands, technology, infrastructure, security, and authentication remain active independently of localized language selection unless that category is explicitly disabled.
 
 ## Strict defaults
 
@@ -186,6 +186,7 @@ Global categories such as brands, technology, infrastructure, security, and auth
 | Setting | Default |
 | --- | --- |
 | Localized language | English |
+| Built-in categories | all 22 enabled |
 | `Strictness` | `Strict` |
 | Compact matching | enabled |
 | Consistent compact-rule handling | enabled |
@@ -219,14 +220,49 @@ builder.Services.AddUnclaimable(options =>
 
     options.AddLanguage(Language.Dutch);
 
+    options.DisableCategory(Category.Brands);
+    options.DisableCategory(Category.Technology);
+
+    options.AllowedIdentifiers.Add("supportive");
+
+    options.Reserve("acme", matching: ReservedMatchMode.Exact);
+    options.Reserve("internalbot", matching: ReservedMatchMode.Default);
+
+    // Existing API remains supported with its existing matching behavior.
     options.AdditionalReserved.Add("examplebrand");
-    options.AdditionalReserved.Add("internalbot");
 
     options.AdditionalBlockedCharacters("^", "$");
 
     options.DisabledRules = Rule.Numbers;
 });
 ```
+
+### Category selection
+
+Every built-in category remains enabled by default. `DisableCategory(...)` removes only that category's entries from the checker's reserved-name indexes, so the setting applies consistently to exact, compact, partial, Unicode-confusable, and obfuscation matching.
+
+If the same value exists in more than one category, disabling one category does not make the value claimable while another enabled category still reserves it. Use `EnableCategory(...)` to re-enable a category on the same options object before constructing a checker.
+
+### Exact allowed identifiers
+
+`AllowedIdentifiers` is a narrow exception mechanism for complete identifiers. Exact normalization trims leading/trailing whitespace, applies Unicode NFKC normalization, and then lowercases using invariant casing.
+
+An allowed identifier bypasses **built-in reserved-name matching only**. Structural rules such as length, blocked characters, numbers, malformed Unicode, whitespace, and other character restrictions still run first. In particular, the default whitespace rule is not bypassed by normalization; trimming only matters when whitespace validation has been relaxed. Explicit application reservations also take precedence.
+
+Allowing `supportive` does not automatically allow `supportiveadmin`, punctuation variants, Unicode lookalikes, or disguised/obfuscated variants.
+
+### Application reservations with a match mode
+
+Use `Reserve(...)` when an application reservation needs explicit matching semantics:
+
+```csharp
+options.Reserve("acme", matching: ReservedMatchMode.Exact);
+options.Reserve("internalbot", matching: ReservedMatchMode.Default);
+```
+
+`ReservedMatchMode.Exact` means whole-identifier matching after the same trim → NFKC → invariant-lowercase normalization. It does not participate in compact, partial, Unicode-confusable, or obfuscation matching.
+
+`ReservedMatchMode.Default` follows the checker's existing configured matching pipeline. `AdditionalReserved` is preserved unchanged and continues to use that existing default pipeline.
 
 Options are captured when a `Checker` is constructed. Mutating the same `Options` object afterwards does not silently change that checker's matching behavior.
 
@@ -280,13 +316,13 @@ The checks are separate so applications can relax format handling without also a
 
 ### Exact matching
 
-Case and normalization differences resolve to the same protected value where applicable.
+Exact matching trims leading/trailing whitespace, applies Unicode NFKC normalization, and then lowercases using invariant casing before comparison. Structural validation still runs before reserved-name matching.
 
 ### Compact matching
 
 Compact matching ignores separators and punctuation during the protected-name comparison. This helps catch variants such as punctuation inserted into a protected identifier.
 
-`ConsistentCompactMatching` is enabled by default in 0.4.0 so `Rule.CompactMatching` has the same meaning across direct compact, partial, and obfuscation paths.
+`ConsistentCompactMatching` has been enabled by default since 0.4.0 so `Rule.CompactMatching` has the same meaning across direct compact, partial, and obfuscation paths.
 
 ### Strict partial matching
 
@@ -354,7 +390,7 @@ Console.WriteLine(result.Category);
 
 Existing `MatchStartIndex` and `MatchLength` refer to the transformed matching text. Indexes and lengths are measured in UTF-16 code units.
 
-0.4.0 also exposes nullable original-input spans:
+0.4.0 introduced nullable original-input spans:
 
 ```csharp
 Console.WriteLine(result.OriginalMatchStartIndex);
@@ -430,23 +466,23 @@ The repository continuously checks:
 - NuGet package metadata/content;
 - clean packaged-consumer restore and execution;
 - source builds with localized language packs removed;
-- public API compatibility against `v0.3.0`;
-- legacy-compatible behavior when the new 0.4.0 strict defaults are explicitly disabled;
+- public API compatibility against `v0.4.0`;
+- unchanged default behavior against `v0.4.0` across a deterministic compatibility corpus;
+- legacy-compatible behavior against `v0.3.0` when the 0.4.0 strict additions are explicitly disabled;
 - XML documentation for every public member;
 - benchmark coverage for construction and representative hot paths.
 
-## What is new in 0.4.0
+## What is new in 0.5.0
 
-0.4.0 is primarily a validation-quality release:
+0.5.0 is a configurability release with unchanged defaults and unchanged built-in dataset contents:
 
-- malformed UTF-16 is a normal validation failure instead of an exception path;
-- invisible-only, control, and format-character protection are part of the strict default;
-- compact-rule handling is consistent by default;
-- original-input match spans are available when they can be mapped reliably;
-- length failures expose their captured threshold;
-- ASP.NET Core fallback length messages are complete and stable;
-- public APIs and enum numeric values remain compatible with 0.3.0;
-- built-in datasets remain unchanged from 0.3.0.
+- any of the 22 built-in categories can be disabled independently;
+- category selection is applied before all reserved-name matching indexes are built;
+- exact `AllowedIdentifiers` exceptions can resolve individual built-in false positives without relaxing structural validation;
+- explicit application reservations still win over an allowed-identifier exception;
+- `Reserve(...)` supports `ReservedMatchMode.Exact` for whole-identifier-only application reservations and `Default` for the existing matching pipeline;
+- `AdditionalReserved` keeps its existing public API and behavior;
+- release regression checks compare both public API compatibility and default outcomes directly against 0.4.0.
 
 See [CHANGELOG.md](CHANGELOG.md) for the release history.
 

@@ -208,6 +208,11 @@ public sealed partial class Checker : IChecker
 
         foreach (var entry in BuiltInEntries.Value)
         {
+            if (!options.IsCategoryEnabled(entry.Category))
+            {
+                continue;
+            }
+
             if (entry.Language.HasValue && !options.Languages.Contains(entry.Language.Value))
             {
                 continue;
@@ -226,10 +231,26 @@ public sealed partial class Checker : IChecker
 
         foreach (var value in options.AdditionalReserved)
         {
-            Add(new ReservedEntry(value, "custom"));
+            AddCustomDefault(new ReservedEntry(value, "custom"));
         }
 
+        foreach (var reservation in options.Reservations)
+        {
+            var entry = new ReservedEntry(reservation.Value, "custom");
+            if (reservation.Matching == ReservedMatchMode.Exact)
+            {
+                AddExactCustom(entry);
+            }
+            else
+            {
+                AddCustomDefault(entry);
+            }
+        }
+
+        CaptureAllowedIdentifiers(options);
+
         _partialEntries.Sort((left, right) => right.Compact.Length.CompareTo(left.Compact.Length));
+        _customPartialEntries.Sort((left, right) => right.Compact.Length.CompareTo(left.Compact.Length));
     }
 
     /// <summary>
@@ -293,6 +314,17 @@ public sealed partial class Checker : IChecker
         if (exact is null)
         {
             return Result.Allowed(value);
+        }
+
+        var exactCustomResult = CheckExactCustomReservation(value, exact);
+        if (exactCustomResult is not null)
+        {
+            return exactCustomResult;
+        }
+
+        if (_allowedIdentifiers.Contains(exact))
+        {
+            return CheckCustomDefaultReservations(value, exact) ?? Result.Allowed(value);
         }
 
         ReservedEntry? exactMatch;

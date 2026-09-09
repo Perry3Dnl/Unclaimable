@@ -1,4 +1,4 @@
-name: .NET 0.4.0 Compatibility
+name: .NET 0.5.0 Compatibility
 
 on:
   push:
@@ -32,20 +32,29 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Compare public API and legacy-compatible behavior with v0.3.0
+      - name: Compare v0.5.0 with v0.4.0 defaults and v0.3.0 legacy behavior
         shell: bash
         run: |
           set -euo pipefail
+          legacy_source="$(mktemp -d)"
           baseline_source="$(mktemp -d)"
-          baseline_out="$RUNNER_TEMP/unclaimable-v0.3.0"
+          legacy_out="$RUNNER_TEMP/unclaimable-v0.3.0"
+          baseline_out="$RUNNER_TEMP/unclaimable-v0.4.0"
           current_out="$RUNNER_TEMP/unclaimable-current"
 
           cleanup() {
+            git worktree remove --force "$legacy_source" >/dev/null 2>&1 || true
             git worktree remove --force "$baseline_source" >/dev/null 2>&1 || true
           }
           trap cleanup EXIT
 
-          git worktree add --detach "$baseline_source" v0.3.0
+          git worktree add --detach "$legacy_source" v0.3.0
+          git worktree add --detach "$baseline_source" v0.4.0
+
+          dotnet build \
+            "$legacy_source/platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj" \
+            --configuration Release \
+            --output "$legacy_out"
 
           dotnet build \
             "$baseline_source/platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj" \
@@ -60,4 +69,4 @@ jobs:
           dotnet run \
             --project platforms/dotnet/compat/Unclaimable.ReleaseChecks/Unclaimable.ReleaseChecks.csproj \
             --configuration Release \
-            -- "$baseline_out" "$current_out"
+            -- "$legacy_out" "$baseline_out" "$current_out"

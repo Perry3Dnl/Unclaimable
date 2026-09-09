@@ -5,7 +5,7 @@ namespace Unclaimable;
 /// later mutations to this object do not change that checker's matching configuration.
 /// Runtime character-policy updates remain live through the checker's <see cref="IPolicy"/> instance.
 /// </summary>
-public sealed class Options
+public sealed partial class Options
 {
     /// <summary>Creates options using the strict default configuration.</summary>
     public Options()

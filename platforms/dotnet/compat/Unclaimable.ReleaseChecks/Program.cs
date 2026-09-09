@@ -5,23 +5,25 @@ using System.Runtime.Loader;
 using System.Text;
 using System.Text.Json;
 
-if (args.Length != 2)
+if (args.Length != 3)
 {
-    Console.Error.WriteLine("Usage: Unclaimable.ReleaseChecks <v0.3.0-output-directory> <current-output-directory>");
+    Console.Error.WriteLine("Usage: Unclaimable.ReleaseChecks <v0.3.0-output-directory> <v0.4.0-output-directory> <current-output-directory>");
     return 2;
 }
 
-var baselineDirectory = Path.GetFullPath(args[0]);
-var currentDirectory = Path.GetFullPath(args[1]);
-
+var legacyDirectory = Path.GetFullPath(args[0]);
+var baseline040Directory = Path.GetFullPath(args[1]);
+var currentDirectory = Path.GetFullPath(args[2]);
 var failures = new List<string>();
-CompareAssemblyApi("Unclaimable.dll", baselineDirectory, currentDirectory, failures);
-CompareAssemblyApi("Unclaimable.AspNetCore.dll", baselineDirectory, currentDirectory, failures);
-CompareLegacyCompatibleBehavior(baselineDirectory, currentDirectory, failures);
+
+CompareAssemblyApi("Unclaimable.dll", baseline040Directory, currentDirectory, failures);
+CompareAssemblyApi("Unclaimable.AspNetCore.dll", baseline040Directory, currentDirectory, failures);
+CompareDefault040Behavior(baseline040Directory, currentDirectory, failures);
+CompareLegacyCompatibleBehavior(legacyDirectory, currentDirectory, failures);
 
 if (failures.Count > 0)
 {
-    Console.Error.WriteLine($"0.4.0 release compatibility checks failed with {failures.Count} difference(s):");
+    Console.Error.WriteLine($"0.5.0 release compatibility checks failed with {failures.Count} difference(s):");
     foreach (var failure in failures.Take(100))
     {
         Console.Error.WriteLine($"- {failure}");
@@ -35,8 +37,9 @@ if (failures.Count > 0)
     return 1;
 }
 
-Console.WriteLine("Public API comparison against v0.3.0 passed.");
-Console.WriteLine("Legacy-compatible valid-Unicode behavior matched v0.3.0 when the new 0.4.0 strict defaults were explicitly disabled.");
+Console.WriteLine("Public API compatibility against v0.4.0 passed.");
+Console.WriteLine("Default behavior matched v0.4.0 across the compatibility corpus.");
+Console.WriteLine("Legacy-compatible valid-Unicode behavior still matched v0.3.0 with the 0.4.0 strict additions explicitly disabled.");
 return 0;
 
 static void CompareAssemblyApi(
@@ -53,7 +56,7 @@ static void CompareAssemblyApi(
 
     foreach (var signature in baselineSurface.Except(currentSurface, StringComparer.Ordinal))
     {
-        failures.Add($"{assemblyFile}: removed or changed public API: {signature}");
+        failures.Add($"{assemblyFile}: removed or changed v0.4.0 public API: {signature}");
     }
 }
 
@@ -191,16 +194,33 @@ static string FormatDefault(object? value)
     };
 }
 
-static void CompareLegacyCompatibleBehavior(string baselineDirectory, string currentDirectory, List<string> failures)
+static void CompareDefault040Behavior(string baselineDirectory, string currentDirectory, List<string> failures)
 {
     using var baseline = new CheckerRuntime(baselineDirectory);
+    using var current = new CheckerRuntime(currentDirectory);
+
+    foreach (var value in Build040Corpus())
+    {
+        var baselineSnapshot = baseline.Snapshot(value, include040Properties: true);
+        var currentSnapshot = current.Snapshot(value, include040Properties: true);
+
+        if (!string.Equals(baselineSnapshot, currentSnapshot, StringComparison.Ordinal))
+        {
+            failures.Add(
+                $"default behavior changed for {JsonSerializer.Serialize(value)}: v0.4.0={baselineSnapshot}; current={currentSnapshot}");
+        }
+    }
+}
+
+static void CompareLegacyCompatibleBehavior(string legacyDirectory, string currentDirectory, List<string> failures)
+{
+    using var baseline = new CheckerRuntime(legacyDirectory);
     using var current = new CheckerRuntime(currentDirectory, useLegacy040Settings: true);
 
-    var corpus = BuildValidUnicodeCorpus();
-    foreach (var value in corpus)
+    foreach (var value in BuildValidUnicodeCorpus())
     {
-        var baselineSnapshot = baseline.Snapshot(value);
-        var currentSnapshot = current.Snapshot(value);
+        var baselineSnapshot = baseline.Snapshot(value, include040Properties: false);
+        var currentSnapshot = current.Snapshot(value, include040Properties: false);
 
         if (!string.Equals(baselineSnapshot, currentSnapshot, StringComparison.Ordinal))
         {
@@ -208,6 +228,15 @@ static void CompareLegacyCompatibleBehavior(string baselineDirectory, string cur
                 $"legacy-compatible behavior changed for {JsonSerializer.Serialize(value)}: v0.3.0={baselineSnapshot}; current={currentSnapshot}");
         }
     }
+}
+
+static IReadOnlyList<string?> Build040Corpus()
+{
+    var values = BuildValidUnicodeCorpus().ToList();
+    values.Add(new string(new[] { '\uD800' }));
+    values.Add(new string(new[] { '\uDC00' }));
+    values.Add("ab" + new string(new[] { '\uD800' }) + "cd");
+    return values;
 }
 
 static IReadOnlyList<string?> BuildValidUnicodeCorpus()
@@ -318,13 +347,13 @@ sealed class CheckerRuntime : IDisposable
         _checkDetailed = checkerType.GetMethod("CheckDetailed", new[] { typeof(string), typeof(bool) })!;
     }
 
-    public string Snapshot(string? value)
+    public string Snapshot(string? value, bool include040Properties)
     {
         try
         {
             var result = _check.Invoke(_checker, new object?[] { value })!;
             var detailed = _checkDetailed.Invoke(_checker, new object?[] { value, false })!;
-            return SnapshotResult(result) + "|D=" + SnapshotDetailed(detailed);
+            return SnapshotResult(result, include040Properties) + "|D=" + SnapshotDetailed(detailed, include040Properties);
         }
         catch (TargetInvocationException exception) when (exception.InnerException is not null)
         {
@@ -334,10 +363,10 @@ sealed class CheckerRuntime : IDisposable
 
     public void Dispose() => _context.Unload();
 
-    private static string SnapshotResult(object result)
+    private static string SnapshotResult(object result, bool include040Properties)
     {
         var type = result.GetType();
-        return string.Join(";", new[]
+        var parts = new List<string>
         {
             "R=" + Get(type, result, "IsReserved"),
             "C=" + Get(type, result, "IsClaimable"),
@@ -350,10 +379,19 @@ sealed class CheckerRuntime : IDisposable
             "OC=" + Encode((string?)type.GetProperty("OffendingCharacter")!.GetValue(result)),
             "MS=" + NullableValue(type, result, "MatchStartIndex"),
             "ML=" + NullableValue(type, result, "MatchLength")
-        });
+        };
+
+        if (include040Properties)
+        {
+            parts.Add("OMS=" + NullableValue(type, result, "OriginalMatchStartIndex"));
+            parts.Add("OML=" + NullableValue(type, result, "OriginalMatchLength"));
+            parts.Add("LL=" + NullableValue(type, result, "LengthLimit"));
+        }
+
+        return string.Join(";", parts);
     }
 
-    private static string SnapshotDetailed(object detailed)
+    private static string SnapshotDetailed(object detailed, bool include040Properties)
     {
         var type = detailed.GetType();
         var diagnostics = (System.Collections.IEnumerable)type.GetProperty("Diagnostics")!.GetValue(detailed)!;
@@ -361,13 +399,14 @@ sealed class CheckerRuntime : IDisposable
         {
             "R=" + Get(type, detailed, "IsReserved"),
             "C=" + Get(type, detailed, "IsClaimable"),
+            "I=" + Encode((string?)type.GetProperty("Input")!.GetValue(detailed)),
             "IL=" + Get(type, detailed, "InputLength")
         };
 
         foreach (var diagnostic in diagnostics)
         {
             var diagnosticType = diagnostic!.GetType();
-            parts.Add(string.Join(",", new[]
+            var diagnosticParts = new List<string>
             {
                 "K=" + Convert.ToInt32(diagnosticType.GetProperty("Kind")!.GetValue(diagnostic), CultureInfo.InvariantCulture),
                 "MV=" + Encode((string?)diagnosticType.GetProperty("MatchedValue")!.GetValue(diagnostic)),
@@ -375,9 +414,17 @@ sealed class CheckerRuntime : IDisposable
                 "OI=" + NullableValue(diagnosticType, diagnostic, "OffendingCharacterIndex"),
                 "OC=" + Encode((string?)diagnosticType.GetProperty("OffendingCharacter")!.GetValue(diagnostic)),
                 "MS=" + NullableValue(diagnosticType, diagnostic, "MatchStartIndex"),
-                "ML=" + NullableValue(diagnosticType, diagnostic, "MatchLength"),
-                "MSG=" + Encode((string?)diagnosticType.GetProperty("Message")!.GetValue(diagnostic))
-            }));
+                "ML=" + NullableValue(diagnosticType, diagnostic, "MatchLength")
+            };
+
+            if (include040Properties)
+            {
+                diagnosticParts.Add("OMS=" + NullableValue(diagnosticType, diagnostic, "OriginalMatchStartIndex"));
+                diagnosticParts.Add("OML=" + NullableValue(diagnosticType, diagnostic, "OriginalMatchLength"));
+            }
+
+            diagnosticParts.Add("MSG=" + Encode((string?)diagnosticType.GetProperty("Message")!.GetValue(diagnostic)));
+            parts.Add(string.Join(",", diagnosticParts));
         }
 
         return string.Join("/", parts);
