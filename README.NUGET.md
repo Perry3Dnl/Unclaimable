@@ -2,7 +2,7 @@
 
 Strict, fast username and identifier validation for .NET.
 
-**Current version: 0.3.0**
+**Current version: 0.4.0**
 
 Unclaimable helps decide whether a username, handle, slug, account name, or similar identifier should be claimable.
 
@@ -11,13 +11,13 @@ It combines curated reserved-name datasets with structural validation rules, imp
 ## Install
 
 ```bash
-dotnet add package Unclaimable --version 0.3.0
+dotnet add package Unclaimable --version 0.4.0
 ```
 
 For ASP.NET Core integration:
 
 ```bash
-dotnet add package Unclaimable.AspNetCore --version 0.3.0
+dotnet add package Unclaimable.AspNetCore --version 0.4.0
 ```
 
 ## Quick start
@@ -48,6 +48,8 @@ public sealed class UsernameService(IChecker checker)
 }
 ```
 
+`null` is accepted by Unclaimable so required-field validation can remain a separate concern, for example through `[Required]`.
+
 ## What it protects against
 
 The default policy includes:
@@ -73,9 +75,45 @@ The default policy includes:
 - blocked characters;
 - leading and trailing separator restrictions.
 
+`IsReserved` also reports structural validation failures such as invalid length, blocked characters, or malformed UTF-16. It therefore means “this value cannot be claimed under this checker,” not only “this exact string exists in a reserved-name dataset.”
+
+## 0.4.0 compatibility and Unicode handling
+
+0.4.0 intentionally preserves the 0.3.0 public API, default settings, enabled datasets, enum values, and outcomes for valid Unicode input.
+
+Malformed UTF-16 is now handled explicitly before normalization or character-policy calls. An unpaired high or low surrogate is returned as `MatchKind.InvalidCharacters` instead of potentially causing an exception. The offending index is the original UTF-16 code-unit index.
+
+Additional Unicode hardening is opt-in:
+
+```csharp
+builder.Services.AddUnclaimable(options =>
+{
+    options.RejectInvisibleOnlyIdentifiers = true;
+    options.RejectControlCharacters = true;
+    options.RejectFormatCharacters = true;
+});
+```
+
+All three settings default to `false`. Invisible-only detection is a documented Unicode-category approximation: it requires at least one scalar outside whitespace, control, format, and combining-mark categories. Unicode categories cannot determine whether every font or renderer will actually display a character.
+
+Format rejection is deliberately separate because joiners and other formatting characters can be legitimate in some languages.
+
+`Rule.CompactMatching` can also be made consistent across direct, partial, and obfuscation matching:
+
+```csharp
+builder.Services.AddUnclaimable(options =>
+{
+    options.ConsistentCompactMatching = true;
+});
+```
+
+This setting also defaults to `false`, preserving the legacy 0.3.0 interaction. When enabled and compact matching is disabled, exact partial matching remains available, compact partial matching is skipped, and obfuscation candidates preserve separators and punctuation. Unicode-confusable matching remains independently controlled.
+
+Options are captured when a `Checker` is constructed. Runtime changes made through the `IPolicy` instance remain live.
+
 ## Dataset coverage
 
-Version 0.3.0 contains **10,731 filter entries across 22 categories**, representing **10,633 unique values within those categories**. Localized language packs can contain the same literal value in more than one language, so entry counts can be higher than unique-value counts.
+Version 0.4.0 intentionally keeps the same built-in datasets as 0.3.0: **10,731 filter entries across 22 categories**, representing **10,633 unique values within those categories**. Localized language packs can contain the same literal value in more than one language, so entry counts can be higher than unique-value counts.
 
 | Category | Filter entries | Unique values |
 | --- | ---: | ---: |
@@ -155,9 +193,9 @@ builder.Services.AddUnclaimable(options =>
 });
 ```
 
-Application-specific reserved values participate in the same normalization and matching pipeline as the built-in datasets.
+Application-specific reserved values participate in the same normalization and matching pipeline as the built-in datasets. In strict mode, partial matching can remain enabled even when `PartialMatching` itself has not been set to `true`; disable `Rule.PartialMatching` or use `Strictness.Standard` when that relaxation is intended.
 
-## Detailed results
+## Detailed results and match positions
 
 ```csharp
 var result = checker.Check("support-team");
@@ -166,6 +204,17 @@ Console.WriteLine(result.IsReserved);
 Console.WriteLine(result.Category);
 Console.WriteLine(result.MatchKind);
 ```
+
+`MatchStartIndex` and `MatchLength` retain their existing meaning and refer to the transformed matching text. Indexes and lengths use UTF-16 code units.
+
+0.4.0 adds nullable original-input spans:
+
+```csharp
+Console.WriteLine(result.OriginalMatchStartIndex);
+Console.WriteLine(result.OriginalMatchLength);
+```
+
+These are populated only when the transformation can be mapped reliably back to the original input. Compact-match spans include intervening punctuation. They are `null` when normalization makes the mapping uncertain rather than returning an inaccurate highlight.
 
 For diagnostics that may contain multiple failures:
 
@@ -186,6 +235,8 @@ public sealed class SignupModel
     public string UserName { get; set; } = string.Empty;
 }
 ```
+
+0.4.0 also fixes default minimum/maximum-length messages when `[ClaimableUsername]` is used without dependency injection. Length placeholders use the threshold captured by the checker result first, then registered `Options`, then default options when `Checker.Default` was selected.
 
 ## More information
 
