@@ -6,6 +6,8 @@ All notable changes to Unclaimable are documented here.
 
 Configurability release that keeps the 0.4.0 strict defaults and built-in dataset contents unchanged while making the existing 22 categories and application-specific overrides substantially more practical.
 
+This release marks a more stable point in Unclaimable's development: the core validation behavior, configuration semantics, compatibility guarantees, test coverage, and release/package gates now form a stronger baseline for future versions.
+
 ### Added
 
 - `Category` with all 22 built-in reserved-name dataset categories and `Options.DisableCategory(...)` / `EnableCategory(...)` for per-checker category selection. Every category remains enabled by default.
