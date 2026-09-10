@@ -1,28 +1,73 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/Perry3Dnl/Unclaimable/main/assets/unclaimable-icon.png" alt="Unclaimable icon" width="180" />
-</p>
+<h1>
+  <img src="assets/unclaimable-icon.png" alt="Unclaimable icon" width="48" align="absmiddle" />
+  Unclaimable
+</h1>
 
-<h1 align="center">Unclaimable</h1>
+[![build](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml)
+[![NuGet](https://img.shields.io/nuget/v/Unclaimable.svg?label=nuget)](https://www.nuget.org/packages/Unclaimable)
+[![NuGet downloads](https://img.shields.io/nuget/dt/Unclaimable.svg?label=downloads)](https://www.nuget.org/packages/Unclaimable)
+[![license](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
+[![target](https://img.shields.io/badge/.NET-netstandard2.0-512BD4.svg)](platforms/dotnet/src/Unclaimable/Unclaimable.csproj)
 
-<p align="center">
-  Strict, fast username and identifier validation for .NET.
-</p>
+**Strict, fast username and identifier validation for .NET.**
 
-<p align="center">
-  <a href="https://www.nuget.org/packages/Unclaimable"><strong>NuGet</strong></a>
-  ·
-  <a href="CHANGELOG.md"><strong>Changelog</strong></a>
-</p>
+Prevent reserved, protected, misleading, and unsafe identifiers before they can be claimed. Simple API, strong defaults, Unicode-aware matching, and no runtime dependencies in the core package.
 
-Unclaimable answers one question: **should this identifier be claimable?**
+[**NuGet**](https://www.nuget.org/packages/Unclaimable) · [**Changelog**](CHANGELOG.md)
 
-It provides a strong default policy for usernames, handles, slugs, account names, tenant names, public identifiers, and similar user-claimable values. It combines large curated reserved-name datasets with structural validation, impersonation protection, partial matching, compact matching, bounded obfuscation detection, Unicode lookalike handling, localized filtering, category selection, exact exceptions, and application-specific rules.
+## ✨ Features
 
-For most applications, the strict default is enough:
+- ✅ Reserved-name protection across **22 built-in categories**
+- ✅ Exact, compact, partial, and safe-compound matching
+- ✅ Common leetspeak, symbol substitutions, and bounded obfuscation detection
+- ✅ Selected Unicode-confusable and lookalike protection
+- ✅ **15 localized language datasets** with English enabled by default
+- ✅ Per-category enable/disable controls and exact allowed-identifier exceptions
+- ✅ Length, number, whitespace, separator, blocked-character, and Unicode safety rules
+- ✅ Dependency-free `netstandard2.0` core plus ASP.NET Core integration
+
+## 📦 Packages
+
+| Package | Target | Purpose |
+| --- | --- | --- |
+| [`Unclaimable`](https://www.nuget.org/packages/Unclaimable) | `netstandard2.0` | dependency-free runtime core and embedded datasets |
+| `Unclaimable.AspNetCore` | `net8.0` | ASP.NET Core DI and DataAnnotations integration |
+
+Install the core package:
+
+```bash
+dotnet add package Unclaimable --version 0.5.0
+```
+
+For ASP.NET Core:
+
+```bash
+dotnet add package Unclaimable.AspNetCore --version 0.5.0
+```
+
+## 🚀 Quick start
+
+```csharp
+using Unclaimable;
+
+var checker = new Checker();
+
+var result = checker.Check("candidate-name");
+if (result.IsClaimable)
+{
+    // Continue with your own availability/database check.
+}
+```
+
+For dependency injection, the strict default is one line:
 
 ```csharp
 builder.Services.AddUnclaimable();
 ```
+
+`null` is accepted by Unclaimable. Required-field validation is intentionally a separate concern.
+
+`IsReserved` means the value cannot be claimed under the checker. That includes both dataset matches and structural failures such as invalid length, blocked characters, malformed Unicode, or disallowed characters.
 
 ## Why Unclaimable
 
@@ -62,43 +107,6 @@ Unclaimable checks more than literal equality. Its default pipeline includes:
 - structured fail-fast results;
 - detailed multi-diagnostic results;
 - ASP.NET Core dependency injection and DataAnnotations integration.
-
-## Packages
-
-| Package | Target | Purpose |
-| --- | --- | --- |
-| [`Unclaimable`](https://www.nuget.org/packages/Unclaimable) | `netstandard2.0` | dependency-free runtime core and embedded datasets |
-| `Unclaimable.AspNetCore` | `net8.0` | ASP.NET Core DI and DataAnnotations integration |
-
-Install the core package:
-
-```bash
-dotnet add package Unclaimable --version 0.5.0
-```
-
-For ASP.NET Core:
-
-```bash
-dotnet add package Unclaimable.AspNetCore --version 0.5.0
-```
-
-## Quick start
-
-```csharp
-using Unclaimable;
-
-var checker = new Checker();
-
-var result = checker.Check("candidate-name");
-if (result.IsClaimable)
-{
-    // Continue with your own availability/database check.
-}
-```
-
-`null` is accepted by Unclaimable. Required-field validation is intentionally a separate concern.
-
-`IsReserved` means the value cannot be claimed under the checker. That includes both dataset matches and structural failures such as invalid length, blocked characters, malformed Unicode, or disallowed characters.
 
 ## Dataset coverage
 
@@ -488,4 +496,4 @@ See [CHANGELOG.md](CHANGELOG.md) for the release history.
 
 ## License
 
-See [LICENSE](LICENSE).
+Unclaimable is licensed under the [Mozilla Public License 2.0](LICENSE).
