@@ -21,7 +21,7 @@ public sealed class CoverageCoreBehaviorTests
         var policy = new Policy(new[] { "#" });
         var checker = new Checker(options, policy);
         var result = checker.CheckDetailed("_1 \u0001\u200Bé#-", includeMessages: true);
-        var kinds = result.Diagnostics.Select(diagnostic => diagnostic.MatchKind).ToArray();
+        var kinds = result.Diagnostics.Select(diagnostic => diagnostic.Kind).ToArray();
 
         Assert.Contains(MatchKind.TooShort, kinds);
         Assert.Contains(MatchKind.LeadingSeparator, kinds);
@@ -42,7 +42,7 @@ public sealed class CoverageCoreBehaviorTests
         };
 
         var result = new Checker(options).CheckDetailed("abcdefgh", includeMessages: false);
-        var diagnostic = Assert.Single(result.Diagnostics.Where(item => item.MatchKind == MatchKind.TooLong));
+        var diagnostic = Assert.Single(result.Diagnostics.Where(item => item.Kind == MatchKind.TooLong));
 
         Assert.Null(diagnostic.Message);
     }
@@ -56,7 +56,7 @@ public sealed class CoverageCoreBehaviorTests
         var result = checker.CheckDetailed(input, includeMessages: true);
 
         var diagnostic = Assert.Single(result.Diagnostics);
-        Assert.Equal(MatchKind.InvalidCharacters, diagnostic.MatchKind);
+        Assert.Equal(MatchKind.InvalidCharacters, diagnostic.Kind);
         Assert.Equal(3, diagnostic.OffendingCharacterIndex);
         Assert.Contains("UTF-16", diagnostic.Message);
         Assert.Equal(MatchKind.InvalidCharacters, checker.Check(input).MatchKind);
@@ -79,7 +79,7 @@ public sealed class CoverageCoreBehaviorTests
         Assert.Equal(MatchKind.InvalidCharacters, checker.Check(input).MatchKind);
         Assert.Contains(
             checker.CheckDetailed(input, includeMessages: true).Diagnostics,
-            diagnostic => diagnostic.MatchKind == MatchKind.InvalidCharacters
+            diagnostic => diagnostic.Kind == MatchKind.InvalidCharacters
                           && diagnostic.Message?.Contains("visible", StringComparison.OrdinalIgnoreCase) == true);
     }
 
@@ -145,7 +145,7 @@ public sealed class CoverageCoreBehaviorTests
 
         var country = new Options().EnableRule(Rule.CountryNames);
         var countryResult = new Checker(country).CheckDetailed("france", includeMessages: true);
-        var countryDiagnostic = Assert.Single(countryResult.Diagnostics.Where(item => item.MatchKind == MatchKind.CountryName));
+        var countryDiagnostic = Assert.Single(countryResult.Diagnostics.Where(item => item.Kind == MatchKind.CountryName));
         Assert.Equal("This value is not allowed.", countryDiagnostic.Message);
     }
 
@@ -171,13 +171,13 @@ public sealed class CoverageCoreBehaviorTests
         var combinedResult = new Checker(combined).CheckDetailed("gооgl3", includeMessages: true);
         Assert.Contains(
             combinedResult.Diagnostics,
-            diagnostic => diagnostic.MatchKind == MatchKind.Obfuscated && diagnostic.MatchedValue == "google");
+            diagnostic => diagnostic.Kind == MatchKind.Obfuscated && diagnostic.MatchedValue == "google");
 
         var partial = new Options().Reserve("admin", ReservedMatchMode.Default);
         var partialResult = new Checker(partial).CheckDetailed("xxаdminyy", includeMessages: true);
         Assert.Contains(
             partialResult.Diagnostics,
-            diagnostic => diagnostic.MatchKind == MatchKind.Partial && diagnostic.MatchedValue == "admin");
+            diagnostic => diagnostic.Kind == MatchKind.Partial && diagnostic.MatchedValue == "admin");
     }
 
     [Fact]
@@ -190,7 +190,7 @@ public sealed class CoverageCoreBehaviorTests
 
         Assert.Contains(
             result.Diagnostics,
-            diagnostic => diagnostic.MatchKind == MatchKind.UnicodeConfusable
+            diagnostic => diagnostic.Kind == MatchKind.UnicodeConfusable
                           && diagnostic.MatchedValue == "foo-bar");
     }
 
@@ -199,7 +199,7 @@ public sealed class CoverageCoreBehaviorTests
     {
         var partial = new Options().Reserve("admin", ReservedMatchMode.Default);
         var partialResult = new Checker(partial).CheckDetailed("xx4dm1nyy", includeMessages: true);
-        Assert.Contains(partialResult.Diagnostics, diagnostic => diagnostic.MatchKind == MatchKind.Partial);
+        Assert.Contains(partialResult.Diagnostics, diagnostic => diagnostic.Kind == MatchKind.Partial);
 
         var nonCompact = new Options().Reserve("a-b", ReservedMatchMode.Default);
         nonCompact.DisableRule(Rule.CompactMatching | Rule.BlockedCharacters);
@@ -244,14 +244,14 @@ public sealed class CoverageCoreBehaviorTests
     private static void AssertReservedDiagnostic(Options options, string input, MatchKind kind)
     {
         var result = new Checker(options).CheckDetailed(input, includeMessages: true);
-        var diagnostic = Assert.Single(result.Diagnostics.Where(item => item.MatchKind == kind));
+        var diagnostic = Assert.Single(result.Diagnostics.Where(item => item.Kind == kind));
         Assert.False(string.IsNullOrWhiteSpace(diagnostic.Message));
     }
 
     private static void AssertPatternDiagnostic(Options options, string input, MatchKind kind)
     {
         var result = new Checker(options).CheckDetailed(input, includeMessages: true);
-        var diagnostic = Assert.Single(result.Diagnostics.Where(item => item.MatchKind == kind));
+        var diagnostic = Assert.Single(result.Diagnostics.Where(item => item.Kind == kind));
         Assert.False(string.IsNullOrWhiteSpace(diagnostic.Message));
     }
 }
