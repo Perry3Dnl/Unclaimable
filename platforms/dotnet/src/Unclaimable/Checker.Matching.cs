@@ -27,10 +27,7 @@ public sealed partial class Checker
             _compact.Add(compact, entry);
         }
 
-        var isProfanity = string.Equals(entry.Category, "profanity", StringComparison.Ordinal);
-        if (includeInPartialMatching
-            && (entry.SafePartial || isProfanity)
-            && compact.Length >= _partialMatchMinimumLength)
+        if (includeInPartialMatching && compact.Length >= _partialMatchMinimumLength)
         {
             _partialEntries.Add(new PartialEntry(exact, compact, entry));
         }
