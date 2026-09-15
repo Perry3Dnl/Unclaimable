@@ -78,14 +78,14 @@ internal static class OptionalIdentityData
 
     internal static readonly string[] FictionalCharacters =
     {
-        "batman", "blackpanther", "bowser", "brucewayne", "bugs-bunny", "bugsbunny", "captainamerica", "catwoman",
-        "cinderella", "clarkkent", "daffyduck", "darthvader", "deadpool", "donaldduck", "fredflintstone", "frodo",
-        "gandalf", "geraltofrivia", "goku", "hanniballecter", "harleyquinn", "hermionegranger", "homersimpson",
-        "indianajones", "ironman", "jamesbond", "jessepinkman", "katnisseverdeen", "kratos", "laracroft",
-        "lukeskywalker", "masterchief", "mickeymouse", "naruto", "peterpan", "peterparker", "pikachu", "popeye",
-        "princessleia", "princesspeach", "princesszelda", "rickgrimes", "ricksanchez", "rockybalboa", "sailormoon",
-        "scoobydoo", "sherlockholmes", "shrek", "solidsnake", "sonicthehedgehog", "spiderman", "spongebob",
-        "superman", "thanos", "tinkerbell", "tonystark", "walterwhite", "wonderwoman", "wolverine", "yoda"
+        "batman", "blackpanther", "bowser", "brucewayne", "bugsbunny", "captainamerica", "catwoman", "cinderella",
+        "clarkkent", "daffyduck", "darthvader", "deadpool", "donaldduck", "fredflintstone", "frodo", "gandalf",
+        "geraltofrivia", "goku", "hanniballecter", "harleyquinn", "hermionegranger", "homersimpson", "indianajones",
+        "ironman", "jamesbond", "jessepinkman", "katnisseverdeen", "kratos", "laracroft", "lukeskywalker",
+        "masterchief", "mickeymouse", "naruto", "peterpan", "peterparker", "pikachu", "popeye", "princessleia",
+        "princesspeach", "princesszelda", "rickgrimes", "ricksanchez", "rockybalboa", "sailormoon", "scoobydoo",
+        "sherlockholmes", "shrek", "solidsnake", "sonicthehedgehog", "spiderman", "spongebob", "superman",
+        "thanos", "tinkerbell", "tonystark", "walterwhite", "wonderwoman", "wolverine", "yoda"
     };
 
     internal static readonly string[] Franchises =
