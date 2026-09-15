@@ -94,6 +94,8 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
             MatchKind.SymbolOnly => messages.SymbolOnly,
             MatchKind.AsciiArt => messages.AsciiArt,
             MatchKind.UppercaseOnly => messages.UppercaseOnly,
+            MatchKind.CountryName => messages.CountryName,
+            MatchKind.PopularCityName => messages.PopularCityName,
             _ => null
         };
     }
@@ -124,6 +126,8 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
             MatchKind.SymbolOnly => "{FieldName} must contain at least one letter or number.",
             MatchKind.AsciiArt => "{FieldName} matches a disallowed ASCII-art pattern.",
             MatchKind.UppercaseOnly => "{FieldName} cannot consist only of uppercase letters.",
+            MatchKind.CountryName => "{FieldName} cannot be a country name.",
+            MatchKind.PopularCityName => "{FieldName} cannot be a protected popular city name.",
             _ => "{FieldName} is not allowed."
         };
     }
