@@ -2,39 +2,38 @@
 
 Strict, fast username and identifier validation for .NET.
 
-**Current version: 0.6.0**
+**Current version: 0.7.0**
 
-Unclaimable helps decide whether a username, handle, slug, account name, tenant name, or similar identifier should be claimable. It combines curated reserved-name datasets with structural validation, compact matching, curated partial matching, obfuscation detection, selected Unicode lookalikes, localized filtering, category controls, exact exceptions, and application-specific rules.
+Unclaimable helps decide whether a username, handle, slug, account name, tenant name, or similar identifier should be claimable. It combines curated reserved-name datasets with structural validation, compact matching, curated partial matching, obfuscation detection, selected Unicode lookalikes, localized filtering, category controls, exact exceptions, application-specific rules, and configurable identifier-pattern checks.
 
-## Why 0.6.0 exists
+## What's new in 0.7.0
 
-0.6.0 is a response to production-oriented feedback rather than a bulk feature or dataset release.
+0.7.0 adds a dedicated identifier-shape policy layer and literal placeholder protection.
 
-The main issue found in 0.5.0 was false positives from generic built-in substring matching. Short protected terms could reject unrelated words merely because the protected text appeared inside them. Examples included values such as `supportive`, `helpful`, `apples`, `nikee`, `badminton`, `stafford`, and `rooted`.
+New `Pattern` flags can reject:
 
-0.6.0 changes that behavior deliberately:
+- `NumericOnly` — identifiers made entirely of Unicode decimal digits;
+- `Repeated` — long identifiers built by repeating a short unit;
+- `SymbolOnly` — identifiers containing punctuation or symbols but no Unicode letters or numbers;
+- `AsciiArt` — a conservative set of known ASCII-art constructions;
+- `UppercaseOnly` — identifiers whose cased letters are all uppercase.
 
-- `Strictness.Strict` still enables partial matching;
-- built-in entries must now be explicitly marked as safe for partial matching before they enter the substring index;
-- exact, compact, obfuscation, Unicode-confusable, and structural protections remain independent;
-- application-defined `AdditionalReserved` and `Reserve(..., Default)` keep their existing configured matching behavior;
-- the built-in reserved vocabulary is not bulk-expanded in this release;
-- CI now includes a checked-in known-safe username corpus to prevent this class of regression from returning unnoticed.
+`NumericOnly`, `Repeated`, `SymbolOnly`, and `AsciiArt` are enabled by default. `UppercaseOnly` is opt-in.
 
-Exact reserved identifiers such as `support`, `apple`, `nike`, `admin`, and `root` remain reserved. Curated high-risk compounds such as `superadmin`, `systemadministrator`, `customersupport`, `passwordreset`, and generated authentication-service identities can still participate in partial matching.
+These checks are independent deny rules. Disabling or passing one never marks an identifier as allowed; the remaining structural, pattern, and reserved-name checks continue. For example, disabling `UppercaseOnly` does not make `ADMIN` claimable because it still matches the reserved `admin` identifier.
 
-This is an intentional default-policy relaxation. Consumers upgrading from 0.5.0 should review it if they relied on generic built-in substring blocking.
+0.7.0 also adds the global `placeholders` category for literal values such as `null`, `undefined`, `empty`, `none`, `nil`, `unset`, `missing`, `unknown`, and related forms. Actual C# `null` input remains accepted so required-field validation can stay separate.
 
 ## Install
 
 ```bash
-dotnet add package Unclaimable --version 0.6.0
+dotnet add package Unclaimable --version 0.7.0
 ```
 
 ASP.NET Core integration:
 
 ```bash
-dotnet add package Unclaimable.AspNetCore --version 0.6.0
+dotnet add package Unclaimable.AspNetCore --version 0.7.0
 ```
 
 ## Quick start
@@ -62,7 +61,7 @@ builder.Services.AddUnclaimable();
 
 The default policy includes:
 
-- all 22 built-in categories;
+- all 23 built-in categories;
 - English localized data;
 - exact reserved-name matching;
 - compact punctuation/separator matching;
@@ -76,15 +75,79 @@ The default policy includes:
 - numbers rejected;
 - whitespace rejected;
 - built-in `-` and `_` blocked;
-- leading and trailing separator restrictions.
+- leading and trailing separator restrictions;
+- numeric-only pattern protection;
+- repeated-pattern protection;
+- symbol-only pattern protection;
+- conservative ASCII-art protection.
+
+Uppercase-only protection is available but disabled by default.
 
 `IsReserved` therefore means “this value cannot be claimed under this checker,” not only “this literal exists in a reserved-name dataset.”
 
+## Pattern configuration
+
+```csharp
+var options = new Options();
+
+options.EnablePattern(Pattern.UppercaseOnly);
+options.DisablePattern(Pattern.AsciiArt);
+options.DisablePattern(Pattern.NumericOnly | Pattern.Repeated);
+
+var checker = new Checker(options);
+```
+
+`Options.EnabledPatterns` exposes the configured flags. `EnablePattern(...)` and `DisablePattern(...)` accept one pattern or a bitwise combination.
+
+Structural validation runs before fail-fast pattern checks. For example, with the default number rule, an all-digit value is rejected as `NumbersNotAllowed` before `NumericOnly` is reached. If numbers are otherwise allowed, numeric-only protection can act independently:
+
+```csharp
+var options = new Options
+{
+    AllowNumbers = true
+};
+
+var result = new Checker(options).Check("39742397429374");
+// result.MatchKind == MatchKind.NumericOnly
+```
+
+## Placeholder identifiers
+
+The global `placeholders` category includes literal identifiers such as:
+
+```text
+null
+undefined
+empty
+emptyvalue
+none
+nil
+unset
+missing
+unknown
+notset
+novalue
+nullvalue
+undefinedvalue
+missingvalue
+placeholder
+placeholdervalue
+defaultvalue
+```
+
+Disable it like any other category when an application intentionally permits those names:
+
+```csharp
+options.DisableCategory(Category.Placeholders);
+```
+
+The literal string `"null"` is reserved by default; actual C# `null` remains accepted.
+
 ## Dataset coverage
 
-0.6.0 keeps the same built-in vocabulary cardinality as 0.5.0: **10,731 filter entries across 22 categories**, representing **10,633 unique values within those categories**. Selected entries changed matching-policy metadata rather than adding another large vocabulary batch.
+0.7.0 contains **10,748 filter entries across 23 categories**, representing **10,650 unique values within those categories**. The increase from 0.6.0 is the 17-entry global `placeholders` category.
 
-Matching rules can reject additional variants without storing every possible spelling.
+Matching rules, normalization, obfuscation detection, Unicode-confusable handling, structural validation, and pattern checks can reject additional variants without storing every possible spelling.
 
 ## Language support
 
@@ -111,6 +174,9 @@ builder.Services.AddUnclaimable(options =>
     options.DisableCategory(Category.Brands);
     options.DisableCategory(Category.Technology);
 
+    options.EnablePattern(Pattern.UppercaseOnly);
+    options.DisablePattern(Pattern.AsciiArt);
+
     options.AllowedIdentifiers.Add("superadmin");
 
     options.Reserve("acme", matching: ReservedMatchMode.Exact);
@@ -125,13 +191,13 @@ builder.Services.AddUnclaimable(options =>
 
 Every built-in category remains enabled unless explicitly disabled. Category selection applies before exact, compact, partial, Unicode-confusable, and obfuscation indexes are built.
 
-`AllowedIdentifiers` is an exact normalized exception for built-in matching. Structural validation still runs first, and explicit application reservations still win.
+`AllowedIdentifiers` is an exact normalized exception for built-in matching. Structural and pattern validation still run first, and explicit application reservations still win.
 
 `ReservedMatchMode.Exact` performs whole-identifier matching after trim → NFKC → invariant lowercase. `ReservedMatchMode.Default` uses the configured matching pipeline. `AdditionalReserved` remains compatible with its existing behavior.
 
-## Partial matching in 0.6.0
+## Curated partial matching
 
-Built-in dataset entries now separate two decisions:
+Since 0.6.0, built-in dataset entries separate two decisions:
 
 ```text
 Reserve this complete identifier?                 yes/no
@@ -140,9 +206,7 @@ Reject it whenever it appears inside another one? explicit opt-in
 
 Schema-v2 `partialValues` and generated combinations with `"partial": true` are eligible for built-in substring matching. Ordinary `values` are still protected through exact and the other configured matching paths but are not automatically substring rules.
 
-`PartialMatchMinimumLength` still applies after eligibility. It no longer acts as the only protection against false positives.
-
-Generic profanity substring matching remains separately opt-in through `ProfanityPartialMatching`.
+`PartialMatchMinimumLength` still applies after eligibility. Generic profanity substring matching remains separately opt-in through `ProfanityPartialMatching`.
 
 ## Unicode scope
 
@@ -173,6 +237,8 @@ For multiple diagnostics:
 var detailed = checker.CheckDetailed(userName, includeMessages: true);
 ```
 
+0.7.0 adds dedicated match kinds and diagnostic messages for numeric-only, repeated-pattern, symbol-only, ASCII-art, and uppercase-only failures.
+
 ## ASP.NET Core DataAnnotations
 
 ```csharp
@@ -187,9 +253,11 @@ public sealed class SignupModel
 }
 ```
 
+Reason-specific validation messages are available for the new pattern failures in addition to the existing reserved-name and structural reasons.
+
 ## Release quality
 
-0.6.0 adds a known-safe regression corpus, retains shared reserved conformance cases, validates NuGet public API compatibility against published 0.5.0, pins GitHub Actions to immutable commit SHAs, and uses Dependabot to maintain those pins.
+0.7.0 adds regression coverage for every pattern, enable/disable capture, cross-filter behavior, placeholder normalization/category controls, and the invariant that relaxing one protection does not bypass another. The package/build/smoke workflow and public-API compatibility workflow remain part of the release gates.
 
 Full documentation and source:
 
