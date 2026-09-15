@@ -6,7 +6,6 @@
   "values": [
     "accesscontrol",
     "accessmanagement",
-    "accountrecovery",
     "accesstoken",
     "authentication",
     "authenticator",
@@ -22,7 +21,6 @@
     "passcode",
     "passkeys",
     "passwordrecovery",
-    "passwordreset",
     "recoverycode",
     "refreshtoken",
     "securitycode",
