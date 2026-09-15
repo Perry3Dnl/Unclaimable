@@ -9,7 +9,7 @@ namespace Unclaimable;
 /// <summary>
 /// Validates identifier structure and checks normalized values against Unclaimable's reserved-name datasets.
 /// Configuration from <see cref="Options"/> is captured at construction time, while updates to the supplied
-/// <see cref="IPolicy"/> remain live. Null values are accepted; required-field validation remains separate.
+/// <see cref="IPolicy"/> remain live. Null values are rejected as missing identifiers.
 /// </summary>
 public sealed partial class Checker : IChecker
 {
@@ -255,12 +255,12 @@ public sealed partial class Checker : IChecker
 
     /// <summary>
     /// Returns whether the value is rejected. Structural validation failures are included.
-    /// Null is accepted; use required-field validation separately when null is not allowed.
+    /// Null is rejected as <see cref="MatchKind.MissingValue"/>.
     /// </summary>
     public bool IsReserved(string? value) => Check(value).IsReserved;
 
     /// <summary>
-    /// Returns whether the value is claimable. Null is accepted; required-field validation remains separate.
+    /// Returns whether the value is claimable. Null is not claimable.
     /// </summary>
     public bool IsClaimable(string? value) => !Check(value).IsReserved;
 
