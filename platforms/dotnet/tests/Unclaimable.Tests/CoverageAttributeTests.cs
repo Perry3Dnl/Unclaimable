@@ -38,6 +38,19 @@ public sealed class CoverageAttributeTests
     }
 
     [Fact]
+    public void AttributeAcceptsClaimableStringValues()
+    {
+        using var provider = new ServiceCollection()
+            .AddSingleton<IChecker>(new StubChecker(Result.Allowed("ordinarycoverageuser")))
+            .BuildServiceProvider();
+
+        var result = new ClaimableUsernameAttribute()
+            .GetValidationResult("ordinarycoverageuser", CreateContext(provider));
+
+        Assert.Null(result);
+    }
+
+    [Fact]
     public void AttributeFallsBackToDefaultCheckerWhenNoCheckerIsRegistered()
     {
         var attribute = new ClaimableUsernameAttribute();
@@ -183,6 +196,22 @@ public sealed class CoverageAttributeTests
             .GetValidationResult("word", CreateContext(profanityProvider));
 
         Assert.Equal("profanity", profanityValidation!.ErrorMessage);
+    }
+
+    [Fact]
+    public void UnknownReasonFallsBackToGlobalValidationMessageWhenOptionsAreRegistered()
+    {
+        var options = new Options { ValidationMessage = "fallback" };
+        var result = new Result(true, "input", null, null, MatchKind.None);
+        using var provider = new ServiceCollection()
+            .AddSingleton(options)
+            .AddSingleton<IChecker>(new StubChecker(result))
+            .BuildServiceProvider();
+
+        var validation = new ClaimableUsernameAttribute()
+            .GetValidationResult("input", CreateContext(provider));
+
+        Assert.Equal("fallback", validation!.ErrorMessage);
     }
 
     [Fact]
