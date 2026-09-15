@@ -8,6 +8,8 @@ on:
       - "README.md"
       - "README.NUGET.md"
       - "CHANGELOG.md"
+      - "DATASET_POLICY.md"
+      - "SECURITY.md"
       - "assets/**"
       - "data/**"
       - "conformance/**"
@@ -20,6 +22,8 @@ on:
       - "README.md"
       - "README.NUGET.md"
       - "CHANGELOG.md"
+      - "DATASET_POLICY.md"
+      - "SECURITY.md"
       - "assets/**"
       - "data/**"
       - "conformance/**"
@@ -47,6 +51,16 @@ jobs:
       - name: Dataset statistics
         shell: pwsh
         run: ./platforms/dotnet/scripts/Get-DatasetStatistics.ps1
+
+      - name: Dataset policy guard
+        shell: pwsh
+        run: ./platforms/dotnet/scripts/Test-DatasetPolicy.ps1
+
+      - name: Dataset policy diff
+        shell: pwsh
+        env:
+          DATASET_BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: ./platforms/dotnet/scripts/Compare-DatasetPolicy.ps1 -BaseRef "$env:DATASET_BASE_REF"
 
       - name: Test
         run: dotnet test platforms/dotnet/tests/Unclaimable.Tests/Unclaimable.Tests.csproj --configuration Release
