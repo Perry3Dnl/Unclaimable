@@ -29,13 +29,13 @@ internal static class OptionalIdentityData
     internal static readonly string[] Currencies =
     {
         "aed", "afghani", "ars", "aud", "australiandollar", "baht", "bdt", "bitcoin", "btc", "cad",
-        "canadiandollar", "chf", "chineseyuan", "cny", "cryptocurrency", "dirham", "dollar", "dong", "egp",
-        "ethereum", "eth", "eur", "euro", "gbp", "hkd", "hongkongdollar", "idr", "ils", "indianrupee",
-        "inr", "japaneseyen", "jpy", "krone", "krona", "kwd", "lira", "mexicanpeso", "mxn", "naira",
-        "ngn", "nok", "nzd", "newzealanddollar", "peso", "php", "pkr", "pln", "pound", "poundsterling",
-        "qar", "rand", "riyal", "rub", "rupee", "sar", "sek", "sgd", "singaporedollar", "solana", "sterling",
-        "swissfranc", "tether", "thb", "try", "turkishlira", "uah", "usd", "usdc", "usdt", "won", "yen",
-        "yuan", "zar", "zloty"
+        "canadiandollar", "chf", "chineseyuan", "cny", "dirham", "dollar", "dong", "egp", "ethereum", "eth",
+        "eur", "euro", "gbp", "hkd", "hongkongdollar", "idr", "ils", "indianrupee", "inr", "japaneseyen",
+        "jpy", "krone", "krona", "kwd", "lira", "mexicanpeso", "mxn", "naira", "ngn", "nok", "nzd",
+        "newzealanddollar", "peso", "php", "pkr", "pln", "pound", "poundsterling", "qar", "rand", "riyal",
+        "rub", "rupee", "sar", "sek", "sgd", "singaporedollar", "sol", "solana", "sterling", "swissfranc",
+        "tether", "thb", "try", "turkishlira", "uah", "usd", "usdc", "usdt", "won", "yen", "yuan", "zar",
+        "zloty"
     };
 
     internal static readonly string[] Religions =
@@ -50,24 +50,23 @@ internal static class OptionalIdentityData
 
     internal static readonly string[] Landmarks =
     {
-        "acropolis", "alhambra", "angkorwat", "bigben", "blue-mosque", "bluemosque", "brandenburg-gate",
-        "brandenburggate", "burjkhalifa", "chichenitza", "christtheredeemer", "colosseum", "eiffeltower",
-        "empirestatebuilding", "forbiddencity", "goldengatebridge", "grandcanyon", "greatpyramid", "greatpyramidofgiza",
-        "greatsphinx", "greatwall", "greatwallofchina", "hagia-sophia", "hagiasophia", "hollywoodsign", "louvre",
-        "machupicchu", "mountfuji", "mount-rushmore", "mountrushmore", "notredame", "petra", "pyramids",
-        "pyramidsofgiza", "sagradafamilia", "space-needle", "spaceneedle", "statueofliberty", "stonehenge",
-        "sydneyharbourbridge", "sydneyoperahouse", "tajmahal", "towerbridge", "trevifountain", "uluru",
-        "vatican", "victoriafalls", "whitehouse"
+        "acropolis", "alhambra", "angkorwat", "bigben", "bluemosque", "brandenburggate", "burjkhalifa",
+        "chichenitza", "christtheredeemer", "colosseum", "eiffeltower", "empirestatebuilding", "forbiddencity",
+        "goldengatebridge", "grandcanyon", "greatpyramid", "greatpyramidofgiza", "greatsphinx", "greatwall",
+        "greatwallofchina", "hagiasophia", "hollywoodsign", "louvre", "machupicchu", "mountfuji", "mountrushmore",
+        "notredame", "petra", "pyramids", "pyramidsofgiza", "sagradafamilia", "spaceneedle", "statueofliberty",
+        "stonehenge", "sydneyharbourbridge", "sydneyoperahouse", "tajmahal", "towerbridge", "trevifountain", "uluru",
+        "victoriafalls", "whitehouse"
     };
 
     internal static readonly string[] Events =
     {
-        "asian-games", "asiangames", "burningman", "cannesfilmfestival", "ces", "coachella", "comiccon",
-        "commonwealthgames", "cricketworldcup", "daytona500", "eurovision", "eurovisionsongcontest", "fifaworldcup",
-        "gamescom", "indy500", "kentuckyderby", "lemans", "monacograndprix", "olympics", "oktoberfest",
-        "panamericangames", "paralympics", "rydercup", "rugbyworldcup", "sundance", "sundancefilmfestival",
-        "superbowl", "sxsw", "themasters", "tourdefrance", "venicefilmfestival", "websummit", "wimbledon",
-        "worldcup", "worldseries", "wrestlemania"
+        "asiangames", "burningman", "cannesfilmfestival", "ces", "coachella", "comiccon", "commonwealthgames",
+        "cricketworldcup", "daytona500", "eurovision", "eurovisionsongcontest", "fifaworldcup", "gamescom",
+        "indy500", "kentuckyderby", "lemans", "monacograndprix", "olympics", "oktoberfest", "panamericangames",
+        "paralympics", "rydercup", "rugbyworldcup", "sundance", "sundancefilmfestival", "superbowl", "sxsw",
+        "themasters", "tourdefrance", "venicefilmfestival", "websummit", "wimbledon", "worldcup", "worldseries",
+        "wrestlemania"
     };
 
     internal static readonly string[] Awards =
@@ -83,22 +82,22 @@ internal static class OptionalIdentityData
     {
         "ariel", "batman", "blackpanther", "captainamerica", "catwoman", "cinderella", "darthvader", "deadpool",
         "donaldduck", "elsa", "frodo", "gandalf", "goku", "hanniballecter", "harleyquinn", "hermionegranger",
-        "homer-simpson", "homersimpson", "indianajones", "ironman", "jamesbond", "joker", "katnisseverdeen",
-        "link", "lukeskywalker", "mariobros", "mickeymouse", "naruto", "peterpan", "pikachu", "popeye",
-        "princessleia", "rockybalboa", "sailormoon", "scoobydoo", "sherlockholmes", "shrek", "sonic",
-        "spiderman", "spongebob", "superman", "terminator", "thanos", "thor", "tinkerbell", "wonderwoman",
-        "wolverine", "yoda", "zelda"
+        "homersimpson", "indianajones", "ironman", "jamesbond", "joker", "katnisseverdeen", "link", "lukeskywalker",
+        "mariobros", "mickeymouse", "naruto", "peterpan", "pikachu", "popeye", "princessleia", "rockybalboa",
+        "sailormoon", "scoobydoo", "sherlockholmes", "shrek", "sonic", "spiderman", "spongebob", "superman",
+        "terminator", "thanos", "thor", "tinkerbell", "wonderwoman", "wolverine", "yoda", "zelda"
     };
 
     internal static readonly string[] Franchises =
     {
-        "assassinscreed", "avatar", "barbie", "batmanfranchise", "callofduty", "dccomics", "disney", "dragonball",
-        "dungeonsanddragons", "fallout", "fastandfurious", "finalfantasy", "fortnite", "frozen", "gameofthrones",
-        "grandtheftauto", "halo", "harrypotter", "hellokitty", "jurassicpark", "lego", "lordoftherings",
-        "marvel", "marvelcinematicuniverse", "minecraft", "mortal-kombat", "mortalkombat", "naruto-franchise",
-        "nintendo", "onepiece", "pokemon", "resident-evil", "residentevil", "sonicthehedgehog", "star-trek",
-        "starwars", "startrek", "streetfighter", "supermario", "thelegendofzelda", "transformers", "warcraft",
-        "warhammer", "witcher", "xmen", "zelda-franchise"
+        "assassinscreed", "avatar", "barbie", "callofduty", "diablo", "dragonball", "dungeonsanddragons",
+        "elderscrolls", "fallout", "fastandfurious", "finalfantasy", "fortnite", "frozen", "gameofthrones",
+        "godzilla", "grandtheftauto", "halo", "harrypotter", "hellokitty", "jurassicpark", "kingdomhearts",
+        "lordoftherings", "masseffect", "marvelcinematicuniverse", "minecraft", "missionimpossible", "mortalkombat",
+        "onepiece", "piratesofthecaribbean", "pokemon", "residentevil", "sonicthehedgehog", "starcraft", "starwars",
+        "startrek", "strangerthings", "streetfighter", "supermario", "thehungergames", "thelastofus", "thelegendofzelda",
+        "thematrix", "thewalkingdead", "toystory", "transformers", "twilight", "warcraft", "warhammer", "witcher",
+        "xmen"
     };
 
     internal static readonly string[] Professions =
