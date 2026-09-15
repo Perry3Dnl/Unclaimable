@@ -1,8 +1,11 @@
 namespace Unclaimable;
 
-public sealed partial class Checker
+internal static class GeographyData
 {
-    private static readonly HashSet<string> CountryNames = new HashSet<string>(StringComparer.Ordinal)
+    internal const string CountryReservationPrefix = "__unclaimable_internal_country_rule__:";
+    internal const string CityReservationPrefix = "__unclaimable_internal_city_rule__:";
+
+    internal static readonly string[] CountryNames =
     {
         "afghanistan", "albania", "algeria", "andorra", "angola", "antiguaandbarbuda", "argentina",
         "armenia", "australia", "austria", "azerbaijan", "bahamas", "bahrain", "bangladesh", "barbados",
@@ -33,7 +36,7 @@ public sealed partial class Checker
         "vaticancity", "venezuela", "vietnam", "yemen", "zambia", "zimbabwe"
     };
 
-    private static readonly HashSet<string> PopularCityNames = new HashSet<string>(StringComparer.Ordinal)
+    internal static readonly string[] PopularCityNames =
     {
         "abuja", "abudhabi", "accra", "adelaide", "addisababa", "algiers", "alexandria", "amsterdam", "ankara",
         "antwerp", "athens", "atlanta", "auckland", "austin", "baghdad", "baku", "baltimore", "bangalore",
@@ -41,93 +44,24 @@ public sealed partial class Checker
         "bogotá", "bologna", "bordeaux", "boston", "bratislava", "brisbane", "brussels", "bucharest", "budapest",
         "buenosaires", "busan", "cairo", "calgary", "capetown", "caracas", "casablanca", "cebu", "charlotte",
         "chennai", "chicago", "christchurch", "cleveland", "cologne", "colombo", "copenhagen", "dakar", "dallas",
-        "dammam", "darel salaam", "daressalaam", "delhi", "denver", "detroit", "dhaka", "doha", "dresden",
-        "dubai", "dublin", "durban", "dusseldorf", "düsseldorf", "edinburgh", "edmonton", "florence", "frankfurt",
-        "fukuoka", "geneva", "glasgow", "guadalajara", "guangzhou", "hamburg", "hanoi", "havana", "helsinki",
-        "hochiminhcity", "hongkong", "honolulu", "houston", "hyderabad", "indianapolis", "istanbul", "jacksonville",
-        "jakarta", "jeddah", "jerusalem", "johannesburg", "kansascity", "karachi", "kathmandu", "khartoum",
-        "kigali", "kingston", "kolkata", "kualalumpur", "kyiv", "kyoto", "lagos", "lahore", "lasvegas",
-        "lima", "lisbon", "liverpool", "ljubljana", "london", "losangeles", "luxembourgcity", "lyon", "macao",
-        "macau", "madrid", "manchester", "manila", "marrakech", "marseille", "medellin", "medellín", "melbourne",
-        "mexicocity", "miami", "milan", "milwaukee", "minneapolis", "montevideo", "montreal", "montréal", "moscow",
-        "mumbai", "munich", "nairobi", "nanjing", "naples", "nashville", "newdelhi", "neworleans", "newyork",
-        "newyorkcity", "nice", "osaka", "oslo", "ottawa", "orlando", "panamacity", "paris", "perth", "philadelphia",
-        "phnompenh", "phoenix", "portland", "porto", "prague", "pretoria", "quebec", "quebeccity", "quito", "rabat",
-        "reykjavik", "riga", "riodejaneiro", "riyadh", "rome", "rotterdam", "saintpetersburg", "salvador", "sandiego",
-        "sanfrancisco", "sanjose", "santiago", "saopaulo", "sãopaulo", "seattle", "seoul", "seville", "shanghai",
-        "shenzhen", "singapore", "sofia", "stockholm", "stuttgart", "sydney", "taipei", "tallinn", "tampa", "tashkent",
-        "tbilisi", "tehran", "telaviv", "thehague", "thessaloniki", "tirana", "tokyo", "toronto", "toulouse", "tunis",
-        "turin", "valencia", "vancouver", "venice", "vienna", "vilnius", "warsaw", "washington", "washingtondc",
-        "wellington", "winnipeg", "wroclaw", "wrocław", "yangon", "yerevan", "zagreb", "zurich", "zürich"
+        "dammam", "daressalaam", "delhi", "denver", "detroit", "dhaka", "doha", "dresden", "dubai", "dublin",
+        "durban", "dusseldorf", "düsseldorf", "edinburgh", "edmonton", "florence", "frankfurt", "fukuoka", "geneva",
+        "glasgow", "guadalajara", "guangzhou", "hamburg", "hanoi", "havana", "helsinki", "hochiminhcity", "hongkong",
+        "honolulu", "houston", "hyderabad", "indianapolis", "istanbul", "jacksonville", "jakarta", "jeddah",
+        "jerusalem", "johannesburg", "kansascity", "karachi", "kathmandu", "khartoum", "kigali", "kingston",
+        "kolkata", "kualalumpur", "kyiv", "kyoto", "lagos", "lahore", "lasvegas", "lima", "lisbon", "liverpool",
+        "ljubljana", "london", "losangeles", "luxembourgcity", "lyon", "macao", "macau", "madrid", "manchester",
+        "manila", "marrakech", "marseille", "medellin", "medellín", "melbourne", "mexicocity", "miami", "milan",
+        "milwaukee", "minneapolis", "montevideo", "montreal", "montréal", "moscow", "mumbai", "munich", "nairobi",
+        "nanjing", "naples", "nashville", "newdelhi", "neworleans", "newyork", "newyorkcity", "nice", "osaka",
+        "oslo", "ottawa", "orlando", "panamacity", "paris", "perth", "philadelphia", "phnompenh", "phoenix",
+        "portland", "porto", "prague", "pretoria", "quebec", "quebeccity", "quito", "rabat", "reykjavik", "riga",
+        "riodejaneiro", "riyadh", "rome", "rotterdam", "saintpetersburg", "salvador", "sandiego", "sanfrancisco",
+        "sanjose", "santiago", "saopaulo", "sãopaulo", "seattle", "seoul", "seville", "shanghai", "shenzhen",
+        "singapore", "sofia", "stockholm", "stuttgart", "sydney", "taipei", "tallinn", "tampa", "tashkent",
+        "tbilisi", "tehran", "telaviv", "thehague", "thessaloniki", "tirana", "tokyo", "toronto", "toulouse",
+        "tunis", "turin", "valencia", "vancouver", "venice", "vienna", "vilnius", "warsaw", "washington",
+        "washingtondc", "wellington", "winnipeg", "wroclaw", "wrocław", "yangon", "yerevan", "zagreb", "zurich",
+        "zürich"
     };
-
-    private bool TryFindFirstGeographyViolation(string? value, out Result? violation)
-    {
-        violation = null;
-
-        if (!_countryNamesEnabled && !_popularCityNamesEnabled)
-        {
-            return false;
-        }
-
-        var normalized = NormalizeGeographyName(value);
-        if (normalized is null)
-        {
-            return false;
-        }
-
-        if (_countryNamesEnabled && CountryNames.Contains(normalized))
-        {
-            violation = new Result(true, value, normalized, null, MatchKind.CountryName);
-            return true;
-        }
-
-        if (_popularCityNamesEnabled && PopularCityNames.Contains(normalized))
-        {
-            violation = new Result(true, value, normalized, null, MatchKind.PopularCityName);
-            return true;
-        }
-
-        return false;
-    }
-
-    private void CollectGeographyDiagnostics(string? value, bool includeMessages, List<Diagnostic> diagnostics)
-    {
-        if (!_countryNamesEnabled && !_popularCityNamesEnabled)
-        {
-            return;
-        }
-
-        var normalized = NormalizeGeographyName(value);
-        if (normalized is null)
-        {
-            return;
-        }
-
-        if (_countryNamesEnabled && CountryNames.Contains(normalized))
-        {
-            diagnostics.Add(ToDiagnostic(
-                new Result(true, value, normalized, null, MatchKind.CountryName),
-                includeMessages));
-        }
-
-        if (_popularCityNamesEnabled && PopularCityNames.Contains(normalized))
-        {
-            diagnostics.Add(ToDiagnostic(
-                new Result(true, value, normalized, null, MatchKind.PopularCityName),
-                includeMessages));
-        }
-    }
-
-    private static string? NormalizeGeographyName(string? value)
-    {
-        var exact = NormalizeExact(value);
-        if (exact is null)
-        {
-            return null;
-        }
-
-        var compact = NormalizeCompact(exact);
-        return compact.Length == 0 ? null : compact;
-    }
 }
