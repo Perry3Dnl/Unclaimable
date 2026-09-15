@@ -288,7 +288,7 @@ public sealed partial class Checker
             case (char)0x03C4: mapped = 't'; return true;
             case (char)0x03C5: mapped = 'y'; return true;
             case (char)0x03C7: mapped = 'x'; return true;
-            case (char)0x03F2: mapped = 'c'; return true;
+            case (char)0x03C2: mapped = 'c'; return true;
             case (char)0x0131: mapped = 'i'; return true;
             default:
                 mapped = (char)0;
