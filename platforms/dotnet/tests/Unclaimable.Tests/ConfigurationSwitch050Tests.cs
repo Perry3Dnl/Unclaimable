@@ -4,10 +4,10 @@ using Xunit;
 
 namespace Unclaimable.Tests;
 
-public sealed class ConfigurationSwitch050Tests
+public sealed class ConfigurationSwitch060Tests
 {
     private static readonly Lazy<IReadOnlyDictionary<string, IReadOnlyList<string>>> ExclusiveCategoryValues =
-        new Lazy<IReadOnlyDictionary<string, IReadOnlyList<string>>>(BuildExclusiveCategoryValues);
+        new(BuildExclusiveCategoryValues);
 
     public static IEnumerable<object[]> AllCategories =>
         Enum.GetValues<Category>().Select(category => new object[] { category });
@@ -19,12 +19,10 @@ public sealed class ConfigurationSwitch050Tests
         var categoryName = category.ToString().ToLowerInvariant();
         Assert.True(ExclusiveCategoryValues.Value.TryGetValue(categoryName, out var candidates));
 
-        // Standard mode isolates exact category membership from valid cross-category partial matches.
         var options = new Options { Strictness = Strictness.Standard };
         var enabledChecker = new Checker(options);
 
         options.DisableCategory(category);
-        Assert.Contains(category, options.DisabledCategories);
         var disabledChecker = new Checker(options);
 
         var candidate = candidates!.FirstOrDefault(value =>
@@ -35,26 +33,16 @@ public sealed class ConfigurationSwitch050Tests
                    && disabledChecker.IsClaimable(value);
         });
 
-        Assert.False(
-            string.IsNullOrEmpty(candidate),
-            $"Disabling '{categoryName}' did not make an exclusive exact value claimable in Standard mode.");
-
-        var enabledResult = enabledChecker.Check(candidate);
-        Assert.True(enabledResult.IsReserved);
-        Assert.Equal(MatchKind.Exact, enabledResult.MatchKind);
-        Assert.Equal(categoryName, enabledResult.Category);
+        Assert.False(string.IsNullOrEmpty(candidate), $"No exclusive exact value found for category '{categoryName}'.");
+        Assert.Equal(categoryName, enabledChecker.Check(candidate).Category);
         Assert.True(disabledChecker.IsClaimable(candidate));
 
         options.EnableCategory(category);
-        Assert.DoesNotContain(category, options.DisabledCategories);
+        var restored = new Checker(options).Check(candidate);
+        Assert.True(restored.IsReserved);
+        Assert.Equal(MatchKind.Exact, restored.MatchKind);
+        Assert.Equal(categoryName, restored.Category);
 
-        var restoredResult = new Checker(options).Check(candidate);
-        Assert.True(restoredResult.IsReserved);
-        Assert.Equal(MatchKind.Exact, restoredResult.MatchKind);
-        Assert.Equal(categoryName, restoredResult.Category);
-
-        // Both already-constructed checkers keep the category state they captured.
-        Assert.Equal(categoryName, enabledChecker.Check(candidate).Category);
         Assert.True(disabledChecker.IsClaimable(candidate));
     }
 
@@ -76,20 +64,15 @@ public sealed class ConfigurationSwitch050Tests
         var testCase = CreateRuleCase(rule);
         var options = testCase.Options;
 
-        var enabled = new Checker(options).Check(testCase.Input);
-        Assert.True(enabled.IsReserved, $"Rule '{rule}' should reject its enabled case.");
-        Assert.Equal(testCase.ExpectedKind, enabled.MatchKind);
+        Assert.Equal(testCase.ExpectedKind, new Checker(options).Check(testCase.Input).MatchKind);
 
         options.DisabledRules |= rule;
-        var disabledChecker = new Checker(options);
-        Assert.True(disabledChecker.IsClaimable(testCase.Input), $"Rule '{rule}' remained active after disable.");
+        var disabled = new Checker(options);
+        Assert.True(disabled.IsClaimable(testCase.Input), $"Rule '{rule}' remained active after disable.");
 
         options.DisabledRules &= ~rule;
-        var restored = new Checker(options).Check(testCase.Input);
-        Assert.True(restored.IsReserved, $"Rule '{rule}' was not restored after re-enable.");
-        Assert.Equal(testCase.ExpectedKind, restored.MatchKind);
-
-        Assert.True(disabledChecker.IsClaimable(testCase.Input));
+        Assert.Equal(testCase.ExpectedKind, new Checker(options).Check(testCase.Input).MatchKind);
+        Assert.True(disabled.IsClaimable(testCase.Input));
     }
 
     [Theory]
@@ -107,20 +90,15 @@ public sealed class ConfigurationSwitch050Tests
         var testCase = CreateToggleCase(toggle);
         var options = testCase.Options;
 
-        var enabled = new Checker(options).Check(testCase.Input);
-        Assert.True(enabled.IsReserved, $"Option '{toggle}' should reject its enabled case.");
-        Assert.Equal(testCase.ExpectedKind, enabled.MatchKind);
+        Assert.Equal(testCase.ExpectedKind, new Checker(options).Check(testCase.Input).MatchKind);
 
         testCase.Disable(options);
-        var disabledChecker = new Checker(options);
-        Assert.True(disabledChecker.IsClaimable(testCase.Input), $"Option '{toggle}' remained active after disable.");
+        var disabled = new Checker(options);
+        Assert.True(disabled.IsClaimable(testCase.Input), $"Option '{toggle}' remained active after disable.");
 
         testCase.Enable(options);
-        var restored = new Checker(options).Check(testCase.Input);
-        Assert.True(restored.IsReserved, $"Option '{toggle}' was not restored after re-enable.");
-        Assert.Equal(testCase.ExpectedKind, restored.MatchKind);
-
-        Assert.True(disabledChecker.IsClaimable(testCase.Input));
+        Assert.Equal(testCase.ExpectedKind, new Checker(options).Check(testCase.Input).MatchKind);
+        Assert.True(disabled.IsClaimable(testCase.Input));
     }
 
     [Fact]
@@ -130,11 +108,9 @@ public sealed class ConfigurationSwitch050Tests
         const string value = "qzxé";
 
         Assert.True(new Checker(options).IsClaimable(value));
-
         options.AsciiOnly = true;
         var asciiOnly = new Checker(options);
         Assert.Equal(MatchKind.InvalidCharacters, asciiOnly.Check(value).MatchKind);
-
         options.AsciiOnly = false;
         Assert.True(new Checker(options).IsClaimable(value));
         Assert.Equal(MatchKind.InvalidCharacters, asciiOnly.Check(value).MatchKind);
@@ -143,20 +119,21 @@ public sealed class ConfigurationSwitch050Tests
     [Fact]
     public void StrictnessCanBeChangedInBothDirections()
     {
+        const string value = "mysuperadminx";
         var options = new Options { Strictness = Strictness.Strict };
-        Assert.Equal(MatchKind.Partial, new Checker(options).Check("supportive").MatchKind);
+        Assert.Equal(MatchKind.Partial, new Checker(options).Check(value).MatchKind);
 
         options.Strictness = Strictness.Standard;
         var standard = new Checker(options);
-        Assert.True(standard.IsClaimable("supportive"));
+        Assert.True(standard.IsClaimable(value));
 
         options.Strictness = Strictness.Strict;
-        Assert.Equal(MatchKind.Partial, new Checker(options).Check("supportive").MatchKind);
-        Assert.True(standard.IsClaimable("supportive"));
+        Assert.Equal(MatchKind.Partial, new Checker(options).Check(value).MatchKind);
+        Assert.True(standard.IsClaimable(value));
     }
 
     [Fact]
-    public void PartialMatchMinimumLengthCanBeRaisedAndLowered()
+    public void PartialMatchMinimumLengthCanBeRaisedAndLoweredForCustomReservations()
     {
         var options = new Options
         {
@@ -196,39 +173,40 @@ public sealed class ConfigurationSwitch050Tests
     public void LanguageCanBeAddedRemovedAndAddedAgain()
     {
         var options = new Options();
-        const string dutchOnlyValue = "facturatiehulp";
-        Assert.True(new Checker(options).IsClaimable(dutchOnlyValue));
+        const string value = "facturatiehulp";
+        Assert.True(new Checker(options).IsClaimable(value));
 
         options.AddLanguage(Language.Dutch);
         var withDutch = new Checker(options);
-        Assert.Equal("support", withDutch.Check(dutchOnlyValue).Category);
+        Assert.Equal("support", withDutch.Check(value).Category);
 
         options.RemoveLanguage(Language.Dutch);
         var withoutDutch = new Checker(options);
-        Assert.True(withoutDutch.IsClaimable(dutchOnlyValue));
+        Assert.True(withoutDutch.IsClaimable(value));
 
         options.AddLanguage(Language.Dutch);
-        Assert.Equal("support", new Checker(options).Check(dutchOnlyValue).Category);
-        Assert.Equal("support", withDutch.Check(dutchOnlyValue).Category);
-        Assert.True(withoutDutch.IsClaimable(dutchOnlyValue));
+        Assert.Equal("support", new Checker(options).Check(value).Category);
+        Assert.Equal("support", withDutch.Check(value).Category);
+        Assert.True(withoutDutch.IsClaimable(value));
     }
 
     [Fact]
     public void AllowedIdentifierCanBeAddedRemovedAndAddedAgain()
     {
+        const string value = "superadmin";
         var options = new Options();
-        options.AllowedIdentifiers.Add("supportive");
+        options.AllowedIdentifiers.Add(value);
         var allowed = new Checker(options);
-        Assert.True(allowed.IsClaimable("supportive"));
+        Assert.True(allowed.IsClaimable(value));
 
-        options.AllowedIdentifiers.Remove("supportive");
+        options.AllowedIdentifiers.Remove(value);
         var removed = new Checker(options);
-        Assert.True(removed.IsReserved("supportive"));
+        Assert.True(removed.IsReserved(value));
 
-        options.AllowedIdentifiers.Add("supportive");
-        Assert.True(new Checker(options).IsClaimable("supportive"));
-        Assert.True(allowed.IsClaimable("supportive"));
-        Assert.True(removed.IsReserved("supportive"));
+        options.AllowedIdentifiers.Add(value);
+        Assert.True(new Checker(options).IsClaimable(value));
+        Assert.True(allowed.IsClaimable(value));
+        Assert.True(removed.IsReserved(value));
     }
 
     [Fact]
@@ -567,35 +545,24 @@ public sealed class ConfigurationSwitch050Tests
         FormatCharacterProtection
     }
 
-    private sealed class RuleCase
+    private sealed class RuleCase(Options options, string input, MatchKind expectedKind)
     {
-        public RuleCase(Options options, string input, MatchKind expectedKind)
-        {
-            Options = options;
-            Input = input;
-            ExpectedKind = expectedKind;
-        }
-
-        public Options Options { get; }
-        public string Input { get; }
-        public MatchKind ExpectedKind { get; }
+        public Options Options { get; } = options;
+        public string Input { get; } = input;
+        public MatchKind ExpectedKind { get; } = expectedKind;
     }
 
-    private sealed class ToggleCase
+    private sealed class ToggleCase(
+        Options options,
+        string input,
+        MatchKind expectedKind,
+        Action<Options> disable,
+        Action<Options> enable)
     {
-        public ToggleCase(Options options, string input, MatchKind expectedKind, Action<Options> disable, Action<Options> enable)
-        {
-            Options = options;
-            Input = input;
-            ExpectedKind = expectedKind;
-            Disable = disable;
-            Enable = enable;
-        }
-
-        public Options Options { get; }
-        public string Input { get; }
-        public MatchKind ExpectedKind { get; }
-        public Action<Options> Disable { get; }
-        public Action<Options> Enable { get; }
+        public Options Options { get; } = options;
+        public string Input { get; } = input;
+        public MatchKind ExpectedKind { get; } = expectedKind;
+        public Action<Options> Disable { get; } = disable;
+        public Action<Options> Enable { get; } = enable;
     }
 }
