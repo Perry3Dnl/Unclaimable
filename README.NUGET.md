@@ -2,7 +2,7 @@
 
 Strict, fast username and identifier validation for .NET.
 
-**Current version: 0.7.2**
+**Source version prepared for release: 0.7.2**
 
 Unclaimable helps decide whether a username, handle, slug, account name, tenant name, or similar identifier should be claimable. It combines curated reserved-name datasets with structural validation, compact matching, curated partial matching, obfuscation detection, selected Unicode lookalikes, localized filtering, category controls, application-specific rules, and configurable identifier-pattern checks.
 
@@ -77,6 +77,8 @@ Generic additions remain exact values rather than broad substring roots: `vote` 
 
 ## Install
 
+After the 0.7.2 release is published:
+
 ```bash
 dotnet add package Unclaimable --version 0.7.2
 ```
@@ -86,6 +88,8 @@ ASP.NET Core integration:
 ```bash
 dotnet add package Unclaimable.AspNetCore --version 0.7.2
 ```
+
+Until publication, use the current NuGet release or the CI-generated 0.7.2 package artifacts.
 
 ## Quick start
 
