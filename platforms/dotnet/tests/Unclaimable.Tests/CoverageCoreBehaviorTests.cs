@@ -42,7 +42,7 @@ public sealed class CoverageCoreBehaviorTests
         };
 
         var result = new Checker(options).CheckDetailed("abcdefgh", includeMessages: false);
-        var diagnostic = Assert.Single(result.Diagnostics.Where(item => item.Kind == MatchKind.TooLong));
+        var diagnostic = Assert.Single(result.Diagnostics, item => item.Kind == MatchKind.TooLong);
 
         Assert.Null(diagnostic.Message);
     }
@@ -80,7 +80,7 @@ public sealed class CoverageCoreBehaviorTests
         Assert.Contains(
             checker.CheckDetailed(input, includeMessages: true).Diagnostics,
             diagnostic => diagnostic.Kind == MatchKind.InvalidCharacters
-                          && diagnostic.Message?.Contains("visible", StringComparison.OrdinalIgnoreCase) == true);
+                          && diagnostic.Message?.Contains("Unicode scalar", StringComparison.OrdinalIgnoreCase) == true);
     }
 
     [Fact]
@@ -145,7 +145,7 @@ public sealed class CoverageCoreBehaviorTests
 
         var country = new Options().EnableRule(Rule.CountryNames);
         var countryResult = new Checker(country).CheckDetailed("france", includeMessages: true);
-        var countryDiagnostic = Assert.Single(countryResult.Diagnostics.Where(item => item.Kind == MatchKind.CountryName));
+        var countryDiagnostic = Assert.Single(countryResult.Diagnostics, item => item.Kind == MatchKind.CountryName);
         Assert.Equal("This value is not allowed.", countryDiagnostic.Message);
     }
 
@@ -244,14 +244,14 @@ public sealed class CoverageCoreBehaviorTests
     private static void AssertReservedDiagnostic(Options options, string input, MatchKind kind)
     {
         var result = new Checker(options).CheckDetailed(input, includeMessages: true);
-        var diagnostic = Assert.Single(result.Diagnostics.Where(item => item.Kind == kind));
+        var diagnostic = Assert.Single(result.Diagnostics, item => item.Kind == kind);
         Assert.False(string.IsNullOrWhiteSpace(diagnostic.Message));
     }
 
     private static void AssertPatternDiagnostic(Options options, string input, MatchKind kind)
     {
         var result = new Checker(options).CheckDetailed(input, includeMessages: true);
-        var diagnostic = Assert.Single(result.Diagnostics.Where(item => item.Kind == kind));
+        var diagnostic = Assert.Single(result.Diagnostics, item => item.Kind == kind);
         Assert.False(string.IsNullOrWhiteSpace(diagnostic.Message));
     }
 }
