@@ -107,7 +107,7 @@ public sealed class ValidationMessageOptionsTests
 
         var error = Validate("support", provider);
 
-        Assert.Equal("Username contains a reserved name and cannot be claimed.", error.ErrorMessage);
+        Assert.Equal("Username is reserved and cannot be claimed.", error.ErrorMessage);
     }
 
     [Fact]
