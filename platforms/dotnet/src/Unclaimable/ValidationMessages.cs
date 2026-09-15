@@ -32,6 +32,8 @@ public sealed class ValidationMessages
     public string? LeadingSeparator { get; set; }
     /// <summary>Message for trailing-separator failures.</summary>
     public string? TrailingSeparator { get; set; }
+    /// <summary>Message for missing-value failures.</summary>
+    public string? MissingValue { get; set; }
     /// <summary>Message for profanity matches.</summary>
     public string? Profanity { get; set; }
 }

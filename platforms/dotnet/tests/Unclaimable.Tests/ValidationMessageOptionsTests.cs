@@ -14,6 +14,13 @@ public sealed class ValidationMessageOptionsTests
         public string Username { get; init; } = string.Empty;
     }
 
+    private sealed class NullableSignupModel
+    {
+        [Display(Name = "Username")]
+        [ClaimableUsername]
+        public string? Username { get; init; }
+    }
+
     private sealed class AttributeOverrideModel
     {
         [Display(Name = "Username")]
@@ -35,6 +42,28 @@ public sealed class ValidationMessageOptionsTests
         var error = Validate("admin", provider);
 
         Assert.Equal("Username 'admin' is reserved (roles).", error.ErrorMessage);
+    }
+
+    [Fact]
+    public void MissingValueMessageCanBeConfiguredPerReason()
+    {
+        using var provider = new ServiceCollection()
+            .AddUnclaimable(options =>
+            {
+                options.ValidationMessage = "Global fallback.";
+                options.Messages.MissingValue = "{FieldName} must be supplied.";
+            })
+            .BuildServiceProvider();
+
+        var results = new List<ValidationResult>();
+        var model = new NullableSignupModel { Username = null };
+        var context = new ValidationContext(model, provider, items: null);
+
+        var isValid = Validator.TryValidateObject(model, context, results, validateAllProperties: true);
+
+        Assert.False(isValid);
+        var error = Assert.Single(results);
+        Assert.Equal("Username must be supplied.", error.ErrorMessage);
     }
 
     [Fact]

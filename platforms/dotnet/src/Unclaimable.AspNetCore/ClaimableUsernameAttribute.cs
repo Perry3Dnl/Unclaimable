@@ -89,6 +89,7 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
             MatchKind.BlockedCharacter => messages.BlockedCharacter,
             MatchKind.LeadingSeparator => messages.LeadingSeparator,
             MatchKind.TrailingSeparator => messages.TrailingSeparator,
+            MatchKind.MissingValue => messages.MissingValue,
             _ => null
         };
     }
