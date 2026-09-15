@@ -20,7 +20,6 @@
     "companyofficial",
     "corporateofficial",
     "enterpriseofficial",
-    "official",
     "officialchannel",
     "officialcontact",
     "officialdesk",
@@ -32,10 +31,8 @@
     "systemofficial",
     "teamofficial",
     "verified",
-    "verifiedadmin",
     "verifiedsecurity",
     "verifiedservice",
-    "verifiedsupport",
     "verifiedteam"
   ]
 }
