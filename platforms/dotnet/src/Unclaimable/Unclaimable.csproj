@@ -16,7 +16,7 @@
     <PackageTags>username;validation;security;reserved-names</PackageTags>
 
     <EnablePackageValidation>true</EnablePackageValidation>
-    <!-- 0.7.1 is staged but not published yet; validate against the latest published package. -->
+    <!-- 0.7.1 through 0.7.3 are staged but not published yet; validate against the latest published package. -->
     <PackageValidationBaselineVersion>0.7.0</PackageValidationBaselineVersion>
   </PropertyGroup>
 
