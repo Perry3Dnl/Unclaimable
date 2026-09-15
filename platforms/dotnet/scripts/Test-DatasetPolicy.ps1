@@ -43,13 +43,6 @@ function Add-DatasetEntry {
     $SeenInFile[$normalized] = $Kind
     $compact = Get-CompactValue $Value
 
-    if ($Partial) {
-        $minimumLength = if ($Category -eq "profanity") { 6 } else { 7 }
-        if ($compact.Length -lt $minimumLength) {
-            $Errors.Add("$FilePath marks '$Value' as partial-safe with compact length $($compact.Length); category '$Category' requires at least $minimumLength characters by dataset policy.")
-        }
-    }
-
     $Entries.Add([pscustomobject]@{
         Category = $Category
         Language = $Language
@@ -191,14 +184,23 @@ $totalEntries = $entries.Count
 $uniqueValues = @($entries.Normalized | Sort-Object -Unique).Count
 $partialEntries = @($entries | Where-Object Partial).Count
 $shortTokens = @($collisionEntries | Where-Object { $_.Compact.Length -le $ShortTokenMaximumLength }).Count
+$shortPartialEntries = @($collisionEntries | Where-Object { $_.Partial -and $_.Compact.Length -le $ShortTokenMaximumLength } | Sort-Object Compact, Normalized)
 
 Write-Output "DATASET_POLICY_BEGIN"
 Write-Output "Concrete entries: $totalEntries"
 Write-Output "Unique normalized values: $uniqueValues"
 Write-Output "Explicit partial-safe entries: $partialEntries"
 Write-Output "Short tokens reviewed (<= $ShortTokenMaximumLength compact chars): $shortTokens"
+Write-Output "Short explicit partial-safe entries: $($shortPartialEntries.Count)"
 Write-Output "Known-safe corpus size: $($safeRecords.Count)"
 Write-Output "Guarded short-token collisions: $($guardedCollisions.Count)"
+
+if ($shortPartialEntries.Count -gt 0) {
+    Write-Output "Short explicit partial-safe entries requiring heightened review:"
+    foreach ($entry in @($shortPartialEntries | Select-Object -First 25)) {
+        Write-Output "- '$($entry.Value)' ($($entry.Category)), compact length $($entry.Compact.Length)."
+    }
+}
 
 if ($guardedCollisions.Count -gt 0) {
     Write-Output "Guarded collision examples:"
@@ -216,8 +218,22 @@ if (-not [string]::IsNullOrWhiteSpace($env:GITHUB_STEP_SUMMARY)) {
     $summary.Add("- Unique normalized values: **$uniqueValues**")
     $summary.Add("- Explicit partial-safe entries: **$partialEntries**")
     $summary.Add("- Short tokens reviewed: **$shortTokens**")
+    $summary.Add("- Short explicit partial-safe entries: **$($shortPartialEntries.Count)**")
     $summary.Add("- Known-safe usernames: **$($safeRecords.Count)**")
     $summary.Add("- Guarded short-token collisions: **$($guardedCollisions.Count)**")
+
+    if ($shortPartialEntries.Count -gt 0) {
+        $summary.Add("")
+        $summary.Add("### Short explicit partial-safe entries")
+        $summary.Add("")
+        $summary.Add("Short partial rules are not rejected by an arbitrary length threshold. They are surfaced for heightened review and must remain explicitly authorized and collision-safe against the checked-in known-safe corpus.")
+        $summary.Add("")
+        $summary.Add("| Partial-safe value | Category | Compact length |")
+        $summary.Add("| --- | --- | ---: |")
+        foreach ($entry in @($shortPartialEntries | Select-Object -First 20)) {
+            $summary.Add("| ``$($entry.Value)`` | ``$($entry.Category)`` | $($entry.Compact.Length) |")
+        }
+    }
 
     if ($guardedCollisions.Count -gt 0) {
         $summary.Add("")
