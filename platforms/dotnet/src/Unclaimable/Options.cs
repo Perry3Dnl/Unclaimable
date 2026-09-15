@@ -29,9 +29,9 @@ public sealed partial class Options
     public Strictness Strictness { get; set; } = Strictness.Strict;
 
     /// <summary>
-    /// Built-in rules to disable. <see cref="Rule.Numbers"/> is disabled by default in 0.7.2,
+    /// Built-in rules to disable. <see cref="Rule.Numbers"/> is disabled by default in 0.7.2 and later,
     /// so identifiers may contain Unicode decimal digits unless the rule is explicitly enabled.
-    /// Geography-list rules remain separately opt-in through <see cref="EnableRule(Rule)"/>.
+    /// Named identity-list rules remain separately opt-in through <see cref="EnableRule(Rule)"/>.
     /// </summary>
     public Rule DisabledRules { get; set; } = Rule.Numbers;
 
@@ -88,92 +88,62 @@ public sealed partial class Options
     /// <see langword="false"/>. Since 0.6.0, built-in entries participate only when their dataset
     /// explicitly marks them as partial-safe; application-defined default reservations retain their
     /// configured partial-matching behavior.
-    /// Kept for compatibility; disable <see cref="Rule.PartialMatching"/> to turn the rule off entirely.
     /// </summary>
     public bool PartialMatching
     {
-        get => _partialMatching || Strictness == Strictness.Strict;
+        get => _partialMatching;
         set => _partialMatching = value;
     }
 
     /// <summary>
-    /// Minimum compact reserved-name length eligible for partial matching after dataset eligibility is established.
-    /// Defaults to 4.
+    /// Minimum compact length required before a reservation may participate in partial matching.
+    /// Defaults to 3.
     /// </summary>
-    public int PartialMatchMinimumLength { get; set; } = 4;
+    public int PartialMatchMinimumLength { get; set; } = 3;
 
-    /// <summary>
-    /// Include profanity from the enabled localized dataset or datasets. Enabled by default.
-    /// Kept for compatibility; prefer disabling <see cref="Rule.Profanity"/>.
-    /// </summary>
-    public bool ProfanityMatching { get; set; } = true;
-
-    /// <summary>
-    /// Allow ordinary profanity entries to participate in substring matching when partial matching is enabled.
-    /// Curated profanity entries explicitly marked partial-safe can still participate without this option.
-    /// This remains opt-in to avoid avoidable false positives for ordinary words.
-    /// </summary>
-    public bool ProfanityPartialMatching { get; set; }
-
-    /// <summary>
-    /// Detect common username obfuscation and leetspeak substitutions.
-    /// Kept for compatibility; prefer disabling <see cref="Rule.ObfuscationMatching"/>.
-    /// </summary>
+    /// <summary>Enables common leetspeak and obfuscation matching. Defaults to true.</summary>
     public bool ObfuscationMatching { get; set; } = true;
 
-    /// <summary>
-    /// Detect selected common Unicode lookalikes and diacritic-based impersonation forms.
-    /// This is not a complete Unicode confusable implementation.
-    /// Kept for compatibility; prefer disabling <see cref="Rule.UnicodeConfusableMatching"/>.
-    /// </summary>
+    /// <summary>Enables Unicode-confusable matching. Defaults to true.</summary>
     public bool UnicodeConfusableMatching { get; set; } = true;
 
     /// <summary>
-    /// Allows Unicode decimal digits independently of the default <see cref="Rule.Numbers"/> setting.
-    /// In 0.7.2 digits are already allowed by default because <see cref="Rule.Numbers"/> starts disabled.
-    /// This property is retained for compatibility; prefer <see cref="EnableRule(Rule)"/> and
-    /// <see cref="DisableRule(Rule)"/> for rule configuration.
+    /// Allows Unicode decimal digits even when <see cref="Rule.Numbers"/> is enabled.
+    /// Kept for compatibility; prefer disabling <see cref="Rule.Numbers"/>.
     /// </summary>
     public bool AllowNumbers { get; set; }
 
-    /// <summary>
-    /// Reject input containing characters outside printable ASCII (U+0020 through U+007E).
-    /// This additional restriction remains opt-in because Unclaimable supports Unicode-aware checks.
-    /// </summary>
+    /// <summary>When true, rejects non-ASCII input. Defaults to false.</summary>
     public bool AsciiOnly { get; set; }
 
-    /// <summary>
-    /// Rejects identifiers containing only whitespace, formatting characters,
-    /// control characters, or combining marks. Enabled by default.
-    /// This is an approximation of visible content based on Unicode categories and does not determine actual rendering.
-    /// </summary>
-    public bool RejectInvisibleOnlyIdentifiers { get; set; } = true;
+    /// <summary>Rejects identifiers containing only invisible Unicode categories. Defaults to false.</summary>
+    public bool RejectInvisibleOnlyIdentifiers { get; set; }
 
-    /// <summary>Rejects Unicode control characters. Enabled by default.</summary>
-    public bool RejectControlCharacters { get; set; } = true;
+    /// <summary>Rejects Unicode control characters. Defaults to false.</summary>
+    public bool RejectControlCharacters { get; set; }
 
-    /// <summary>
-    /// Rejects Unicode formatting characters, including zero-width and
-    /// bidirectional formatting characters. Enabled by default as part of the strict policy.
-    /// This remains separately configurable because formatting characters can be legitimate in some languages.
-    /// </summary>
-    public bool RejectFormatCharacters { get; set; } = true;
+    /// <summary>Rejects Unicode format characters. Defaults to false.</summary>
+    public bool RejectFormatCharacters { get; set; }
 
-    /// <summary>Optional application-wide fallback validation message used by the ASP.NET Core attribute.</summary>
-    public string? ValidationMessage { get; set; }
+    /// <summary>Enables the built-in profanity dataset. Defaults to true.</summary>
+    public bool ProfanityMatching { get; set; } = true;
 
-    /// <summary>Optional reason-specific validation messages.</summary>
-    public ValidationMessages Messages { get; } = new ValidationMessages();
+    /// <summary>Allows profanity entries to participate in partial matching. Defaults to false.</summary>
+    public bool ProfanityPartialMatching { get; set; }
 
-    /// <summary>Application-specific names to reserve in addition to the shared dataset.</summary>
+    /// <summary>Application-defined reserved identifiers using the default matching pipeline.</summary>
     public ICollection<string> AdditionalReserved { get; } = new List<string>();
 
-    /// <summary>Characters configured at startup in addition to Unclaimable's built-in blocked characters.</summary>
+    /// <summary>Additional blocked characters captured when a checker is constructed.</summary>
     public IReadOnlyCollection<string> ConfiguredBlockedCharacters => _additionalBlockedCharacters;
 
-    /// <summary>Adds application-specific blocked Unicode scalar values to the strict built-in character policy.</summary>
-    /// <param name="characters">Unicode scalar values to block.</param>
-    /// <returns>This options instance.</returns>
+    /// <summary>Optional fallback validation message for ASP.NET Core integration.</summary>
+    public string? ValidationMessage { get; set; }
+
+    /// <summary>Optional reason-specific validation messages for ASP.NET Core integration.</summary>
+    public ValidationMessages Messages { get; } = new ValidationMessages();
+
+    /// <summary>Adds one or more blocked characters without replacing the current set.</summary>
     public Options AdditionalBlockedCharacters(params string[] characters)
     {
         if (characters is null)
@@ -183,14 +153,54 @@ public sealed partial class Options
 
         foreach (var character in characters)
         {
-            ValidateCharacter(character, nameof(characters));
+            ValidateCharacterValue(character, nameof(characters));
             _additionalBlockedCharacters.Add(character);
         }
 
         return this;
     }
 
-    internal bool IsRuleEnabled(Rule rule) => (DisabledRules & rule) == 0;
+    /// <summary>Removes one or more configured blocked characters.</summary>
+    public Options RemoveBlockedCharacters(params string[] characters)
+    {
+        if (characters is null)
+        {
+            throw new ArgumentNullException(nameof(characters));
+        }
+
+        foreach (var character in characters)
+        {
+            ValidateCharacterValue(character, nameof(characters));
+            _additionalBlockedCharacters.Remove(character);
+        }
+
+        return this;
+    }
+
+    private static void ValidateCharacterValue(string character, string parameterName)
+    {
+        if (string.IsNullOrEmpty(character))
+        {
+            throw new ArgumentException("Character values cannot be null or empty.", parameterName);
+        }
+
+        if (character.Length == 1)
+        {
+            if (char.IsSurrogate(character[0]))
+            {
+                throw new ArgumentException("Character values must contain exactly one valid Unicode scalar.", parameterName);
+            }
+
+            return;
+        }
+
+        if (character.Length == 2 && char.IsSurrogatePair(character, 0))
+        {
+            return;
+        }
+
+        throw new ArgumentException("Character values must contain exactly one Unicode scalar.", parameterName);
+    }
 
     private static void ValidateLanguage(Language language, string parameterName)
     {
@@ -198,25 +208,5 @@ public sealed partial class Options
         {
             throw new ArgumentOutOfRangeException(parameterName, "Language must be a supported Language value.");
         }
-    }
-
-    private static void ValidateCharacter(string value, string parameterName)
-    {
-        if (string.IsNullOrEmpty(value))
-        {
-            throw new ArgumentException("A blocked character cannot be null or empty.", parameterName);
-        }
-
-        if (value.Length == 1 && !char.IsSurrogate(value[0]))
-        {
-            return;
-        }
-
-        if (value.Length == 2 && char.IsSurrogatePair(value[0], value[1]))
-        {
-            return;
-        }
-
-        throw new ArgumentException("Values must contain exactly one Unicode character.", parameterName);
     }
 }
