@@ -27,6 +27,8 @@ Representative 0.5.0 false positives included:
 
 ### Changed
 
+- `null` identifiers are now rejected by the core checker as `MatchKind.MissingValue` instead of being considered claimable. This is an intentional 0.6.0 behavior change from 0.5.0 and is independent of the configurable minimum-length rule.
+- `[ClaimableUsername]` now follows the same null policy, so a separate `[Required]` attribute is not necessary solely to reject a null identifier.
 - Built-in partial matching is now **explicitly dataset-authorized**. `Strictness.Strict` still enables the partial-matching capability, but ordinary built-in `values` no longer become generic substring rules automatically.
 - Schema-v2 `partialValues` and generated combinations with `"partial": true` are eligible for built-in partial matching.
 - `PartialMatchMinimumLength` still applies after eligibility; length alone is no longer treated as sufficient evidence that an entry is safe as a substring rule.
@@ -38,6 +40,9 @@ Representative 0.5.0 false positives included:
 
 ### Added
 
+- `MatchKind.MissingValue` for explicit missing-identifier diagnostics while preserving all existing `MatchKind` numeric values.
+- `ValidationMessages.MissingValue` for reason-specific ASP.NET validation-message customization.
+- Regression and packaged-consumer smoke coverage for null rejection in the core checker and DataAnnotations integration.
 - A checked-in `conformance/safe-usernames.json` corpus expanded to more than 250 realistic identifiers covering ordinary compound words, personal-name patterns, international names, developer/gaming handles, business/project-style names, and Unicode identifiers that must remain claimable under the default policy.
 - Regression tests that fail when a known-safe username becomes blocked and require the safe corpus to remain broad and normalized-duplicate-free.
 - Systematic dataset-policy validation that expands schema-v2 combinations, checks duplicate/partial-safe data constraints, and compares every short reserved token against the complete known-safe corpus.
@@ -53,6 +58,7 @@ Representative 0.5.0 false positives included:
 
 ### Documentation
 
+- The GitHub and NuGet READMEs now document that `null` is rejected directly by Unclaimable and that `[ClaimableUsername]` does not require `[Required]` merely for null blocking.
 - The GitHub and NuGet READMEs now explain why 0.6.0 exists, including concrete before/after false-positive examples.
 - Unicode-confusable protection is now prominently scoped as a selected mapping, **not** a complete Unicode Technical Standard #39 implementation; `UnicodeConfusableMatching = true` does not claim complete Unicode anti-spoofing.
 - The 32-candidate obfuscation expansion limit is documented as deterministic and deliberately non-exhaustive rather than an exhaustive decoder of every ambiguous substitution combination.
@@ -71,10 +77,10 @@ Representative 0.5.0 false positives included:
 
 ### Compatibility
 
-- No existing public types, methods, constructors, properties, or enum numeric values are intentionally removed or changed.
+- No existing public types, methods, constructors, properties, or existing enum numeric values are intentionally removed or changed; `MatchKind.MissingValue` is additive.
 - Built-in dataset vocabulary cardinality remains 10,731 filter entries across 22 categories, representing 10,633 unique values within those categories; selected entries moved between schema buckets to declare partial eligibility without duplicating vocabulary.
 - Exact, compact, obfuscation, Unicode-confusable, structural, category-selection, allowed-identifier, and custom-reservation behavior remain independently configurable.
-- Default behavior intentionally differs from 0.5.0 for documented built-in false-positive cases. Consumers that relied on generic built-in substring rejection should review those policy changes before upgrading.
+- Default behavior intentionally differs from 0.5.0 for documented built-in false-positive cases and for `null`, which is now rejected. Consumers that relied on generic built-in substring rejection or claimable null input should review those policy changes before upgrading.
 
 ## 0.5.0 - 2026-09-09
 

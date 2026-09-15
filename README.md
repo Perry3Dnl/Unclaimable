@@ -109,9 +109,9 @@ For dependency injection:
 builder.Services.AddUnclaimable();
 ```
 
-`null` is accepted by Unclaimable. Required-field validation is intentionally a separate concern.
+`null` is rejected as `MatchKind.MissingValue` by the core checker. `[ClaimableUsername]` follows the same rule, so a separate `[Required]` attribute is not necessary solely to block a null identifier.
 
-`IsReserved` means the value cannot be claimed under the checker. That includes both dataset matches and structural failures such as invalid length, blocked characters, malformed Unicode, or disallowed characters.
+`IsReserved` means the value cannot be claimed under the checker. That includes both dataset matches and structural failures such as missing values, invalid length, blocked characters, malformed Unicode, or disallowed characters.
 
 ## Why Unclaimable
 
@@ -129,6 +129,7 @@ customer-support
 
 Unclaimable's default pipeline includes:
 
+- missing (`null`) identifier rejection;
 - exact reserved-name matching;
 - compact separator and punctuation matching;
 - dataset-authorized partial matching;
@@ -236,6 +237,7 @@ Global categories remain active independently of localized language selection un
 
 | Setting | Default |
 | --- | --- |
+| Missing (`null`) input | rejected as `MatchKind.MissingValue` |
 | Localized language | English |
 | Built-in categories | all 22 enabled |
 | `Strictness` | `Strict` |
@@ -461,7 +463,9 @@ public sealed class SignupModel
 }
 ```
 
-Validation-message precedence is attribute-level, reason-specific configured message, global configured message, then built-in fallback.
+`[ClaimableUsername]` rejects `null` itself. `[Required]` can still be used when you want the standard DataAnnotations required-field semantics or its own message conventions.
+
+Validation-message precedence is attribute-level, reason-specific configured message, global configured message, then built-in fallback. Missing values can be customized through `options.Messages.MissingValue`.
 
 ## Quality gates
 
@@ -492,6 +496,7 @@ Dataset/policy changes are reviewed as consumer-visible behavior changes even wh
 A feedback-response release focused on predictability and downstream safety:
 
 - reduced false positives by making built-in partial matching explicitly dataset-authorized;
+- rejects null identifiers as `MatchKind.MissingValue` across the core checker and `[ClaimableUsername]`, with a reason-specific validation-message override;
 - expanded the known-safe username regression corpus to 250+ realistic identifiers;
 - added systematic short-token collision checks and CI dataset behavior diffs;
 - documented dataset provenance, licensing, curation, and false-positive review policy;
