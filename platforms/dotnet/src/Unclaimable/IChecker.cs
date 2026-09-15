@@ -5,13 +5,12 @@ public interface IChecker
 {
     /// <summary>
     /// Returns whether the value is rejected. Structural validation failures are included in the reserved result.
-    /// A <see langword="null"/> value is accepted; required-field validation remains the application's responsibility.
+    /// A <see langword="null"/> value is rejected as <see cref="MatchKind.MissingValue"/>.
     /// </summary>
     bool IsReserved(string? value);
 
     /// <summary>
-    /// Returns whether the value is claimable. A <see langword="null"/> value is claimable;
-    /// required-field validation remains separate.
+    /// Returns whether the value is claimable. A <see langword="null"/> value is not claimable.
     /// </summary>
     bool IsClaimable(string? value);
 
