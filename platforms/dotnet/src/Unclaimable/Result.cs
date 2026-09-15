@@ -28,7 +28,17 @@ public enum MatchKind
     /// <summary>The value started with a separator while leading separators were disabled.</summary>
     LeadingSeparator = 11,
     /// <summary>The value ended with a separator while trailing separators were disabled.</summary>
-    TrailingSeparator = 12
+    TrailingSeparator = 12,
+    /// <summary>The value consisted only of Unicode decimal digits.</summary>
+    NumericOnly = 13,
+    /// <summary>The value consisted of a repeated short pattern.</summary>
+    RepeatedPattern = 14,
+    /// <summary>The value contained no Unicode letters or numbers.</summary>
+    SymbolOnly = 15,
+    /// <summary>The value matched a disallowed ASCII-art pattern.</summary>
+    AsciiArt = 16,
+    /// <summary>The value contained cased letters and all of them were uppercase.</summary>
+    UppercaseOnly = 17
 }
 
 /// <summary>

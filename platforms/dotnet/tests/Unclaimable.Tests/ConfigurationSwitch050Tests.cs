@@ -269,7 +269,7 @@ public sealed class ConfigurationSwitch060Tests
             case Rule.MinimumLength:
                 return new RuleCase(new Options(), "qz", MatchKind.TooShort);
             case Rule.MaximumLength:
-                return new RuleCase(new Options(), new string('q', 33), MatchKind.TooLong);
+                return new RuleCase(new Options(), "qzxvornabcdefghijklmnopqrstuvwxyz", MatchKind.TooLong);
             case Rule.Whitespace:
                 return new RuleCase(new Options(), "qzx vorn", MatchKind.BlockedCharacter);
             case Rule.BlockedCharacters:

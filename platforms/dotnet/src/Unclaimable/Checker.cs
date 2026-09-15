@@ -184,6 +184,7 @@ public sealed partial class Checker : IChecker
         }
 
         _policy = policy;
+        _enabledPatterns = options.EnabledPatterns;
         _minimumLengthEnabled = options.IsRuleEnabled(Rule.MinimumLength);
         _maximumLengthEnabled = options.IsRuleEnabled(Rule.MaximumLength);
         _whitespaceEnabled = options.IsRuleEnabled(Rule.Whitespace);
@@ -273,6 +274,12 @@ public sealed partial class Checker : IChecker
             return policyViolation!;
         }
 
+        Result? patternViolation;
+        if (TryFindFirstPatternViolation(value, out patternViolation))
+        {
+            return patternViolation!;
+        }
+
         return CheckReservedName(value);
     }
 
@@ -298,6 +305,7 @@ public sealed partial class Checker : IChecker
         }
 
         CollectPolicyDiagnostics(value, includeMessages, diagnostics);
+        CollectPatternDiagnostics(value, includeMessages, diagnostics);
 
         var reservedResult = CheckReservedName(value);
         if (reservedResult.IsReserved)
@@ -443,5 +451,4 @@ public sealed partial class Checker : IChecker
             originalMatchLength,
             null);
     }
-
 }

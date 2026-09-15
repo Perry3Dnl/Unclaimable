@@ -49,5 +49,7 @@ public enum Category
     /// <summary>System and platform-internal identities.</summary>
     System = 20,
     /// <summary>Technology companies, products, platforms, and ecosystems.</summary>
-    Technology = 21
+    Technology = 21,
+    /// <summary>Placeholder, null-like, unset, and missing-value identifiers.</summary>
+    Placeholders = 22
 }

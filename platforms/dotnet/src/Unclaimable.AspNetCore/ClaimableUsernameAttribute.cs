@@ -89,6 +89,11 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
             MatchKind.BlockedCharacter => messages.BlockedCharacter,
             MatchKind.LeadingSeparator => messages.LeadingSeparator,
             MatchKind.TrailingSeparator => messages.TrailingSeparator,
+            MatchKind.NumericOnly => messages.NumericOnly,
+            MatchKind.RepeatedPattern => messages.RepeatedPattern,
+            MatchKind.SymbolOnly => messages.SymbolOnly,
+            MatchKind.AsciiArt => messages.AsciiArt,
+            MatchKind.UppercaseOnly => messages.UppercaseOnly,
             _ => null
         };
     }
@@ -114,6 +119,11 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
             MatchKind.BlockedCharacter => "{FieldName} contains a blocked character.",
             MatchKind.LeadingSeparator => "{FieldName} cannot start with a separator.",
             MatchKind.TrailingSeparator => "{FieldName} cannot end with a separator.",
+            MatchKind.NumericOnly => "{FieldName} cannot consist only of numbers.",
+            MatchKind.RepeatedPattern => "{FieldName} cannot consist of a repeated short pattern.",
+            MatchKind.SymbolOnly => "{FieldName} must contain at least one letter or number.",
+            MatchKind.AsciiArt => "{FieldName} matches a disallowed ASCII-art pattern.",
+            MatchKind.UppercaseOnly => "{FieldName} cannot consist only of uppercase letters.",
             _ => "{FieldName} is not allowed."
         };
     }

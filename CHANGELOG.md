@@ -2,6 +2,53 @@
 
 All notable changes to Unclaimable are documented here.
 
+## 0.7.0 - 2026-09-15
+
+Identifier-pattern release focused on rejecting suspicious or degenerate identifier shapes without turning those checks into reserved-name entries.
+
+0.7.0 is intentionally stricter by default than 0.6.0. Existing APIs remain available, but newly enabled pattern checks and the new placeholder category can reject values that 0.6.0 allowed.
+
+### Added
+
+- New `[Flags]` `Pattern` enum for higher-level identifier-shape protections.
+- `Options.EnabledPatterns` plus `EnablePattern(...)` and `DisablePattern(...)` for captured per-checker pattern configuration.
+- `Pattern.NumericOnly` for all-digit identifiers. Enabled by default.
+- `Pattern.Repeated` for long identifiers built from repeated short units. Enabled by default.
+- `Pattern.SymbolOnly` for identifiers containing punctuation or symbols but no Unicode letters or numbers. Enabled by default.
+- `Pattern.AsciiArt` for a conservative set of known ASCII-art constructions. Enabled by default.
+- `Pattern.UppercaseOnly` for identifiers whose cased letters are all uppercase. Disabled by default because uppercase handles can be legitimate.
+- Dedicated `MatchKind` values for `NumericOnly`, `RepeatedPattern`, `SymbolOnly`, `AsciiArt`, and `UppercaseOnly`.
+- Reason-specific `ValidationMessages` properties and ASP.NET Core DataAnnotations fallback messages for every new pattern failure.
+- New global `placeholders` category containing 17 literal null-like or missing-value identifiers including `null`, `undefined`, `empty`, `none`, `nil`, `unset`, `missing`, `unknown`, and related forms.
+- `Category.Placeholders` as a normal configurable dataset category.
+- Regression coverage for every pattern, bitwise pattern configuration, checker configuration capture, cross-filter behavior, placeholder normalization/category controls, and actual-null versus literal-`"null"` behavior.
+
+### Behavior
+
+- Pattern checks are independent deny rules. Passing or disabling one pattern does not mark an identifier as claimable and does not bypass structural validation, other pattern checks, or reserved-name matching.
+- Fail-fast structural validation runs before pattern checks. For example, an all-digit identifier still reports `NumbersNotAllowed` under the default number rule; `NumericOnly` becomes the rejection reason when numbers are otherwise permitted.
+- `CheckDetailed(...)` can report pattern failures alongside other applicable diagnostics and a reserved-name match.
+- `AllowedIdentifiers` remains a narrow built-in reserved-name exception and does not bypass structural or pattern checks.
+- Disabling `UppercaseOnly` does not make a reserved uppercase identifier such as `ADMIN` claimable; reserved-name normalization still resolves it to `admin`.
+- Disabling `NumericOnly` does not clear an identifier that is independently rejected by `Repeated`.
+- Literal placeholder strings use the normal exact/compact/confusable/obfuscation pipeline and can be removed with `DisableCategory(Category.Placeholders)`.
+- Actual C# `null` input keeps the established claimable behavior so required-field validation remains separate.
+
+### Dataset
+
+- Built-in dataset coverage increases from 10,731 to **10,748 filter entries**.
+- Built-in unique values increase from 10,633 to **10,650 unique values**.
+- The category count increases from 22 to **23 categories** through the new 17-entry global `placeholders` dataset.
+- Existing category numeric values remain unchanged; `Category.Placeholders` is appended as value `22`.
+
+### Compatibility
+
+- Existing `MatchKind` numeric values remain unchanged; the five new pattern reasons are appended as values `13` through `17`.
+- Existing public types, methods, constructors, properties, rule values, category values, and matching APIs are not intentionally removed or renumbered.
+- The new `Pattern` API is additive.
+- Default behavior intentionally becomes stricter for newly covered identifier shapes and placeholder literals. Consumers upgrading from 0.6.0 should review these policy additions if such values are intentionally allowed.
+- Full test/package/smoke validation and public-API compatibility checks remain green on the release branch.
+
 ## 0.6.0 - 2026-09-15
 
 Feedback-response release focused on reducing false positives, making policy changes safer to review, clarifying Unicode guarantees, and hardening the release pipeline.

@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "category": "placeholders",
+  "language": "global",
+  "description": "Placeholder-like identifiers that represent missing, unset, empty, or undefined values rather than a user identity.",
+  "values": [
+    "null",
+    "undefined",
+    "empty",
+    "emptyvalue",
+    "none",
+    "nil",
+    "unset",
+    "missing",
+    "unknown",
+    "notset",
+    "novalue",
+    "nullvalue",
+    "undefinedvalue",
+    "missingvalue",
+    "placeholder",
+    "placeholdervalue",
+    "defaultvalue"
+  ]
+}
