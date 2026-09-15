@@ -10,7 +10,8 @@ public sealed partial class Checker
         violation = null;
         if (value is null)
         {
-            return false;
+            violation = Result.MissingValue();
+            return true;
         }
 
         if (TryFindMalformedUtf16(value, out var invalidIndex, out var invalidCharacter))
@@ -158,6 +159,9 @@ public sealed partial class Checker
     {
         if (value is null)
         {
+            diagnostics.Add(new Diagnostic(
+                MatchKind.MissingValue,
+                message: includeMessages ? "A value is required." : null));
             return;
         }
 
@@ -339,6 +343,8 @@ public sealed partial class Checker
                 return "Leading separators are not allowed.";
             case MatchKind.TrailingSeparator:
                 return "Trailing separators are not allowed.";
+            case MatchKind.MissingValue:
+                return "A value is required.";
             default:
                 return "This value is not allowed.";
         }
