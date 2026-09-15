@@ -523,7 +523,7 @@ The repository checks:
 - shared reserved and known-safe conformance corpora;
 - category/rule/toggle/pattern configuration behavior;
 - NuGet package creation and metadata/content validation;
-- package public API compatibility against published `0.5.0` using .NET package validation;
+- package public API compatibility against published `0.6.0` using .NET package validation;
 - clean packaged-consumer restore and execution;
 - source builds with localized language packs removed;
 - XML documentation for public members;
