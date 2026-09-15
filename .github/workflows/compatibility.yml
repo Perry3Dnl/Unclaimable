@@ -1,4 +1,4 @@
-name: .NET 0.7.1 Compatibility
+name: .NET 0.7.2 Compatibility
 
 on:
   push:
@@ -37,8 +37,10 @@ jobs:
       - name: Run behavioral compatibility corpus
         run: dotnet test platforms/dotnet/tests/Unclaimable.Tests/Unclaimable.Tests.csproj --configuration Release
 
-      - name: Validate core public API against NuGet v0.7.0
+      # 0.7.1 is staged but not published yet. Keep the package-validation baseline on
+      # the latest published package until 0.7.1 exists on NuGet.org.
+      - name: Validate core public API against latest published NuGet baseline (v0.7.0)
         run: dotnet pack platforms/dotnet/src/Unclaimable/Unclaimable.csproj --configuration Release --output artifacts/compat
 
-      - name: Validate ASP.NET Core public API against NuGet v0.7.0
+      - name: Validate ASP.NET Core public API against latest published NuGet baseline (v0.7.0)
         run: dotnet pack platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj --configuration Release --output artifacts/compat
