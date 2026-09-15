@@ -47,9 +47,9 @@ public sealed class ValidationMessageOptionsTests
             })
             .BuildServiceProvider();
 
-        var error = Validate("supportive", provider);
+        var error = Validate("mysuperadminx", provider);
 
-        Assert.Equal("Username contains protected value 'support'.", error.ErrorMessage);
+        Assert.Equal("Username contains protected value 'superadmin'.", error.ErrorMessage);
     }
 
     [Fact]
@@ -93,7 +93,7 @@ public sealed class ValidationMessageOptionsTests
             })
             .BuildServiceProvider();
 
-        var error = Validate("supportive", provider);
+        var error = Validate("support", provider);
 
         Assert.Equal("Username is unavailable.", error.ErrorMessage);
     }
@@ -105,7 +105,7 @@ public sealed class ValidationMessageOptionsTests
             .AddUnclaimable()
             .BuildServiceProvider();
 
-        var error = Validate("supportive", provider);
+        var error = Validate("support", provider);
 
         Assert.Equal("Username contains a reserved name and cannot be claimed.", error.ErrorMessage);
     }
