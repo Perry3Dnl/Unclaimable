@@ -44,4 +44,8 @@ public sealed class ValidationMessages
     public string? AsciiArt { get; set; }
     /// <summary>Message for uppercase-only pattern failures.</summary>
     public string? UppercaseOnly { get; set; }
+    /// <summary>Message for enabled country-name rule failures.</summary>
+    public string? CountryName { get; set; }
+    /// <summary>Message for enabled popular-city-name rule failures.</summary>
+    public string? PopularCityName { get; set; }
 }
