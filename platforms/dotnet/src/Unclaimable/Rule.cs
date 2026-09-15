@@ -1,13 +1,13 @@
 namespace Unclaimable;
 
 /// <summary>
-/// Built-in validation rules. Existing structural and matching rules are enabled by default unless explicitly disabled.
-/// Geography-list rules are opt-in and must be enabled explicitly.
+/// Built-in validation rules. Most structural and matching rules are enabled by default.
+/// Number rejection, country-name matching, and popular-city-name matching are disabled by default in 0.7.2.
 /// </summary>
 [Flags]
 public enum Rule
 {
-    /// <summary>No rules are disabled or explicitly enabled.</summary>
+    /// <summary>No rule flag.</summary>
     None = 0,
     /// <summary>Minimum-length validation.</summary>
     MinimumLength = 1 << 0,
@@ -21,7 +21,7 @@ public enum Rule
     LeadingSeparator = 1 << 4,
     /// <summary>Trailing-separator validation.</summary>
     TrailingSeparator = 1 << 5,
-    /// <summary>Unicode decimal-digit validation.</summary>
+    /// <summary>Reject identifiers containing Unicode decimal digits. Disabled by default in 0.7.2.</summary>
     Numbers = 1 << 6,
     /// <summary>Compact reserved-name matching.</summary>
     CompactMatching = 1 << 7,
