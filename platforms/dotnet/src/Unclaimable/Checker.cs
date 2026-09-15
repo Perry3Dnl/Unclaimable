@@ -226,7 +226,7 @@ public sealed partial class Checker : IChecker
 
             Add(
                 entry,
-                includeInPartialMatching: entry.SafePartial || !isProfanity || options.ProfanityPartialMatching);
+                includeInPartialMatching: entry.SafePartial || (isProfanity && options.ProfanityPartialMatching));
         }
 
         foreach (var value in options.AdditionalReserved)
