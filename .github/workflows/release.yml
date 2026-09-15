@@ -175,6 +175,14 @@ jobs:
           name: unclaimable-release-packages
           path: artifacts
 
+      - name: Generate package hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd artifacts
+          sha256sum *.nupkg *.snupkg > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
       - name: Validate NuGet account configuration
         shell: bash
         env:
@@ -225,12 +233,13 @@ jobs:
             --source https://api.nuget.org/v3/index.json \
             $EXTRA_ARGS
 
-      - name: Create GitHub release
+      - name: Create or update GitHub release
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.build-and-validate.outputs.version }}
         run: |
+          set -euo pipefail
           TAG="v${VERSION}"
 
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
@@ -242,3 +251,10 @@ jobs:
               --generate-notes \
               --verify-tag
           fi
+
+          gh release upload "$TAG" \
+            artifacts/*.nupkg \
+            artifacts/*.snupkg \
+            artifacts/SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" \
+            --clobber
