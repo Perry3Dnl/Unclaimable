@@ -171,7 +171,7 @@ public sealed class GeographyRule072Tests
     {
         var options = new Options();
 
-        Assert.Throws<ArgumentOutOfRangeException>(() => options.EnableRule((Rule)(1 << 20)));
-        Assert.Throws<ArgumentOutOfRangeException>(() => options.DisableRule((Rule)(1 << 20)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.EnableRule((Rule)(1 << 30)));
+        Assert.Throws<ArgumentOutOfRangeException>(() => options.DisableRule((Rule)(1 << 30)));
     }
 }
