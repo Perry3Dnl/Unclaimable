@@ -4,8 +4,6 @@
   "language": "global",
   "description": "Standalone moderation, enforcement, review, appeal, and account-action identities.",
   "values": [
-    "appeal",
-    "appeals",
     "approved",
     "ban",
     "banned",
