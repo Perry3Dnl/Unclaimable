@@ -28,7 +28,9 @@ public enum MatchKind
     /// <summary>The value started with a separator while leading separators were disabled.</summary>
     LeadingSeparator = 11,
     /// <summary>The value ended with a separator while trailing separators were disabled.</summary>
-    TrailingSeparator = 12
+    TrailingSeparator = 12,
+    /// <summary>No identifier value was supplied.</summary>
+    MissingValue = 13
 }
 
 /// <summary>
@@ -155,6 +157,10 @@ public sealed class Result
     /// <summary>Creates an allowed result.</summary>
     public static Result Allowed(string? input) =>
         new Result(false, input, null, null, MatchKind.None);
+
+    /// <summary>Creates a missing-value result.</summary>
+    public static Result MissingValue() =>
+        Policy(null, MatchKind.MissingValue);
 
     /// <summary>Creates an invalid-character result.</summary>
     public static Result InvalidCharacters(string? input, int? index = null, string? character = null) =>
