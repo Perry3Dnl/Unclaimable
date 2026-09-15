@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "category": "developer",
+  "language": "global",
+  "description": "Standalone developer-tooling, API-management, integration, SDK, and source-management identities.",
+  "values": [
+    "accesskey",
+    "apiclient",
+    "apiclients",
+    "apigateway",
+    "apikey",
+    "apikeys",
+    "apimanagement",
+    "apis",
+    "automationapi",
+    "cicd",
+    "clientid",
+    "clientsecret",
+    "developerkey",
+    "developerportal",
+    "devtools",
+    "integration",
+    "integrations",
+    "openapi",
+    "restapi",
+    "sdk",
+    "sdks",
+    "secretkey",
+    "sourcecode",
+    "swagger",
+    "testenvironment"
+  ]
+}
