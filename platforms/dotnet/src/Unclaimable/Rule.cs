@@ -2,7 +2,7 @@ namespace Unclaimable;
 
 /// <summary>
 /// Built-in validation rules. Most structural and matching rules are enabled by default.
-/// Number rejection, country-name matching, and popular-city-name matching are disabled by default in 0.7.2.
+/// Number rejection and the optional country, city, and celebrity name lists are disabled by default.
 /// </summary>
 [Flags]
 public enum Rule
@@ -21,7 +21,7 @@ public enum Rule
     LeadingSeparator = 1 << 4,
     /// <summary>Trailing-separator validation.</summary>
     TrailingSeparator = 1 << 5,
-    /// <summary>Reject identifiers containing Unicode decimal digits. Disabled by default in 0.7.2.</summary>
+    /// <summary>Reject identifiers containing Unicode decimal digits. Disabled by default in 0.7.2 and later.</summary>
     Numbers = 1 << 6,
     /// <summary>Compact reserved-name matching.</summary>
     CompactMatching = 1 << 7,
@@ -36,5 +36,7 @@ public enum Rule
     /// <summary>Reject complete identifiers that match a built-in country-name list. Disabled by default.</summary>
     CountryNames = 1 << 12,
     /// <summary>Reject complete identifiers that match a curated list of popular city names. Disabled by default.</summary>
-    PopularCityNames = 1 << 13
+    PopularCityNames = 1 << 13,
+    /// <summary>Reject protected celebrity and high-profile public-figure identifiers. Disabled by default.</summary>
+    CelebrityNames = 1 << 14
 }
