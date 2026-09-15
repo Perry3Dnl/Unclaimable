@@ -2,7 +2,7 @@ namespace Unclaimable;
 
 public sealed partial class Options
 {
-    private const Rule OptionalRules = Rule.CountryNames | Rule.PopularCityNames;
+    private const Rule OptionalRules = Rule.CountryNames | Rule.PopularCityNames | Rule.CelebrityNames;
 
     private const Rule AllRules =
         Rule.MinimumLength
@@ -18,21 +18,22 @@ public sealed partial class Options
         | Rule.ObfuscationMatching
         | Rule.UnicodeConfusableMatching
         | Rule.CountryNames
-        | Rule.PopularCityNames;
+        | Rule.PopularCityNames
+        | Rule.CelebrityNames;
 
     private Rule _enabledOptionalRules = Rule.None;
 
     /// <summary>
     /// Gets opt-in rules currently enabled for newly constructed checkers.
-    /// Country-name and popular-city-name matching are disabled by default.
+    /// Country-name, popular-city-name, and celebrity-name matching are disabled by default.
     /// </summary>
     public Rule EnabledOptionalRules => _enabledOptionalRules & ~DisabledRules;
 
     /// <summary>
     /// Enables one or more rules without changing unrelated rule configuration.
     /// Existing rules are enabled by clearing them from <see cref="DisabledRules"/>.
-    /// Opt-in rules such as <see cref="Rule.CountryNames"/> and <see cref="Rule.PopularCityNames"/>
-    /// are activated explicitly by this method.
+    /// Opt-in rules such as <see cref="Rule.CountryNames"/>, <see cref="Rule.PopularCityNames"/>,
+    /// and <see cref="Rule.CelebrityNames"/> are activated explicitly by this method.
     /// </summary>
     /// <param name="rule">One rule or a bitwise combination of supported rules.</param>
     /// <returns>This options instance.</returns>
@@ -61,7 +62,8 @@ public sealed partial class Options
     internal IReadOnlyList<ReservationRegistration> BuildEffectiveReservations()
     {
         if (!IsOptionalRuleEnabled(Rule.CountryNames)
-            && !IsOptionalRuleEnabled(Rule.PopularCityNames))
+            && !IsOptionalRuleEnabled(Rule.PopularCityNames)
+            && !IsOptionalRuleEnabled(Rule.CelebrityNames))
         {
             return _reservations;
         }
@@ -84,6 +86,16 @@ public sealed partial class Options
             {
                 effective.Add(new ReservationRegistration(
                     GeographyData.CityReservationPrefix + value,
+                    ReservedMatchMode.Exact));
+            }
+        }
+
+        if (IsOptionalRuleEnabled(Rule.CelebrityNames))
+        {
+            foreach (var value in CelebrityData.Names)
+            {
+                effective.Add(new ReservationRegistration(
+                    CelebrityData.ReservationPrefix + value,
                     ReservedMatchMode.Exact));
             }
         }
