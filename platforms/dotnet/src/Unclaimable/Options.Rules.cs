@@ -23,10 +23,10 @@ public sealed partial class Options
     private Rule _enabledOptionalRules = Rule.None;
 
     /// <summary>
-    /// Gets opt-in rules explicitly enabled for newly constructed checkers.
+    /// Gets opt-in rules currently enabled for newly constructed checkers.
     /// Country-name and popular-city-name matching are disabled by default.
     /// </summary>
-    public Rule EnabledOptionalRules => _enabledOptionalRules;
+    public Rule EnabledOptionalRules => _enabledOptionalRules & ~DisabledRules;
 
     /// <summary>
     /// Enables one or more rules without changing unrelated rule configuration.
@@ -51,12 +51,45 @@ public sealed partial class Options
     {
         ValidateRule(rule, nameof(rule));
         DisabledRules |= rule;
-        _enabledOptionalRules &= ~rule;
+        _enabledOptionalRules &= ~(rule & OptionalRules);
         return this;
     }
 
     internal bool IsOptionalRuleEnabled(Rule rule) =>
         (_enabledOptionalRules & rule) == rule && (DisabledRules & rule) == 0;
+
+    internal IReadOnlyList<ReservationRegistration> BuildEffectiveReservations()
+    {
+        if (!IsOptionalRuleEnabled(Rule.CountryNames)
+            && !IsOptionalRuleEnabled(Rule.PopularCityNames))
+        {
+            return _reservations;
+        }
+
+        var effective = new List<ReservationRegistration>(_reservations);
+
+        if (IsOptionalRuleEnabled(Rule.CountryNames))
+        {
+            foreach (var value in GeographyData.CountryNames)
+            {
+                effective.Add(new ReservationRegistration(
+                    GeographyData.CountryReservationPrefix + value,
+                    ReservedMatchMode.Exact));
+            }
+        }
+
+        if (IsOptionalRuleEnabled(Rule.PopularCityNames))
+        {
+            foreach (var value in GeographyData.PopularCityNames)
+            {
+                effective.Add(new ReservationRegistration(
+                    GeographyData.CityReservationPrefix + value,
+                    ReservedMatchMode.Exact));
+            }
+        }
+
+        return effective;
+    }
 
     private static void ValidateRule(Rule rule, string parameterName)
     {
