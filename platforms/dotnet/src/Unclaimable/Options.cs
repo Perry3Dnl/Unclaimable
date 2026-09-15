@@ -7,7 +7,7 @@ namespace Unclaimable;
 /// </summary>
 public sealed partial class Options
 {
-    /// <summary>Creates options using the strict default configuration.</summary>
+    /// <summary>Creates options using the default configuration.</summary>
     public Options()
     {
     }
@@ -28,8 +28,12 @@ public sealed partial class Options
     /// </summary>
     public Strictness Strictness { get; set; } = Strictness.Strict;
 
-    /// <summary>Built-in rules to disable. No rules are disabled by default.</summary>
-    public Rule DisabledRules { get; set; } = Rule.None;
+    /// <summary>
+    /// Built-in rules to disable. <see cref="Rule.Numbers"/> is disabled by default in 0.7.2,
+    /// so identifiers may contain Unicode decimal digits unless the rule is explicitly enabled.
+    /// Geography-list rules remain separately opt-in through <see cref="EnableRule(Rule)"/>.
+    /// </summary>
+    public Rule DisabledRules { get; set; } = Rule.Numbers;
 
     /// <summary>
     /// Localized built-in datasets currently enabled for this checker. English is enabled by default.
@@ -125,8 +129,9 @@ public sealed partial class Options
     public bool UnicodeConfusableMatching { get; set; } = true;
 
     /// <summary>
-    /// Allow Unicode decimal digits. Numbers are rejected by default.
-    /// Kept for compatibility; prefer disabling <see cref="Rule.Numbers"/>.
+    /// Allows Unicode decimal digits. Digits are allowed by default in 0.7.2 because
+    /// <see cref="Rule.Numbers"/> starts disabled. This legacy switch can still force numbers to be allowed,
+    /// while <see cref="EnableRule(Rule)"/> with <see cref="Rule.Numbers"/> enables number rejection.
     /// </summary>
     public bool AllowNumbers { get; set; }
 
