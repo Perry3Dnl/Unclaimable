@@ -7,6 +7,10 @@ public sealed partial class Checker
     private readonly Dictionary<string, ReservedEntry> _customExact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
     private readonly Dictionary<string, ReservedEntry> _customCompact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
     private readonly List<PartialEntry> _customPartialEntries = new List<PartialEntry>();
+    private readonly Dictionary<string, string> _countryRuleExact = new Dictionary<string, string>(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> _countryRuleCompact = new Dictionary<string, string>(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> _cityRuleExact = new Dictionary<string, string>(StringComparer.Ordinal);
+    private readonly Dictionary<string, string> _cityRuleCompact = new Dictionary<string, string>(StringComparer.Ordinal);
 
     private void CaptureAllowedIdentifiers(Options options)
     {
@@ -49,6 +53,11 @@ public sealed partial class Checker
 
     private void AddExactCustom(ReservedEntry entry)
     {
+        if (TryAddGeographyRuleReservation(entry.Value))
+        {
+            return;
+        }
+
         var exact = NormalizeExact(entry.Value);
         if (exact is not null && !_exactOnlyCustom.ContainsKey(exact))
         {
@@ -56,8 +65,60 @@ public sealed partial class Checker
         }
     }
 
+    private bool TryAddGeographyRuleReservation(string value)
+    {
+        if (value.StartsWith(GeographyData.CountryReservationPrefix, StringComparison.Ordinal))
+        {
+            AddGeographyRuleValue(
+                value.Substring(GeographyData.CountryReservationPrefix.Length),
+                _countryRuleExact,
+                _countryRuleCompact);
+            return true;
+        }
+
+        if (value.StartsWith(GeographyData.CityReservationPrefix, StringComparison.Ordinal))
+        {
+            AddGeographyRuleValue(
+                value.Substring(GeographyData.CityReservationPrefix.Length),
+                _cityRuleExact,
+                _cityRuleCompact);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static void AddGeographyRuleValue(
+        string value,
+        Dictionary<string, string> exactValues,
+        Dictionary<string, string> compactValues)
+    {
+        var exact = NormalizeExact(value);
+        if (exact is null)
+        {
+            return;
+        }
+
+        if (!exactValues.ContainsKey(exact))
+        {
+            exactValues.Add(exact, value);
+        }
+
+        var compact = NormalizeCompact(exact);
+        if (compact.Length > 0 && !compactValues.ContainsKey(compact))
+        {
+            compactValues.Add(compact, value);
+        }
+    }
+
     private Result? CheckExactCustomReservation(string? value, string exact)
     {
+        var geographyResult = CheckGeographyRuleReservation(value, exact);
+        if (geographyResult is not null)
+        {
+            return geographyResult;
+        }
+
         if (!_exactOnlyCustom.TryGetValue(exact, out var match))
         {
             return null;
@@ -73,6 +134,42 @@ public sealed partial class Checker
             exact.Length,
             originalStart,
             originalLength);
+    }
+
+    private Result? CheckGeographyRuleReservation(string? value, string exact)
+    {
+        if (_countryRuleExact.TryGetValue(exact, out var country))
+        {
+            return new Result(true, value, country, null, MatchKind.CountryName);
+        }
+
+        if (_cityRuleExact.TryGetValue(exact, out var city))
+        {
+            return new Result(true, value, city, null, MatchKind.PopularCityName);
+        }
+
+        if (!_compactMatching)
+        {
+            return null;
+        }
+
+        var compact = NormalizeCompact(exact);
+        if (compact.Length == 0)
+        {
+            return null;
+        }
+
+        if (_countryRuleCompact.TryGetValue(compact, out country))
+        {
+            return new Result(true, value, country, null, MatchKind.CountryName);
+        }
+
+        if (_cityRuleCompact.TryGetValue(compact, out city))
+        {
+            return new Result(true, value, city, null, MatchKind.PopularCityName);
+        }
+
+        return null;
     }
 
     private Result? CheckCustomDefaultReservations(string? value, string exact)
