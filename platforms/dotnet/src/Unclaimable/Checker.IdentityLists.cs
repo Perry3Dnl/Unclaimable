@@ -61,43 +61,42 @@ internal static class OptionalIdentityData
 
     internal static readonly string[] Events =
     {
-        "asiangames", "burningman", "cannesfilmfestival", "ces", "coachella", "comiccon", "commonwealthgames",
-        "cricketworldcup", "daytona500", "eurovision", "eurovisionsongcontest", "fifaworldcup", "gamescom",
-        "indy500", "kentuckyderby", "lemans", "monacograndprix", "olympics", "oktoberfest", "panamericangames",
-        "paralympics", "rydercup", "rugbyworldcup", "sundance", "sundancefilmfestival", "superbowl", "sxsw",
-        "themasters", "tourdefrance", "venicefilmfestival", "websummit", "wimbledon", "worldcup", "worldseries",
-        "wrestlemania"
+        "24hoursoflemans", "asiangames", "burningman", "cannesfilmfestival", "ces", "coachella", "comiccon",
+        "commonwealthgames", "cricketworldcup", "daytona500", "eurovision", "eurovisionsongcontest", "fifaworldcup",
+        "gamescom", "indy500", "kentuckyderby", "monacograndprix", "olympics", "oktoberfest", "panamericangames",
+        "paralympics", "rydercup", "rugbyworldcup", "sundancefilmfestival", "superbowl", "sxsw", "themasters",
+        "tourdefrance", "venicefilmfestival", "websummit", "wimbledon", "worldcup", "worldseries", "wrestlemania"
     };
 
     internal static readonly string[] Awards =
     {
-        "academyaward", "academyawards", "bafta", "baftaawards", "ballondor", "bookerprize", "britawards",
-        "emmy", "emmys", "emmyawards", "fieldsmedal", "goldenglobe", "goldenglobes", "grammy", "grammys",
-        "grammyawards", "hugoaward", "hugoawards", "laureus", "mtvvideomusicawards", "nobel", "nobelpeaceprize",
-        "nobelprize", "nobelprizes", "oscar", "oscars", "palmedor", "peabody", "peabodyawards", "pulitzer",
-        "pulitzerprize", "screenactorsguildawards", "tony", "tonys", "tonyawards", "turingaward"
+        "academyaward", "academyawards", "baftaawards", "ballondor", "bookerprize", "britawards", "emmys",
+        "emmyawards", "fieldsmedal", "goldenglobes", "grammys", "grammyawards", "hugoaward", "hugoawards",
+        "laureusawards", "mtvvideomusicawards", "nobelpeaceprize", "nobelprize", "nobelprizes", "oscars", "palmedor",
+        "peabodyawards", "pulitzer", "pulitzerprize", "screenactorsguildawards", "tonyawards", "turingaward"
     };
 
     internal static readonly string[] FictionalCharacters =
     {
-        "ariel", "batman", "blackpanther", "captainamerica", "catwoman", "cinderella", "darthvader", "deadpool",
-        "donaldduck", "elsa", "frodo", "gandalf", "goku", "hanniballecter", "harleyquinn", "hermionegranger",
-        "homersimpson", "indianajones", "ironman", "jamesbond", "joker", "katnisseverdeen", "link", "lukeskywalker",
-        "mariobros", "mickeymouse", "naruto", "peterpan", "pikachu", "popeye", "princessleia", "rockybalboa",
-        "sailormoon", "scoobydoo", "sherlockholmes", "shrek", "sonic", "spiderman", "spongebob", "superman",
-        "terminator", "thanos", "thor", "tinkerbell", "wonderwoman", "wolverine", "yoda", "zelda"
+        "batman", "blackpanther", "bowser", "brucewayne", "bugs-bunny", "bugsbunny", "captainamerica", "catwoman",
+        "cinderella", "clarkkent", "daffyduck", "darthvader", "deadpool", "donaldduck", "fredflintstone", "frodo",
+        "gandalf", "geraltofrivia", "goku", "hanniballecter", "harleyquinn", "hermionegranger", "homersimpson",
+        "indianajones", "ironman", "jamesbond", "jessepinkman", "katnisseverdeen", "kratos", "laracroft",
+        "lukeskywalker", "masterchief", "mickeymouse", "naruto", "peterpan", "peterparker", "pikachu", "popeye",
+        "princessleia", "princesspeach", "princesszelda", "rickgrimes", "ricksanchez", "rockybalboa", "sailormoon",
+        "scoobydoo", "sherlockholmes", "shrek", "solidsnake", "sonicthehedgehog", "spiderman", "spongebob",
+        "superman", "thanos", "tinkerbell", "tonystark", "walterwhite", "wonderwoman", "wolverine", "yoda"
     };
 
     internal static readonly string[] Franchises =
     {
-        "assassinscreed", "avatar", "barbie", "callofduty", "diablo", "dragonball", "dungeonsanddragons",
-        "elderscrolls", "fallout", "fastandfurious", "finalfantasy", "fortnite", "frozen", "gameofthrones",
-        "godzilla", "grandtheftauto", "halo", "harrypotter", "hellokitty", "jurassicpark", "kingdomhearts",
-        "lordoftherings", "masseffect", "marvelcinematicuniverse", "minecraft", "missionimpossible", "mortalkombat",
-        "onepiece", "piratesofthecaribbean", "pokemon", "residentevil", "sonicthehedgehog", "starcraft", "starwars",
-        "startrek", "strangerthings", "streetfighter", "supermario", "thehungergames", "thelastofus", "thelegendofzelda",
-        "thematrix", "thewalkingdead", "toystory", "transformers", "twilight", "warcraft", "warhammer", "witcher",
-        "xmen"
+        "assassinscreed", "barbie", "callofduty", "diablo", "dragonball", "dungeonsanddragons", "elderscrolls",
+        "fastandfurious", "finalfantasy", "fortnite", "gameofthrones", "godzilla", "grandtheftauto", "harrypotter",
+        "hellokitty", "jurassicpark", "kingdomhearts", "lordoftherings", "masseffect", "marvelcinematicuniverse",
+        "minecraft", "missionimpossible", "mortalkombat", "onepiece", "piratesofthecaribbean", "pokemon",
+        "residentevil", "starcraft", "starwars", "startrek", "strangerthings", "streetfighter", "supermario",
+        "thehungergames", "thelastofus", "thelegendofzelda", "thematrix", "thewalkingdead", "toystory",
+        "transformers", "warcraft", "warhammer", "thewitcher", "xmen"
     };
 
     internal static readonly string[] Professions =
