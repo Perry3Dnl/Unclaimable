@@ -34,4 +34,14 @@ public sealed class ValidationMessages
     public string? TrailingSeparator { get; set; }
     /// <summary>Message for profanity matches.</summary>
     public string? Profanity { get; set; }
+    /// <summary>Message for numeric-only pattern failures.</summary>
+    public string? NumericOnly { get; set; }
+    /// <summary>Message for repeated-pattern failures.</summary>
+    public string? RepeatedPattern { get; set; }
+    /// <summary>Message for symbol-only pattern failures.</summary>
+    public string? SymbolOnly { get; set; }
+    /// <summary>Message for ASCII-art pattern failures.</summary>
+    public string? AsciiArt { get; set; }
+    /// <summary>Message for uppercase-only pattern failures.</summary>
+    public string? UppercaseOnly { get; set; }
 }

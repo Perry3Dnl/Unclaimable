@@ -131,6 +131,8 @@ public sealed partial class Options
                 return "system";
             case Category.Technology:
                 return "technology";
+            case Category.Placeholders:
+                return "placeholders";
             default:
                 throw new ArgumentOutOfRangeException(nameof(category));
         }

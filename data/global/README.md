@@ -12,6 +12,7 @@ Current global categories:
 - `legal` — legal, privacy, intellectual-property and regulatory-response identities;
 - `commerce` — merchant, seller, storefront, order and transaction-facing identities;
 - `community` — official community programs, ambassadors, hubs and member-relations identities;
+- `placeholders` — null-like, unset, missing and placeholder identifiers that should not be claimed as user identities;
 - `other` — protected platform-facing names that do not fit cleanly into another category.
 
 Each dataset uses schema version `1` and declares `"language": "global"` explicitly.
