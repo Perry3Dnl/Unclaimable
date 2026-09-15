@@ -129,9 +129,10 @@ public sealed partial class Options
     public bool UnicodeConfusableMatching { get; set; } = true;
 
     /// <summary>
-    /// Allows Unicode decimal digits. Digits are allowed by default in 0.7.2 because
-    /// <see cref="Rule.Numbers"/> starts disabled. This legacy switch can still force numbers to be allowed,
-    /// while <see cref="EnableRule(Rule)"/> with <see cref="Rule.Numbers"/> enables number rejection.
+    /// Allows Unicode decimal digits independently of the default <see cref="Rule.Numbers"/> setting.
+    /// In 0.7.2 digits are already allowed by default because <see cref="Rule.Numbers"/> starts disabled.
+    /// This property is retained for compatibility; prefer <see cref="EnableRule(Rule)"/> and
+    /// <see cref="DisableRule(Rule)"/> for rule configuration.
     /// </summary>
     public bool AllowNumbers { get; set; }
 
