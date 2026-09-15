@@ -6,9 +6,6 @@
   "values": [
     "accounting",
     "balance",
-    "billing",
-    "chargeback",
-    "chargebacks",
     "credit",
     "debit",
     "escrow",
@@ -26,8 +23,6 @@
     "purchasing",
     "receivables",
     "reconciliation",
-    "refund",
-    "refunds",
     "reimbursement",
     "revenue",
     "sellerfinance",
