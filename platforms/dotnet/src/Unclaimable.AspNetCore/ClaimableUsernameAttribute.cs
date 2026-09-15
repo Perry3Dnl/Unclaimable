@@ -4,7 +4,7 @@ namespace Unclaimable.AspNetCore;
 
 /// <summary>
 /// Validates that a string identifier is claimable according to the registered <see cref="IChecker"/>.
-/// Null values are accepted so required-field validation can be handled independently.
+/// Null values are rejected as missing identifiers.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter)]
 public sealed class ClaimableUsernameAttribute : ValidationAttribute
@@ -12,12 +12,12 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
     /// <summary>Validates one value using the registered checker or <see cref="Checker.Default"/>.</summary>
     protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
     {
-        if (value is null)
+        string? text = null;
+        if (value is string stringValue)
         {
-            return ValidationResult.Success;
+            text = stringValue;
         }
-
-        if (value is not string text)
+        else if (value is not null)
         {
             return new ValidationResult($"{validationContext.DisplayName} must be a string.");
         }
@@ -114,6 +114,7 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
             MatchKind.BlockedCharacter => "{FieldName} contains a blocked character.",
             MatchKind.LeadingSeparator => "{FieldName} cannot start with a separator.",
             MatchKind.TrailingSeparator => "{FieldName} cannot end with a separator.",
+            MatchKind.MissingValue => "{FieldName} is required.",
             _ => "{FieldName} is not allowed."
         };
     }

@@ -15,6 +15,13 @@ public sealed class AspNetCoreIntegrationTests
         public string Username { get; init; } = string.Empty;
     }
 
+    private sealed class NullableSignupModel
+    {
+        [Display(Name = "Username")]
+        [ClaimableUsername]
+        public string? Username { get; init; }
+    }
+
     private sealed class CustomMessageSignupModel
     {
         [Required]
@@ -33,6 +40,19 @@ public sealed class AspNetCoreIntegrationTests
         var checker = provider.GetRequiredService<IChecker>();
 
         Assert.True(checker.IsReserved("ExampleBrand"));
+    }
+
+    [Fact]
+    public void ValidationAttributeRejectsNullWithoutRequiredAttribute()
+    {
+        using var provider = new ServiceCollection()
+            .AddUnclaimable()
+            .BuildServiceProvider();
+
+        var results = Validate(new NullableSignupModel { Username = null }, provider);
+
+        var error = Assert.Single(results);
+        Assert.Equal("Username is required.", error.ErrorMessage);
     }
 
     [Fact]

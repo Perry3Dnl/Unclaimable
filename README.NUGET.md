@@ -58,12 +58,13 @@ ASP.NET Core:
 builder.Services.AddUnclaimable();
 ```
 
-`null` is accepted so required-field validation can remain separate, for example through `[Required]`.
+`null` is rejected as `MatchKind.MissingValue`. `[ClaimableUsername]` applies the same rule, so a separate `[Required]` attribute is not needed merely to prevent a null identifier.
 
 ## Default protection
 
 The default policy includes:
 
+- missing (`null`) identifier rejection;
 - all 22 built-in categories;
 - English localized data;
 - exact reserved-name matching;
@@ -202,6 +203,8 @@ public sealed class SignupModel
     public string UserName { get; set; } = string.Empty;
 }
 ```
+
+`[Required]` can still be useful for your application's normal DataAnnotations semantics and message conventions, but `[ClaimableUsername]` now rejects `null` on its own as well.
 
 ## Release quality
 

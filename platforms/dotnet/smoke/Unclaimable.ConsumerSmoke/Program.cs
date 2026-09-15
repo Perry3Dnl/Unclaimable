@@ -13,6 +13,8 @@ static void Require(bool condition, string message)
 
 var checker = Checker.Default;
 
+Require(checker.Check(null).MatchKind == MatchKind.MissingValue, "Null identifiers should be rejected as missing values.");
+Require(!checker.IsClaimable(null), "Null identifiers should never be claimable.");
 Require(checker.Check("customersupport").Category == "support", "English support names should be reserved by default.");
 Require(checker.Check("myloginverificationteamx").MatchKind == MatchKind.Partial, "Explicit high-risk partial entries should be protected in strict mode.");
 Require(checker.IsClaimable("supportive"), "Ordinary words that merely contain short reserved terms should remain claimable.");
@@ -71,6 +73,7 @@ var relaxed = new Checker(new Options
 });
 
 Require(relaxed.IsClaimable("ordinary-user2"), "Applications should be able to relax individual rules.");
+Require(relaxed.Check(null).MatchKind == MatchKind.MissingValue, "Relaxed rules should not make a missing identifier claimable.");
 
 var obfuscationChecker = new Checker(new Options
 {
@@ -134,6 +137,16 @@ Require(
     rejectedResults.Count == 1 && rejectedResults[0].ErrorMessage == "UserName 'examplebrand' is reserved.",
     "ClaimableUsernameAttribute should use the configured reason-specific validation message.");
 
+var missingModel = new NullableSignupModel();
+var missingResults = new List<ValidationResult>();
+var missingContext = new ValidationContext(missingModel, provider, items: null);
+Require(
+    !Validator.TryValidateObject(missingModel, missingContext, missingResults, validateAllProperties: true),
+    "ClaimableUsernameAttribute should reject null without requiring a separate Required attribute.");
+Require(
+    missingResults.Count == 1 && missingResults[0].ErrorMessage == "UserName is unavailable.",
+    "Null attribute rejection should honor the configured validation-message precedence.");
+
 Console.WriteLine("Packaged Unclaimable consumer smoke test passed.");
 
 public sealed class SignupModel
@@ -141,4 +154,10 @@ public sealed class SignupModel
     [Required]
     [ClaimableUsername]
     public string UserName { get; set; } = string.Empty;
+}
+
+public sealed class NullableSignupModel
+{
+    [ClaimableUsername]
+    public string? UserName { get; set; }
 }

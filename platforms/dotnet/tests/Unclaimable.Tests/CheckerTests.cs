@@ -46,6 +46,24 @@ public sealed class CheckerTests
     }
 
     [Fact]
+    public void NullIdentifiersAreRejectedAsMissingValues()
+    {
+        var result = Checker.Default.Check(null);
+        var detailed = Checker.Default.CheckDetailed(null, includeMessages: true);
+
+        Assert.True(result.IsReserved);
+        Assert.False(result.IsClaimable);
+        Assert.True(Checker.Default.IsReserved(null));
+        Assert.False(Checker.Default.IsClaimable(null));
+        Assert.Equal(MatchKind.MissingValue, result.MatchKind);
+        Assert.Null(result.Input);
+
+        var diagnostic = Assert.Single(detailed.Diagnostics);
+        Assert.Equal(MatchKind.MissingValue, diagnostic.Kind);
+        Assert.Equal("A value is required.", diagnostic.Message);
+    }
+
+    [Fact]
     public void LeadingAndTrailingSeparatorsAreRejectedByDefault()
     {
         Assert.Equal(MatchKind.LeadingSeparator, Checker.Default.Check(".john").MatchKind);
