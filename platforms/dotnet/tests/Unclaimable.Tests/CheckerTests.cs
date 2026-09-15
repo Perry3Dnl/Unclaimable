@@ -20,11 +20,10 @@ public sealed class CheckerTests
     }
 
     [Theory]
-    [InlineData("adminold", "admin")]
-    [InlineData("supportive", "support")]
-    [InlineData("apples", "apple")]
-    [InlineData("nikee", "nike")]
-    public void StrictPartialMatchingIsEnabledByDefault(string value, string expectedMatch)
+    [InlineData("mysuperadminx", "superadmin")]
+    [InlineData("myloginverificationteamx", "loginverificationteam")]
+    [InlineData("extracustomersupportx", "customersupport")]
+    public void StrictPartialMatchingUsesExplicitDatasetEligibility(string value, string expectedMatch)
     {
         var result = EnglishChecker.Check(value);
 
@@ -182,13 +181,13 @@ public sealed class CheckerTests
     public void DetailedCheckCollectsPolicyAndReservedNameDiagnostics()
     {
         var checker = new Checker(new Options());
-        var result = checker.CheckDetailed("admin2", includeMessages: true);
+        var result = checker.CheckDetailed("superadmin2", includeMessages: true);
 
         Assert.True(result.IsReserved);
         Assert.Contains(result.Diagnostics, diagnostic =>
             diagnostic.Kind == MatchKind.NumbersNotAllowed);
         Assert.Contains(result.Diagnostics, diagnostic =>
             diagnostic.Kind == MatchKind.Partial
-            && diagnostic.MatchedValue == "admin");
+            && diagnostic.MatchedValue == "superadmin");
     }
 }

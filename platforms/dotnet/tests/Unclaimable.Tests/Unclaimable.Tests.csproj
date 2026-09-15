@@ -24,6 +24,7 @@
 
   <ItemGroup>
     <None Include="../../../../conformance/cases.json" Link="conformance-cases.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../../../conformance/safe-usernames.json" Link="safe-usernames.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

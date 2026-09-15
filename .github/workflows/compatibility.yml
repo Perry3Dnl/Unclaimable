@@ -1,16 +1,18 @@
-name: .NET 0.5.0 Compatibility
+name: .NET 0.6.0 Compatibility
 
 on:
   push:
     paths:
       - "Directory.Build.props"
       - "data/**"
+      - "conformance/**"
       - "platforms/dotnet/**"
       - ".github/workflows/compatibility.yml"
   pull_request:
     paths:
       - "Directory.Build.props"
       - "data/**"
+      - "conformance/**"
       - "platforms/dotnet/**"
       - ".github/workflows/compatibility.yml"
 
@@ -23,50 +25,20 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           dotnet-version: "8.0.x"
 
-      - name: Compare v0.5.0 with v0.4.0 defaults and v0.3.0 legacy behavior
-        shell: bash
-        run: |
-          set -euo pipefail
-          legacy_source="$(mktemp -d)"
-          baseline_source="$(mktemp -d)"
-          legacy_out="$RUNNER_TEMP/unclaimable-v0.3.0"
-          baseline_out="$RUNNER_TEMP/unclaimable-v0.4.0"
-          current_out="$RUNNER_TEMP/unclaimable-current"
+      - name: Run behavioral compatibility corpus
+        run: dotnet test platforms/dotnet/tests/Unclaimable.Tests/Unclaimable.Tests.csproj --configuration Release
 
-          cleanup() {
-            git worktree remove --force "$legacy_source" >/dev/null 2>&1 || true
-            git worktree remove --force "$baseline_source" >/dev/null 2>&1 || true
-          }
-          trap cleanup EXIT
+      - name: Validate core public API against NuGet v0.5.0
+        run: dotnet pack platforms/dotnet/src/Unclaimable/Unclaimable.csproj --configuration Release --output artifacts/compat
 
-          git worktree add --detach "$legacy_source" v0.3.0
-          git worktree add --detach "$baseline_source" v0.4.0
-
-          dotnet build \
-            "$legacy_source/platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj" \
-            --configuration Release \
-            --output "$legacy_out"
-
-          dotnet build \
-            "$baseline_source/platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj" \
-            --configuration Release \
-            --output "$baseline_out"
-
-          dotnet build \
-            platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj \
-            --configuration Release \
-            --output "$current_out"
-
-          dotnet run \
-            --project platforms/dotnet/compat/Unclaimable.ReleaseChecks/Unclaimable.ReleaseChecks.csproj \
-            --configuration Release \
-            -- "$legacy_out" "$baseline_out" "$current_out"
+      - name: Validate ASP.NET Core public API against NuGet v0.5.0
+        run: dotnet pack platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj --configuration Release --output artifacts/compat

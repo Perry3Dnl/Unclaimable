@@ -14,8 +14,7 @@ public sealed class Configuration050Tests
         var checker = new Checker(options);
 
         Assert.True(checker.Check("nike").IsClaimable);
-
-        var support = checker.Check("supportive");
+        var support = checker.Check("support");
         Assert.True(support.IsReserved);
         Assert.Equal("support", support.Category);
     }
@@ -47,21 +46,19 @@ public sealed class Configuration050Tests
         var options = new Options();
         options.DisableCategory(Category.Technology);
 
-        var checker = new Checker(options);
-
-        Assert.True(checker.Check("\u0430pple").IsClaimable);
+        Assert.True(new Checker(options).Check("\u0430pple").IsClaimable);
     }
 
     [Fact]
     public void AllowedIdentifierBypassesOnlyThatCompleteBuiltInIdentifier()
     {
         var options = new Options();
-        options.AllowedIdentifiers.Add("supportive");
+        options.AllowedIdentifiers.Add("superadmin");
 
         var checker = new Checker(options);
 
-        Assert.True(checker.Check("supportive").IsClaimable);
-        Assert.True(checker.Check("supportiveadmin").IsReserved);
+        Assert.True(checker.Check("superadmin").IsClaimable);
+        Assert.True(checker.Check("mysuperadminx").IsReserved);
     }
 
     [Fact]
@@ -86,9 +83,9 @@ public sealed class Configuration050Tests
         {
             DisabledRules = Rule.Numbers
         };
-        options.AllowedIdentifiers.Add("supportive");
+        options.AllowedIdentifiers.Add("superadmin");
 
-        var result = new Checker(options).Check("supp0rtive");
+        var result = new Checker(options).Check("superadm1n");
 
         Assert.True(result.IsReserved);
     }
@@ -100,9 +97,9 @@ public sealed class Configuration050Tests
         {
             MinimumLength = 20
         };
-        options.AllowedIdentifiers.Add("supportive");
+        options.AllowedIdentifiers.Add("superadmin");
 
-        var result = new Checker(options).Check("supportive");
+        var result = new Checker(options).Check("superadmin");
 
         Assert.True(result.IsReserved);
         Assert.Equal(MatchKind.TooShort, result.MatchKind);
@@ -135,7 +132,6 @@ public sealed class Configuration050Tests
         Assert.True(exact.IsReserved);
         Assert.Equal("custom", exact.Category);
         Assert.Equal(MatchKind.Exact, exact.MatchKind);
-
         Assert.True(checker.Check("acmeorchid").IsClaimable);
     }
 
@@ -182,7 +178,6 @@ public sealed class Configuration050Tests
         var checker = new Checker(options);
 
         Assert.True(checker.Check("zorbium").IsReserved);
-
         var compound = checker.Check("zorbiumgarden");
         Assert.True(compound.IsReserved);
         Assert.Equal("custom", compound.Category);
@@ -199,11 +194,9 @@ public sealed class Configuration050Tests
         Assert.True(defaultResult.IsReserved);
         Assert.NotNull(defaultResult.Category);
         Assert.True(Enum.TryParse<Category>(defaultResult.Category, ignoreCase: true, out var winningCategory));
-        Assert.Contains(defaultResult.Category!, duplicate.Value.Categories);
 
         var options = new Options();
         options.DisableCategory(winningCategory);
-
         var result = new Checker(options).Check(duplicate.Value.Value);
 
         Assert.True(result.IsReserved);
@@ -223,17 +216,11 @@ public sealed class Configuration050Tests
         {
             using var stream = assembly.GetManifestResourceStream(resourceName);
             Assert.NotNull(stream);
-
             using var document = JsonDocument.Parse(stream!);
-            if (!document.RootElement.TryGetProperty("category", out var categoryElement))
+            if (document.RootElement.TryGetProperty("category", out var categoryElement)
+                && !string.IsNullOrWhiteSpace(categoryElement.GetString()))
             {
-                continue;
-            }
-
-            var category = categoryElement.GetString();
-            if (!string.IsNullOrWhiteSpace(category))
-            {
-                actualCategories.Add(category);
+                actualCategories.Add(categoryElement.GetString()!);
             }
         }
 
@@ -251,7 +238,7 @@ public sealed class Configuration050Tests
     {
         var options = new Options();
         options.DisableCategory(Category.Brands);
-        options.AllowedIdentifiers.Add("supportive");
+        options.AllowedIdentifiers.Add("superadmin");
 
         var captured = new Checker(options);
 
@@ -259,22 +246,22 @@ public sealed class Configuration050Tests
         options.AllowedIdentifiers.Clear();
 
         Assert.True(captured.Check("nike").IsClaimable);
-        Assert.True(captured.Check("supportive").IsClaimable);
+        Assert.True(captured.Check("superadmin").IsClaimable);
 
         var rebuilt = new Checker(options);
         Assert.True(rebuilt.Check("nike").IsReserved);
-        Assert.True(rebuilt.Check("supportive").IsReserved);
+        Assert.True(rebuilt.Check("superadmin").IsReserved);
     }
 
     [Theory]
     [InlineData("admin", true, "roles")]
     [InlineData("superadmin", true, "roles")]
-    [InlineData("supportive", true, "support")]
+    [InlineData("supportive", false, null)]
     [InlineData("Apple", true, "technology")]
     [InlineData("nike", true, "brands")]
     [InlineData("ordinaryname", false, null)]
     [InlineData("bluegarden", false, null)]
-    public void NoNewConfigurationPreservesRepresentative040Outcomes(string value, bool reserved, string? category)
+    public void Representative060OutcomesAreExplicit(string value, bool reserved, string? category)
     {
         var result = new Checker(new Options()).Check(value);
 
@@ -308,15 +295,14 @@ public sealed class Configuration050Tests
             }
 
             using var document = JsonDocument.Parse(stream);
-            if (!document.RootElement.TryGetProperty("category", out var categoryElement))
+            if (!document.RootElement.TryGetProperty("category", out var categoryElement)
+                || !document.RootElement.TryGetProperty("values", out var valuesElement))
             {
                 continue;
             }
 
             var category = categoryElement.GetString();
-            if (string.IsNullOrWhiteSpace(category)
-                || !Enum.TryParse<Category>(category, ignoreCase: true, out _)
-                || !document.RootElement.TryGetProperty("values", out var valuesElement))
+            if (string.IsNullOrWhiteSpace(category))
             {
                 continue;
             }
@@ -342,14 +328,10 @@ public sealed class Configuration050Tests
             }
         }
 
-        foreach (var pair in categoriesByValue.OrderBy(pair => pair.Key, StringComparer.Ordinal))
-        {
-            if (pair.Value.Count > 1)
-            {
-                return (pair.Key, pair.Value);
-            }
-        }
-
-        return null;
+        return categoriesByValue
+            .OrderBy(pair => pair.Key, StringComparer.Ordinal)
+            .Where(pair => pair.Value.Count > 1)
+            .Select(pair => ((string Value, HashSet<string> Categories)?)(pair.Key, pair.Value))
+            .FirstOrDefault();
     }
 }

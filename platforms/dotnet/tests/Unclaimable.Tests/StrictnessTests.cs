@@ -5,9 +5,9 @@ namespace Unclaimable.Tests;
 public sealed class StrictnessTests
 {
     [Theory]
-    [InlineData("supportive")]
-    [InlineData("apples")]
-    [InlineData("nikee")]
+    [InlineData("mysuperadminx")]
+    [InlineData("myloginverificationteamx")]
+    [InlineData("extracustomersupportx")]
     public void StandardStrictnessDisablesPartialMatching(string value)
     {
         var checker = new Checker(new Options
@@ -19,10 +19,10 @@ public sealed class StrictnessTests
     }
 
     [Theory]
-    [InlineData("supportive", "support")]
-    [InlineData("apples", "apple")]
-    [InlineData("nikee", "nike")]
-    public void StrictStrictnessRejectsEmbeddedReservedNames(string value, string expectedMatch)
+    [InlineData("mysuperadminx", "superadmin")]
+    [InlineData("myloginverificationteamx", "loginverificationteam")]
+    [InlineData("extracustomersupportx", "customersupport")]
+    public void StrictStrictnessRejectsExplicitPartialSafeNames(string value, string expectedMatch)
     {
         var checker = new Checker(new Options
         {
@@ -37,12 +37,16 @@ public sealed class StrictnessTests
     }
 
     [Fact]
-    public void StrictIsTheDefault()
+    public void StrictIsTheDefaultButDoesNotTurnEveryBuiltInIntoASubstringRule()
     {
         var options = new Options();
+        var checker = new Checker(options);
 
         Assert.Equal(Strictness.Strict, options.Strictness);
-        Assert.True(new Checker(options).IsReserved("supportive"));
+        Assert.Equal(MatchKind.Partial, checker.Check("mysuperadminx").MatchKind);
+        Assert.True(checker.IsClaimable("supportive"));
+        Assert.True(checker.IsClaimable("apples"));
+        Assert.True(checker.IsClaimable("nikee"));
     }
 
     [Fact]

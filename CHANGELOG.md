@@ -2,6 +2,71 @@
 
 All notable changes to Unclaimable are documented here.
 
+## 0.6.0 - 2026-09-15
+
+Feedback-response release focused on reducing false positives, making policy changes safer to review, clarifying Unicode guarantees, and hardening the release pipeline.
+
+0.6.0 intentionally does **not** bulk-expand the built-in reserved vocabulary. The primary change is how built-in entries become eligible for substring matching.
+
+### Feedback addressed
+
+A production-oriented review of 0.5.0 identified strict substring matching as the highest-priority risk. In 0.5.0, every sufficiently long non-profanity reserved entry could enter the partial-match index. That meant short or ordinary protected terms could reject unrelated usernames solely because the same letters appeared inside a larger word.
+
+Representative 0.5.0 false positives included:
+
+- `supportive` through `support`;
+- `helpful` through `help`;
+- `apples` through `apple`;
+- `nikee` through `nike`;
+- `badminton` through `admin`;
+- `stafford` through `staff`;
+- `rooted` through `root`;
+- `ownership` through `owner`.
+
+0.6.0 treats this feedback as a policy defect rather than asking consumers to maintain exception lists for ordinary words.
+
+### Changed
+
+- Built-in partial matching is now **explicitly dataset-authorized**. `Strictness.Strict` still enables the partial-matching capability, but ordinary built-in `values` no longer become generic substring rules automatically.
+- Schema-v2 `partialValues` and generated combinations with `"partial": true` are eligible for built-in partial matching.
+- `PartialMatchMinimumLength` still applies after eligibility; length alone is no longer treated as sufficient evidence that an entry is safe as a substring rule.
+- Selected high-risk role, support, and authentication identities are explicitly marked partial-safe, including values such as `superadmin`, `systemadministrator`, `customersupport`, `passwordreset`, and generated authentication-service identities.
+- Short ambiguous entries such as `support`, `help`, `apple`, `nike`, `admin`, `root`, `staff`, and `owner` remain exact reserved identifiers but no longer block unrelated larger words by default.
+- Application-defined `AdditionalReserved` and `Reserve(..., ReservedMatchMode.Default)` retain their existing configured partial-matching behavior. The eligibility change is scoped to built-in datasets.
+- The shared conformance corpus now records the intended 0.6.0 relaxations and curated high-risk partial matches.
+- The compatibility workflow now validates package/public API compatibility against published NuGet `0.5.0` using .NET package validation instead of requiring all default outcomes to remain identical to 0.4.0.
+
+### Added
+
+- A checked-in `conformance/safe-usernames.json` corpus covering ordinary compound words, personal names, international names, developer/gaming handles, business-style names, and Unicode identifiers that must remain claimable under the default policy.
+- Regression tests that fail when a known-safe username becomes blocked.
+- Explicit tests that ambiguous built-in roots remain reserved as complete identifiers while no longer becoming generic substring rules.
+- Explicit tests that curated partial-safe role, support, authentication, and profanity compounds still reject dangerous larger identifiers.
+- NuGet package baseline validation against `0.5.0` for both `Unclaimable` and `Unclaimable.AspNetCore`.
+- Dependabot configuration for pinned GitHub Actions.
+
+### Documentation
+
+- The GitHub and NuGet READMEs now explain why 0.6.0 exists, including concrete before/after false-positive examples.
+- Unicode-confusable protection is now explicitly scoped as a selected mapping, **not** a complete Unicode Technical Standard #39 implementation.
+- Added canonical username guidance covering case sensitivity, Unicode normalization, database uniqueness/collation, display-name behavior, and URL/routing normalization.
+- Added an explicit statement that Unclaimable is a defense-in-depth policy and reserved-name library rather than a complete anti-impersonation or identity system.
+- Dataset/policy changes are documented as consumer-visible behavior changes even when the public C# API does not change.
+
+### Release hardening
+
+- GitHub Actions are pinned to immutable commit SHAs instead of mutable major-version tags.
+- Dependabot maintains those pinned action revisions.
+- The benchmark workflow now targets the active `release/0.6.0` branch instead of the stale `release/0.4.0` branch.
+- Package builds continue to use deterministic builds, Source Link, portable PDBs, symbol packages, NuGet Trusted Publishing, package-content validation, and clean packaged-consumer smoke tests.
+
+### Compatibility
+
+- No existing public types, methods, constructors, properties, or enum numeric values are intentionally removed or changed.
+- Built-in dataset vocabulary cardinality remains 10,731 filter entries across 22 categories, representing 10,633 unique values within those categories; selected entries moved between schema buckets to declare partial eligibility without duplicating vocabulary.
+- Exact, compact, obfuscation, Unicode-confusable, structural, category-selection, allowed-identifier, and custom-reservation behavior remain independently configurable.
+- Default behavior intentionally differs from 0.5.0 for documented built-in false-positive cases. Consumers that relied on generic built-in substring rejection should review those policy changes before upgrading.
+
 ## 0.5.0 - 2026-09-09
 
 Configurability release that keeps the 0.4.0 strict defaults and built-in dataset contents unchanged while making the existing 22 categories and application-specific overrides substantially more practical.

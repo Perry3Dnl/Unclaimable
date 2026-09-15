@@ -14,6 +14,9 @@
     <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
     <PackageIcon>unclaimable-icon.png</PackageIcon>
     <PackageTags>username;validation;security;reserved-names</PackageTags>
+
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageValidationBaselineVersion>0.5.0</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <ItemGroup>

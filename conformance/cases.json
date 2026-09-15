@@ -11,6 +11,36 @@
   },
   {
     "value": "supportive",
+    "reserved": false,
+    "category": null
+  },
+  {
+    "value": "helpful",
+    "reserved": false,
+    "category": null
+  },
+  {
+    "value": "apples",
+    "reserved": false,
+    "category": null
+  },
+  {
+    "value": "nikee",
+    "reserved": false,
+    "category": null
+  },
+  {
+    "value": "mysuperadminx",
+    "reserved": true,
+    "category": "roles"
+  },
+  {
+    "value": "myloginverificationteamx",
+    "reserved": true,
+    "category": "authentication"
+  },
+  {
+    "value": "extracustomersupportx",
     "reserved": true,
     "category": "support"
   },

@@ -21,8 +21,10 @@ public sealed partial class Options
 
     /// <summary>
     /// Controls how aggressively reserved-name rules are applied.
-    /// Strict is the default and enables embedded/partial reserved-name matching even when
-    /// <see cref="PartialMatching"/> is set to <see langword="false"/>.
+    /// Strict is the default and enables the partial-matching capability even when
+    /// <see cref="PartialMatching"/> is set to <see langword="false"/>. Built-in dataset entries
+    /// still require explicit partial eligibility; strict mode does not turn every built-in value
+    /// into a generic substring rule.
     /// </summary>
     public Strictness Strictness { get; set; } = Strictness.Strict;
 
@@ -77,9 +79,12 @@ public sealed partial class Options
     public bool ConsistentCompactMatching { get; set; } = true;
 
     /// <summary>
-    /// Also reject usernames that contain a reserved value as part of a larger value.
-    /// Strict mode enables this automatically even when this property is set to <see langword="false"/>.
-    /// Kept for compatibility; prefer disabling <see cref="Rule.PartialMatching"/> when relaxation is required.
+    /// Enables matching eligible reserved values inside larger identifiers.
+    /// Strict mode enables this capability automatically even when this property is set to
+    /// <see langword="false"/>. Since 0.6.0, built-in entries participate only when their dataset
+    /// explicitly marks them as partial-safe; application-defined default reservations retain their
+    /// configured partial-matching behavior.
+    /// Kept for compatibility; disable <see cref="Rule.PartialMatching"/> to turn the rule off entirely.
     /// </summary>
     public bool PartialMatching
     {
@@ -87,7 +92,10 @@ public sealed partial class Options
         set => _partialMatching = value;
     }
 
-    /// <summary>Minimum compact reserved-name length eligible for partial matching.</summary>
+    /// <summary>
+    /// Minimum compact reserved-name length eligible for partial matching after dataset eligibility is established.
+    /// Defaults to 4.
+    /// </summary>
     public int PartialMatchMinimumLength { get; set; } = 4;
 
     /// <summary>
@@ -97,7 +105,8 @@ public sealed partial class Options
     public bool ProfanityMatching { get; set; } = true;
 
     /// <summary>
-    /// Allow profanity entries to participate in substring matching when partial matching is enabled.
+    /// Allow ordinary profanity entries to participate in substring matching when partial matching is enabled.
+    /// Curated profanity entries explicitly marked partial-safe can still participate without this option.
     /// This remains opt-in to avoid avoidable false positives for ordinary words.
     /// </summary>
     public bool ProfanityPartialMatching { get; set; }
@@ -109,7 +118,8 @@ public sealed partial class Options
     public bool ObfuscationMatching { get; set; } = true;
 
     /// <summary>
-    /// Detect common Unicode lookalikes and diacritic-based impersonation.
+    /// Detect selected common Unicode lookalikes and diacritic-based impersonation forms.
+    /// This is not a complete Unicode confusable implementation.
     /// Kept for compatibility; prefer disabling <see cref="Rule.UnicodeConfusableMatching"/>.
     /// </summary>
     public bool UnicodeConfusableMatching { get; set; } = true;

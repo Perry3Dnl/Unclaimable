@@ -131,16 +131,12 @@ public sealed class LanguageTests
     }
 
     [Fact]
-    public void MixedLanguageValuesStillMatchEnabledProtectedSubstrings()
+    public void CrossLanguageLexicalOverlapDoesNotCreateAnImplicitSubstringRule()
     {
         var checker = new Checker(new Options());
 
-        var result = checker.Check("klantenservice");
-
-        Assert.True(result.IsReserved);
-        Assert.Equal("service", result.MatchedValue);
-        Assert.Equal("system", result.Category);
-        Assert.Equal(MatchKind.Partial, result.MatchKind);
+        Assert.True(checker.IsClaimable("klantenservice"));
+        Assert.True(checker.IsReserved("service"));
     }
 
     [Fact]
