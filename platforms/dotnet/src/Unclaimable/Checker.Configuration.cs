@@ -13,8 +13,8 @@ public sealed partial class Checker
     private readonly Dictionary<string, string> _countryRuleCompact = new Dictionary<string, string>(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _cityRuleExact = new Dictionary<string, string>(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _cityRuleCompact = new Dictionary<string, string>(StringComparer.Ordinal);
-    private readonly Dictionary<string, ReservedEntry> _celebrityRuleExact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
-    private readonly Dictionary<string, ReservedEntry> _celebrityRuleCompact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
+    private readonly Dictionary<string, ReservedEntry> _identityRuleExact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
+    private readonly Dictionary<string, ReservedEntry> _identityRuleCompact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
 
     private void CaptureAllowedIdentifiers(Options options)
     {
@@ -89,9 +89,18 @@ public sealed partial class Checker
             return true;
         }
 
-        if (value.StartsWith(CelebrityData.ReservationPrefix, StringComparison.Ordinal))
+        if (TryAddIdentityRuleReservation(value, CelebrityData.ReservationPrefix, "celebrity")
+            || TryAddIdentityRuleReservation(value, OptionalIdentityData.NationalityPrefix, "nationality")
+            || TryAddIdentityRuleReservation(value, OptionalIdentityData.CurrencyPrefix, "currency")
+            || TryAddIdentityRuleReservation(value, OptionalIdentityData.ReligionPrefix, "religion")
+            || TryAddIdentityRuleReservation(value, OptionalIdentityData.LandmarkPrefix, "landmark")
+            || TryAddIdentityRuleReservation(value, OptionalIdentityData.EventPrefix, "event")
+            || TryAddIdentityRuleReservation(value, OptionalIdentityData.AwardPrefix, "award")
+            || TryAddIdentityRuleReservation(value, OptionalIdentityData.FictionalCharacterPrefix, "fictionalcharacter")
+            || TryAddIdentityRuleReservation(value, OptionalIdentityData.FranchisePrefix, "franchise")
+            || TryAddIdentityRuleReservation(value, OptionalIdentityData.ProfessionPrefix, "profession")
+            || TryAddIdentityRuleReservation(value, OptionalIdentityData.MilitaryPrefix, "military"))
         {
-            AddCelebrityRuleValue(value.Substring(CelebrityData.ReservationPrefix.Length));
             return true;
         }
 
@@ -121,7 +130,18 @@ public sealed partial class Checker
         }
     }
 
-    private void AddCelebrityRuleValue(string value)
+    private bool TryAddIdentityRuleReservation(string reservation, string prefix, string category)
+    {
+        if (!reservation.StartsWith(prefix, StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        AddIdentityRuleValue(reservation.Substring(prefix.Length), category);
+        return true;
+    }
+
+    private void AddIdentityRuleValue(string value, string category)
     {
         var exact = NormalizeExact(value);
         if (exact is null)
@@ -129,16 +149,16 @@ public sealed partial class Checker
             return;
         }
 
-        var entry = new ReservedEntry(value, "celebrity");
-        if (!_celebrityRuleExact.ContainsKey(exact))
+        var entry = new ReservedEntry(value, category);
+        if (!_identityRuleExact.ContainsKey(exact))
         {
-            _celebrityRuleExact.Add(exact, entry);
+            _identityRuleExact.Add(exact, entry);
         }
 
         var compact = NormalizeCompact(exact);
-        if (compact.Length > 0 && !_celebrityRuleCompact.ContainsKey(compact))
+        if (compact.Length > 0 && !_identityRuleCompact.ContainsKey(compact))
         {
-            _celebrityRuleCompact.Add(compact, entry);
+            _identityRuleCompact.Add(compact, entry);
         }
     }
 
@@ -179,13 +199,13 @@ public sealed partial class Checker
             return new Result(true, value, city, null, MatchKind.PopularCityName);
         }
 
-        if (_celebrityRuleExact.TryGetValue(exact, out var celebrityExact))
+        if (_identityRuleExact.TryGetValue(exact, out var identityExact))
         {
             var mapping = value is null ? null : TryCreateInputMapping(value, exact);
             TryMapOriginalSpan(mapping?.ExactToOriginal, 0, exact.Length, out var originalStart, out var originalLength);
             return CreateReservedResult(
                 value,
-                celebrityExact,
+                identityExact,
                 MatchKind.Exact,
                 0,
                 exact.Length,
@@ -206,13 +226,13 @@ public sealed partial class Checker
                 return new Result(true, value, city, null, MatchKind.PopularCityName);
             }
 
-            if (_celebrityRuleCompact.TryGetValue(compact, out var celebrityCompact))
+            if (_identityRuleCompact.TryGetValue(compact, out var identityCompact))
             {
                 var mapping = value is null ? null : TryCreateInputMapping(value, exact);
                 TryMapOriginalSpan(mapping?.CompactToOriginal, 0, compact.Length, out var originalStart, out var originalLength);
                 return CreateReservedResult(
                     value,
-                    celebrityCompact,
+                    identityCompact,
                     MatchKind.Compact,
                     0,
                     compact.Length,
@@ -224,8 +244,8 @@ public sealed partial class Checker
         if (_unicodeConfusableMatching
             && TryMatchUnicodeConfusable(
                 exact,
-                _celebrityRuleExact,
-                _celebrityRuleCompact,
+                _identityRuleExact,
+                _identityRuleCompact,
                 NoPartialEntries,
                 out var confusableMatch,
                 out var confusableKind,
@@ -243,8 +263,8 @@ public sealed partial class Checker
         if (_obfuscationMatching
             && TryMatchObfuscated(
                 exact,
-                _celebrityRuleExact,
-                _celebrityRuleCompact,
+                _identityRuleExact,
+                _identityRuleCompact,
                 NoPartialEntries,
                 out var obfuscatedMatch,
                 out var obfuscatedKind,
