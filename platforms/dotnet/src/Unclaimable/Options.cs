@@ -59,10 +59,16 @@ public sealed partial class Options
         return this;
     }
 
-    /// <summary>Minimum accepted identifier length in UTF-16 code units. Defaults to 3.</summary>
+    /// <summary>
+    /// Minimum accepted identifier length in UTF-16 code units, using <see cref="string.Length"/> semantics.
+    /// Unicode scalar values and grapheme clusters can occupy more than one code unit. Defaults to 3.
+    /// </summary>
     public int MinimumLength { get; set; } = 3;
 
-    /// <summary>Maximum accepted identifier length in UTF-16 code units. Defaults to 32.</summary>
+    /// <summary>
+    /// Maximum accepted identifier length in UTF-16 code units, using <see cref="string.Length"/> semantics.
+    /// Unicode scalar values and grapheme clusters can occupy more than one code unit. Defaults to 32.
+    /// </summary>
     public int MaximumLength { get; set; } = 32;
 
     /// <summary>
@@ -113,13 +119,15 @@ public sealed partial class Options
 
     /// <summary>
     /// Detect common username obfuscation and leetspeak substitutions.
+    /// Candidate expansion is deterministic and deliberately bounded to 32 generated candidates per identifier;
+    /// inputs with more possible substitution combinations are not exhaustively enumerated.
     /// Kept for compatibility; prefer disabling <see cref="Rule.ObfuscationMatching"/>.
     /// </summary>
     public bool ObfuscationMatching { get; set; } = true;
 
     /// <summary>
     /// Detect selected common Unicode lookalikes and diacritic-based impersonation forms.
-    /// This is not a complete Unicode confusable implementation.
+    /// This selected mapping is not a complete Unicode Technical Standard #39 confusable implementation.
     /// Kept for compatibility; prefer disabling <see cref="Rule.UnicodeConfusableMatching"/>.
     /// </summary>
     public bool UnicodeConfusableMatching { get; set; } = true;
