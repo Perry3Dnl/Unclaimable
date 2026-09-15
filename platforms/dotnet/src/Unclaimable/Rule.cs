@@ -1,13 +1,13 @@
 namespace Unclaimable;
 
 /// <summary>
-/// Built-in validation rules that can be disabled for applications that need a more permissive policy.
-/// All rules are enabled by default unless explicitly disabled.
+/// Built-in validation rules. Existing structural and matching rules are enabled by default unless explicitly disabled.
+/// Geography-list rules are opt-in and must be enabled explicitly.
 /// </summary>
 [Flags]
 public enum Rule
 {
-    /// <summary>No rules are disabled.</summary>
+    /// <summary>No rules are disabled or explicitly enabled.</summary>
     None = 0,
     /// <summary>Minimum-length validation.</summary>
     MinimumLength = 1 << 0,
@@ -32,5 +32,9 @@ public enum Rule
     /// <summary>Obfuscation and leetspeak matching.</summary>
     ObfuscationMatching = 1 << 10,
     /// <summary>Unicode-confusable matching.</summary>
-    UnicodeConfusableMatching = 1 << 11
+    UnicodeConfusableMatching = 1 << 11,
+    /// <summary>Reject complete identifiers that match a built-in country-name list. Disabled by default.</summary>
+    CountryNames = 1 << 12,
+    /// <summary>Reject complete identifiers that match a curated list of popular city names. Disabled by default.</summary>
+    PopularCityNames = 1 << 13
 }
