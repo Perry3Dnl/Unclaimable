@@ -2,7 +2,20 @@ namespace Unclaimable;
 
 public sealed partial class Options
 {
-    private const Rule OptionalRules = Rule.CountryNames | Rule.PopularCityNames | Rule.CelebrityNames;
+    private const Rule OptionalRules =
+        Rule.CountryNames
+        | Rule.PopularCityNames
+        | Rule.CelebrityNames
+        | Rule.Nationalities
+        | Rule.Currencies
+        | Rule.Religions
+        | Rule.Landmarks
+        | Rule.Events
+        | Rule.Awards
+        | Rule.FictionalCharacters
+        | Rule.Franchises
+        | Rule.Professions
+        | Rule.Military;
 
     private const Rule AllRules =
         Rule.MinimumLength
@@ -17,23 +30,20 @@ public sealed partial class Options
         | Rule.Profanity
         | Rule.ObfuscationMatching
         | Rule.UnicodeConfusableMatching
-        | Rule.CountryNames
-        | Rule.PopularCityNames
-        | Rule.CelebrityNames;
+        | OptionalRules;
 
     private Rule _enabledOptionalRules = Rule.None;
 
     /// <summary>
     /// Gets opt-in rules currently enabled for newly constructed checkers.
-    /// Country-name, popular-city-name, and celebrity-name matching are disabled by default.
+    /// Named identity lists are disabled by default and must be explicitly enabled.
     /// </summary>
     public Rule EnabledOptionalRules => _enabledOptionalRules & ~DisabledRules;
 
     /// <summary>
     /// Enables one or more rules without changing unrelated rule configuration.
     /// Existing rules are enabled by clearing them from <see cref="DisabledRules"/>.
-    /// Opt-in rules such as <see cref="Rule.CountryNames"/>, <see cref="Rule.PopularCityNames"/>,
-    /// and <see cref="Rule.CelebrityNames"/> are activated explicitly by this method.
+    /// Named identity-list rules are activated explicitly by this method.
     /// </summary>
     /// <param name="rule">One rule or a bitwise combination of supported rules.</param>
     /// <returns>This options instance.</returns>
@@ -61,46 +71,45 @@ public sealed partial class Options
 
     internal IReadOnlyList<ReservationRegistration> BuildEffectiveReservations()
     {
-        if (!IsOptionalRuleEnabled(Rule.CountryNames)
-            && !IsOptionalRuleEnabled(Rule.PopularCityNames)
-            && !IsOptionalRuleEnabled(Rule.CelebrityNames))
+        if ((_enabledOptionalRules & OptionalRules & ~DisabledRules) == Rule.None)
         {
             return _reservations;
         }
 
         var effective = new List<ReservationRegistration>(_reservations);
 
-        if (IsOptionalRuleEnabled(Rule.CountryNames))
-        {
-            foreach (var value in GeographyData.CountryNames)
-            {
-                effective.Add(new ReservationRegistration(
-                    GeographyData.CountryReservationPrefix + value,
-                    ReservedMatchMode.Exact));
-            }
-        }
-
-        if (IsOptionalRuleEnabled(Rule.PopularCityNames))
-        {
-            foreach (var value in GeographyData.PopularCityNames)
-            {
-                effective.Add(new ReservationRegistration(
-                    GeographyData.CityReservationPrefix + value,
-                    ReservedMatchMode.Exact));
-            }
-        }
-
-        if (IsOptionalRuleEnabled(Rule.CelebrityNames))
-        {
-            foreach (var value in CelebrityData.Names)
-            {
-                effective.Add(new ReservationRegistration(
-                    CelebrityData.ReservationPrefix + value,
-                    ReservedMatchMode.Exact));
-            }
-        }
+        AddOptionalReservations(effective, Rule.CountryNames, GeographyData.CountryReservationPrefix, GeographyData.CountryNames);
+        AddOptionalReservations(effective, Rule.PopularCityNames, GeographyData.CityReservationPrefix, GeographyData.PopularCityNames);
+        AddOptionalReservations(effective, Rule.CelebrityNames, CelebrityData.ReservationPrefix, CelebrityData.Names);
+        AddOptionalReservations(effective, Rule.Nationalities, OptionalIdentityData.NationalityPrefix, OptionalIdentityData.Nationalities);
+        AddOptionalReservations(effective, Rule.Currencies, OptionalIdentityData.CurrencyPrefix, OptionalIdentityData.Currencies);
+        AddOptionalReservations(effective, Rule.Religions, OptionalIdentityData.ReligionPrefix, OptionalIdentityData.Religions);
+        AddOptionalReservations(effective, Rule.Landmarks, OptionalIdentityData.LandmarkPrefix, OptionalIdentityData.Landmarks);
+        AddOptionalReservations(effective, Rule.Events, OptionalIdentityData.EventPrefix, OptionalIdentityData.Events);
+        AddOptionalReservations(effective, Rule.Awards, OptionalIdentityData.AwardPrefix, OptionalIdentityData.Awards);
+        AddOptionalReservations(effective, Rule.FictionalCharacters, OptionalIdentityData.FictionalCharacterPrefix, OptionalIdentityData.FictionalCharacters);
+        AddOptionalReservations(effective, Rule.Franchises, OptionalIdentityData.FranchisePrefix, OptionalIdentityData.Franchises);
+        AddOptionalReservations(effective, Rule.Professions, OptionalIdentityData.ProfessionPrefix, OptionalIdentityData.Professions);
+        AddOptionalReservations(effective, Rule.Military, OptionalIdentityData.MilitaryPrefix, OptionalIdentityData.Military);
 
         return effective;
+    }
+
+    private void AddOptionalReservations(
+        List<ReservationRegistration> effective,
+        Rule rule,
+        string prefix,
+        IEnumerable<string> values)
+    {
+        if (!IsOptionalRuleEnabled(rule))
+        {
+            return;
+        }
+
+        foreach (var value in values)
+        {
+            effective.Add(new ReservationRegistration(prefix + value, ReservedMatchMode.Exact));
+        }
     }
 
     private static void ValidateRule(Rule rule, string parameterName)
