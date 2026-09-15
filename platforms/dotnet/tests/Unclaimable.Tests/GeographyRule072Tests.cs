@@ -5,14 +5,17 @@ namespace Unclaimable.Tests;
 public sealed class GeographyRule072Tests
 {
     [Fact]
-    public void GeographyRulesAreDisabledByDefault()
+    public void NewOptInRulesAreDisabledByDefaultAndNumbersAreAllowed()
     {
         var options = new Options();
         var checker = new Checker(options);
 
         Assert.Equal(Rule.None, options.EnabledOptionalRules);
+        Assert.True((options.DisabledRules & Rule.Numbers) != 0);
         Assert.True(checker.IsClaimable("france"));
         Assert.True(checker.IsClaimable("amsterdam"));
+        Assert.True(checker.IsClaimable("user7"));
+        Assert.Equal(MatchKind.NumericOnly, checker.Check("123456789").MatchKind);
     }
 
     [Theory]
@@ -141,11 +144,14 @@ public sealed class GeographyRule072Tests
     [Fact]
     public void EnableAndDisableRuleHelpersWorkForExistingRulesToo()
     {
-        var options = new Options().DisableRule(Rule.Numbers);
+        var options = new Options();
         Assert.True(new Checker(options).IsClaimable("user7"));
 
         options.EnableRule(Rule.Numbers);
         Assert.False(new Checker(options).IsClaimable("user7"));
+
+        options.DisableRule(Rule.Numbers);
+        Assert.True(new Checker(options).IsClaimable("user7"));
     }
 
     [Fact]
