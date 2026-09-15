@@ -14,14 +14,15 @@ static void Require(bool condition, string message)
 var checker = Checker.Default;
 
 Require(checker.Check("customersupport").Category == "support", "English support names should be reserved by default.");
-Require(checker.Check("supportportal").MatchKind == MatchKind.Partial, "Strict partial matching should be enabled for English data by default.");
+Require(checker.Check("myloginverificationteamx").MatchKind == MatchKind.Partial, "Explicit high-risk partial entries should be protected in strict mode.");
+Require(checker.IsClaimable("supportive"), "Ordinary words that merely contain short reserved terms should remain claimable.");
 Require(checker.Check("ordinary2").MatchKind == MatchKind.NumbersNotAllowed, "Numbers should be blocked by default.");
 Require(checker.Check("ordinary-user").MatchKind == MatchKind.BlockedCharacter, "Hyphens should be blocked by default.");
 Require(checker.Check("ordinary_user").MatchKind == MatchKind.BlockedCharacter, "Underscores should be blocked by default.");
 Require(checker.Check("ordinary user").MatchKind == MatchKind.BlockedCharacter, "Whitespace should be blocked by default.");
 Require(checker.Check("ab").MatchKind == MatchKind.TooShort, "Minimum length should be enforced by default.");
 Require(checker.Check(new string('a', 33)).MatchKind == MatchKind.TooLong, "Maximum length should be enforced by default.");
-Require(checker.Check("fuckwaffle").Category == "profanity", "English profanity should participate by default.");
+Require(checker.Check("fuckwaffle").Category == "profanity", "Curated English profanity compounds should participate by default.");
 Require(checker.IsClaimable("facturatiehulp"), "Dutch localized support data should not load until Dutch is added.");
 Require(checker.IsClaimable("abrechnungshilfe"), "German localized support data should not load until German is added.");
 
@@ -85,12 +86,12 @@ Require(unicodeConfusable.MatchKind == MatchKind.UnicodeConfusable, "Cyrillic-a 
 
 var configurableOptions = new Options();
 configurableOptions.DisableCategory(Category.Brands);
-configurableOptions.AllowedIdentifiers.Add("supportive");
+configurableOptions.AllowedIdentifiers.Add("superadmin");
 configurableOptions.Reserve("acme", matching: ReservedMatchMode.Exact);
 var configurableChecker = new Checker(configurableOptions);
 Require(configurableChecker.IsClaimable("nike"), "Packaged consumers should be able to disable a built-in category.");
-Require(configurableChecker.IsClaimable("supportive"), "Packaged consumers should be able to allow one complete built-in identifier.");
-Require(configurableChecker.IsReserved("supportiveadmin"), "Allowed identifiers should not automatically allow compounds.");
+Require(configurableChecker.IsClaimable("superadmin"), "Packaged consumers should be able to allow one complete built-in identifier.");
+Require(configurableChecker.IsReserved("mysuperadminx"), "Allowed identifiers should not automatically allow compounds.");
 Require(configurableChecker.IsReserved("ACME"), "Exact application reservations should use case/Unicode normalization.");
 Require(configurableChecker.IsClaimable("acmeorchid"), "Exact application reservations should not block ordinary compounds.");
 
