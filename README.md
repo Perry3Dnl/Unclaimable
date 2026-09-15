@@ -13,7 +13,9 @@
 
 Prevent reserved, protected, misleading, and unsafe identifiers before they can be claimed. Simple API, defensive defaults, Unicode-aware matching, and no runtime dependencies in the core package.
 
-[**NuGet**](https://www.nuget.org/packages/Unclaimable) · [**Changelog**](CHANGELOG.md)
+[**NuGet**](https://www.nuget.org/packages/Unclaimable) · [**Changelog**](CHANGELOG.md) · [**Dataset policy**](DATASET_POLICY.md) · [**Security**](SECURITY.md)
+
+> **Security boundary:** Unicode-confusable matching is a selected mapping, not complete Unicode UTS #39 protection. Obfuscation expansion is deterministic but capped at 32 candidates per identifier. `MinimumLength` and `MaximumLength` use .NET UTF-16 code units (`string.Length`), not Unicode scalar values or grapheme clusters.
 
 ## 0.6.0: responding to production feedback
 
@@ -52,7 +54,7 @@ while an exact reserved identifier such as `support`, `apple`, `nike`, `admin`, 
 
 This is an intentional default-policy relaxation. Applications upgrading from 0.5.0 should review it if they relied on generic built-in substring blocking. The public API remains compatible with 0.5.0.
 
-The release also adds a checked-in **known-safe username corpus**. CI now treats those values as compatibility guarantees so a future dataset edit cannot silently reintroduce the same class of false positive.
+The release also adds a substantially expanded checked-in **known-safe username corpus**. CI treats those values as compatibility guarantees and systematically compares every short reserved token against that corpus so a future dataset edit cannot silently reintroduce the same class of false positive.
 
 ## Features
 
@@ -66,6 +68,7 @@ The release also adds a checked-in **known-safe username corpus**. CI now treats
 - Dependency-free `netstandard2.0` core plus ASP.NET Core integration
 - Structured first-match and multi-diagnostic results
 - Known-safe and reserved conformance corpora in CI
+- Dataset provenance/curation rules and policy-diff review gates
 
 ## Packages
 
@@ -148,7 +151,7 @@ Unclaimable's default pipeline includes:
 - structured diagnostics;
 - ASP.NET Core dependency injection and DataAnnotations integration.
 
-## Dataset coverage
+## Dataset coverage and governance
 
 0.6.0 keeps the same unique built-in reserved values as 0.5.0: **10,731 filter entries across 22 categories**, representing **10,633 unique values within those categories**. The policy metadata changed for selected entries; this release does not bulk-expand the reserved vocabulary.
 
@@ -179,6 +182,8 @@ Unclaimable's default pipeline includes:
 | **Total** | **10,731** | **10,633** |
 
 The totals are dataset entries, not the total number of strings Unclaimable can detect. Normalization, compact matching, explicit partial entries, obfuscation detection, and Unicode-confusable matching can reject additional variants without storing every spelling.
+
+Dataset edits are consumer-visible policy changes. [`DATASET_POLICY.md`](DATASET_POLICY.md) documents where data comes from, contribution/licensing rules, how exact versus partial eligibility is reviewed, how false positives are handled, and what CI must show before a policy change is merged. The package build does not fetch or merge remote word lists.
 
 ## Language support
 
@@ -238,11 +243,11 @@ Global categories remain active independently of localized language selection un
 | Consistent compact-rule handling | enabled |
 | Partial matching capability | enabled through strict mode |
 | Built-in partial eligibility | explicit dataset opt-in |
-| Obfuscation / leetspeak matching | enabled |
-| Unicode-confusable matching | enabled |
+| Obfuscation / leetspeak matching | enabled, max 32 generated candidates |
+| Unicode-confusable matching | enabled, selected mapping only |
 | Profanity matching | enabled |
-| Minimum length | `3` |
-| Maximum length | `32` |
+| Minimum length | `3` UTF-16 code units |
+| Maximum length | `32` UTF-16 code units |
 | Numbers | rejected |
 | Whitespace | rejected |
 | Built-in `-` and `_` | blocked |
@@ -307,6 +312,12 @@ options.Reserve("internalbot", matching: ReservedMatchMode.Default);
 
 Options are captured when a `Checker` is constructed. Runtime changes through `IPolicy` remain live.
 
+### Length semantics
+
+`MinimumLength` and `MaximumLength` use `string.Length`, so thresholds are measured in **UTF-16 code units**. A supplementary-plane Unicode scalar occupies two code units, and one user-perceived grapheme can contain multiple scalars/code units.
+
+0.6.0 preserves this contract for compatibility. If your product requirements define length in Unicode scalar values or grapheme clusters, enforce that separate rule before or alongside Unclaimable.
+
 ## Reserved-name matching
 
 ### Exact matching
@@ -354,7 +365,7 @@ $ -> s
 + -> t
 ```
 
-Candidate expansion is bounded to avoid uncontrolled combinatorial growth.
+Candidate expansion is deterministic and bounded to **32 generated candidates per identifier** to avoid uncontrolled combinatorial growth. Inputs with enough multi-way substitutions can imply more than 32 possible decodings; once the cap is reached, later branches are not guaranteed to be checked. This behavior is regression-tested and intentionally documented as a bounded heuristic rather than exhaustive obfuscation decoding.
 
 ## Unicode protection
 
@@ -368,7 +379,7 @@ The strict default also rejects invisible-only identifiers, control characters, 
 
 Unclaimable includes a **selected** confusable mapping for common impersonation characters, especially common Greek and Cyrillic lookalikes, plus normalization/diacritic handling used by the matching pipeline.
 
-This is **not a complete Unicode Technical Standard #39 confusable implementation**. A successful Unclaimable check does not prove that an identifier contains no possible Unicode spoofing technique. Scripts and compatibility characters outside the curated mapping can exist.
+This is **not a complete Unicode Technical Standard #39 confusable implementation**. A successful Unclaimable check does not prove that an identifier contains no possible Unicode spoofing technique. Scripts and compatibility characters outside the curated mapping can exist. `UnicodeConfusableMatching = true` means “enable this selected mapping,” not “perform complete Unicode anti-spoofing.”
 
 That boundary is intentional and documented rather than implied away. A future release can move to versioned UTS #39 confusable data, but 0.6.0 does not claim comprehensive Unicode anti-spoofing.
 
@@ -399,6 +410,8 @@ A value passing validation does not guarantee that it:
 - cannot collide under your database or routing normalization rules.
 
 Unclaimable is best treated as a **defense-in-depth username policy and reserved-name detection library**, not a complete anti-impersonation or identity system.
+
+For vulnerability reporting and the distinction between security bugs and dataset/policy issues, see [`SECURITY.md`](SECURITY.md).
 
 ## Detailed results
 
@@ -455,7 +468,12 @@ Validation-message precedence is attribute-level, reason-specific configured mes
 The repository checks:
 
 - unit and regression tests;
-- shared reserved and known-safe conformance corpora;
+- shared reserved and 250+ known-safe conformance cases;
+- systematic short-reserved-token collisions against the entire known-safe corpus;
+- dataset schema/duplicate/partial-safety policy checks;
+- pull-request dataset diffs showing newly blocked/allowed identifiers, partial-match deltas, category changes, and totals;
+- deterministic tests for the 32-candidate obfuscation bound;
+- explicit tests for UTF-16 code-unit length semantics;
 - all category/rule/toggle enable-disable paths;
 - NuGet package creation and metadata/content validation;
 - package public API compatibility against published `0.5.0` using .NET package validation;
@@ -465,7 +483,7 @@ The repository checks:
 - benchmark coverage for construction and representative hot paths;
 - GitHub Actions pinned to immutable commit SHAs, with Dependabot maintaining those pins.
 
-Dataset/policy changes should be reviewed as consumer-visible behavior changes even when no public C# API changes.
+Dataset/policy changes are reviewed as consumer-visible behavior changes even when no public C# API changes. See [`DATASET_POLICY.md`](DATASET_POLICY.md) for the required provenance, licensing, curation, and false-positive review process.
 
 ## Release history
 
@@ -474,8 +492,12 @@ Dataset/policy changes should be reviewed as consumer-visible behavior changes e
 A feedback-response release focused on predictability and downstream safety:
 
 - reduced false positives by making built-in partial matching explicitly dataset-authorized;
-- added a known-safe username regression corpus;
+- expanded the known-safe username regression corpus to 250+ realistic identifiers;
+- added systematic short-token collision checks and CI dataset behavior diffs;
+- documented dataset provenance, licensing, curation, and false-positive review policy;
+- added a vulnerability-reporting and supported-version policy;
 - preserved high-risk curated partial matches;
+- documented and regression-tested the 32-candidate obfuscation bound and UTF-16 length semantics;
 - documented Unicode-confusable scope and canonicalization responsibilities;
 - moved API compatibility checks to the published 0.5.0 NuGet baseline;
 - pinned GitHub Actions to immutable SHAs and enabled Dependabot maintenance.
