@@ -38,17 +38,25 @@ Representative 0.5.0 false positives included:
 
 ### Added
 
-- A checked-in `conformance/safe-usernames.json` corpus covering ordinary compound words, personal names, international names, developer/gaming handles, business-style names, and Unicode identifiers that must remain claimable under the default policy.
-- Regression tests that fail when a known-safe username becomes blocked.
+- A checked-in `conformance/safe-usernames.json` corpus expanded to more than 250 realistic identifiers covering ordinary compound words, personal-name patterns, international names, developer/gaming handles, business/project-style names, and Unicode identifiers that must remain claimable under the default policy.
+- Regression tests that fail when a known-safe username becomes blocked and require the safe corpus to remain broad and normalized-duplicate-free.
+- Systematic dataset-policy validation that expands schema-v2 combinations, checks duplicate/partial-safe data constraints, and compares every short reserved token against the complete known-safe corpus.
+- Dataset policy-diff reporting in CI for newly blocked identifiers, newly allowed identifiers, added/removed partial-match entries, category-set changes, and aggregate dataset deltas.
+- `DATASET_POLICY.md` documenting dataset provenance, curation, external-source licensing/redistribution requirements, false-positive handling, and review expectations.
+- `SECURITY.md` documenting private vulnerability reporting, supported release lines, documented security boundaries, and the distinction between vulnerabilities and dataset/policy issues.
 - Explicit tests that ambiguous built-in roots remain reserved as complete identifiers while no longer becoming generic substring rules.
 - Explicit tests that curated partial-safe role, support, authentication, and profanity compounds still reject dangerous larger identifiers.
+- Adversarial regression tests for the deterministic 32-candidate obfuscation cap, including a retained early branch and an intentionally unexamined later branch.
+- Explicit regression tests proving that `MinimumLength` and `MaximumLength` use UTF-16 code units for supplementary-plane input.
 - NuGet package baseline validation against `0.5.0` for both `Unclaimable` and `Unclaimable.AspNetCore`.
 - Dependabot configuration for pinned GitHub Actions.
 
 ### Documentation
 
 - The GitHub and NuGet READMEs now explain why 0.6.0 exists, including concrete before/after false-positive examples.
-- Unicode-confusable protection is now explicitly scoped as a selected mapping, **not** a complete Unicode Technical Standard #39 implementation.
+- Unicode-confusable protection is now prominently scoped as a selected mapping, **not** a complete Unicode Technical Standard #39 implementation; `UnicodeConfusableMatching = true` does not claim complete Unicode anti-spoofing.
+- The 32-candidate obfuscation expansion limit is documented as deterministic and deliberately non-exhaustive rather than an exhaustive decoder of every ambiguous substitution combination.
+- Minimum/maximum identifier length is explicitly documented as .NET UTF-16 `string.Length` semantics, not Unicode scalar-value or grapheme-cluster counting.
 - Added canonical username guidance covering case sensitivity, Unicode normalization, database uniqueness/collation, display-name behavior, and URL/routing normalization.
 - Added an explicit statement that Unclaimable is a defense-in-depth policy and reserved-name library rather than a complete anti-impersonation or identity system.
 - Dataset/policy changes are documented as consumer-visible behavior changes even when the public C# API does not change.
@@ -57,6 +65,7 @@ Representative 0.5.0 false positives included:
 
 - GitHub Actions are pinned to immutable commit SHAs instead of mutable major-version tags.
 - Dependabot maintains those pinned action revisions.
+- Dataset changes now have automated curation/collision gates and a reviewable behavior-diff summary before merge.
 - The benchmark workflow now targets the active `release/0.6.0` branch instead of the stale `release/0.4.0` branch.
 - Package builds continue to use deterministic builds, Source Link, portable PDBs, symbol packages, NuGet Trusted Publishing, package-content validation, and clean packaged-consumer smoke tests.
 
