@@ -2,6 +2,8 @@ namespace Unclaimable;
 
 public sealed partial class Checker
 {
+    private static readonly IReadOnlyList<PartialEntry> NoPartialEntries = Array.Empty<PartialEntry>();
+
     private readonly HashSet<string> _allowedIdentifiers = new HashSet<string>(StringComparer.Ordinal);
     private readonly Dictionary<string, ReservedEntry> _exactOnlyCustom = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
     private readonly Dictionary<string, ReservedEntry> _customExact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
@@ -11,6 +13,8 @@ public sealed partial class Checker
     private readonly Dictionary<string, string> _countryRuleCompact = new Dictionary<string, string>(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _cityRuleExact = new Dictionary<string, string>(StringComparer.Ordinal);
     private readonly Dictionary<string, string> _cityRuleCompact = new Dictionary<string, string>(StringComparer.Ordinal);
+    private readonly Dictionary<string, ReservedEntry> _celebrityRuleExact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
+    private readonly Dictionary<string, ReservedEntry> _celebrityRuleCompact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
 
     private void CaptureAllowedIdentifiers(Options options)
     {
@@ -53,7 +57,7 @@ public sealed partial class Checker
 
     private void AddExactCustom(ReservedEntry entry)
     {
-        if (TryAddGeographyRuleReservation(entry.Value))
+        if (TryAddOptionalRuleReservation(entry.Value))
         {
             return;
         }
@@ -65,7 +69,7 @@ public sealed partial class Checker
         }
     }
 
-    private bool TryAddGeographyRuleReservation(string value)
+    private bool TryAddOptionalRuleReservation(string value)
     {
         if (value.StartsWith(GeographyData.CountryReservationPrefix, StringComparison.Ordinal))
         {
@@ -82,6 +86,12 @@ public sealed partial class Checker
                 value.Substring(GeographyData.CityReservationPrefix.Length),
                 _cityRuleExact,
                 _cityRuleCompact);
+            return true;
+        }
+
+        if (value.StartsWith(CelebrityData.ReservationPrefix, StringComparison.Ordinal))
+        {
+            AddCelebrityRuleValue(value.Substring(CelebrityData.ReservationPrefix.Length));
             return true;
         }
 
@@ -111,12 +121,33 @@ public sealed partial class Checker
         }
     }
 
+    private void AddCelebrityRuleValue(string value)
+    {
+        var exact = NormalizeExact(value);
+        if (exact is null)
+        {
+            return;
+        }
+
+        var entry = new ReservedEntry(value, "celebrity");
+        if (!_celebrityRuleExact.ContainsKey(exact))
+        {
+            _celebrityRuleExact.Add(exact, entry);
+        }
+
+        var compact = NormalizeCompact(exact);
+        if (compact.Length > 0 && !_celebrityRuleCompact.ContainsKey(compact))
+        {
+            _celebrityRuleCompact.Add(compact, entry);
+        }
+    }
+
     private Result? CheckExactCustomReservation(string? value, string exact)
     {
-        var geographyResult = CheckGeographyRuleReservation(value, exact);
-        if (geographyResult is not null)
+        var optionalRuleResult = CheckOptionalRuleReservation(value, exact);
+        if (optionalRuleResult is not null)
         {
-            return geographyResult;
+            return optionalRuleResult;
         }
 
         if (!_exactOnlyCustom.TryGetValue(exact, out var match))
@@ -136,7 +167,7 @@ public sealed partial class Checker
             originalLength);
     }
 
-    private Result? CheckGeographyRuleReservation(string? value, string exact)
+    private Result? CheckOptionalRuleReservation(string? value, string exact)
     {
         if (_countryRuleExact.TryGetValue(exact, out var country))
         {
@@ -148,25 +179,84 @@ public sealed partial class Checker
             return new Result(true, value, city, null, MatchKind.PopularCityName);
         }
 
-        if (!_compactMatching)
+        if (_celebrityRuleExact.TryGetValue(exact, out var celebrityExact))
         {
-            return null;
+            var mapping = value is null ? null : TryCreateInputMapping(value, exact);
+            TryMapOriginalSpan(mapping?.ExactToOriginal, 0, exact.Length, out var originalStart, out var originalLength);
+            return CreateReservedResult(
+                value,
+                celebrityExact,
+                MatchKind.Exact,
+                0,
+                exact.Length,
+                originalStart,
+                originalLength);
         }
 
         var compact = NormalizeCompact(exact);
-        if (compact.Length == 0)
+        if (_compactMatching && compact.Length > 0)
         {
-            return null;
+            if (_countryRuleCompact.TryGetValue(compact, out country))
+            {
+                return new Result(true, value, country, null, MatchKind.CountryName);
+            }
+
+            if (_cityRuleCompact.TryGetValue(compact, out city))
+            {
+                return new Result(true, value, city, null, MatchKind.PopularCityName);
+            }
+
+            if (_celebrityRuleCompact.TryGetValue(compact, out var celebrityCompact))
+            {
+                var mapping = value is null ? null : TryCreateInputMapping(value, exact);
+                TryMapOriginalSpan(mapping?.CompactToOriginal, 0, compact.Length, out var originalStart, out var originalLength);
+                return CreateReservedResult(
+                    value,
+                    celebrityCompact,
+                    MatchKind.Compact,
+                    0,
+                    compact.Length,
+                    originalStart,
+                    originalLength);
+            }
         }
 
-        if (_countryRuleCompact.TryGetValue(compact, out country))
+        if (_unicodeConfusableMatching
+            && TryMatchUnicodeConfusable(
+                exact,
+                _celebrityRuleExact,
+                _celebrityRuleCompact,
+                NoPartialEntries,
+                out var confusableMatch,
+                out var confusableKind,
+                out var confusableStart,
+                out var confusableLength))
         {
-            return new Result(true, value, country, null, MatchKind.CountryName);
+            return CreateReservedResult(
+                value,
+                confusableMatch!,
+                confusableKind,
+                confusableStart,
+                confusableLength);
         }
 
-        if (_cityRuleCompact.TryGetValue(compact, out city))
+        if (_obfuscationMatching
+            && TryMatchObfuscated(
+                exact,
+                _celebrityRuleExact,
+                _celebrityRuleCompact,
+                NoPartialEntries,
+                out var obfuscatedMatch,
+                out var obfuscatedKind,
+                out var obfuscatedStart,
+                out var obfuscatedLength))
         {
-            return new Result(true, value, city, null, MatchKind.PopularCityName);
+            return CreateReservedResult(
+                value,
+                obfuscatedMatch!,
+                obfuscatedKind,
+                obfuscatedStart,
+                obfuscatedLength);
         }
 
         return null;
