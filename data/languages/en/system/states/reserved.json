@@ -32,7 +32,6 @@
     "running",
     "scheduled",
     "stopped",
-    "unavailable",
     "unhealthy",
     "unlocked",
     "unpublished",
