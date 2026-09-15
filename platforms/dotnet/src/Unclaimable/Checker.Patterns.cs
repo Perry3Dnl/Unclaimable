@@ -99,7 +99,7 @@ public sealed partial class Checker
             return null;
         }
 
-        return value.Trim().Normalize(NormalizationForm.FormKC);
+        return value!.Trim().Normalize(NormalizationForm.FormKC);
     }
 
     private static bool IsNumericOnlyPattern(string value)
@@ -128,12 +128,19 @@ public sealed partial class Checker
 
     private static bool IsSymbolOnlyPattern(string value)
     {
+        var sawSymbolOrPunctuation = false;
+
         for (var index = 0; index < value.Length; index++)
         {
             var category = CharUnicodeInfo.GetUnicodeCategory(value, index);
             if (IsPatternLetterOrNumber(category))
             {
                 return false;
+            }
+
+            if (IsSymbolOrPunctuation(category))
+            {
+                sawSymbolOrPunctuation = true;
             }
 
             if (char.IsHighSurrogate(value[index])
@@ -144,7 +151,7 @@ public sealed partial class Checker
             }
         }
 
-        return true;
+        return sawSymbolOrPunctuation;
     }
 
     private static bool IsPatternLetterOrNumber(UnicodeCategory category)
@@ -157,6 +164,21 @@ public sealed partial class Checker
                || category == UnicodeCategory.DecimalDigitNumber
                || category == UnicodeCategory.LetterNumber
                || category == UnicodeCategory.OtherNumber;
+    }
+
+    private static bool IsSymbolOrPunctuation(UnicodeCategory category)
+    {
+        return category == UnicodeCategory.ConnectorPunctuation
+               || category == UnicodeCategory.DashPunctuation
+               || category == UnicodeCategory.OpenPunctuation
+               || category == UnicodeCategory.ClosePunctuation
+               || category == UnicodeCategory.InitialQuotePunctuation
+               || category == UnicodeCategory.FinalQuotePunctuation
+               || category == UnicodeCategory.OtherPunctuation
+               || category == UnicodeCategory.MathSymbol
+               || category == UnicodeCategory.CurrencySymbol
+               || category == UnicodeCategory.ModifierSymbol
+               || category == UnicodeCategory.OtherSymbol;
     }
 
     private static bool IsRepeatedPattern(string value)
