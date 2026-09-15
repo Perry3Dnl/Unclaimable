@@ -34,7 +34,7 @@ These are separate policy decisions.
 
 A term being important enough to reserve does not automatically make it safe as a substring rule. Short or ambiguous terms such as `admin`, `help`, `support`, `staff`, `root`, `apple`, and `nike` are examples of values that can create unrelated false positives when treated as generic substrings.
 
-For non-profanity data, new partial-safe values shorter than seven compact characters are rejected by the dataset policy gate. Profanity compounds have a six-character floor because they are separately curated as compounds. These floors are governance guards, not replacements for human review or the runtime `PartialMatchMinimumLength` option.
+Short partial-safe values require heightened review because collision risk rises as a token gets shorter. CI deliberately does **not** use a magic token length as proof that a partial rule is safe: short partial-safe entries are surfaced for review and checked against the known-safe corpus. They are permitted when the policy rationale is strong and the regression evidence supports them. The configured runtime `PartialMatchMinimumLength` remains an independent lower bound on which eligible values can actually participate in partial matching.
 
 ## Review requirements for dataset changes
 
@@ -43,7 +43,7 @@ Every dataset pull request should answer the following questions:
 1. **Why should this identifier be reserved by default?** State the impersonation, platform-safety, or policy rationale.
 2. **Where did it come from?** Identify whether it was manually curated, derived from a public official term, or imported from an external dataset. External sources require provenance and licensing details.
 3. **Which category and language own it?** Prefer the narrowest correct category and avoid unnecessary cross-category duplication.
-4. **Should it be exact-only or partial-safe?** Partial matching requires a stronger justification because it can reject unrelated larger identifiers.
+4. **Should it be exact-only or partial-safe?** Partial matching requires a stronger justification because it can reject unrelated larger identifiers. Short partial-safe values require especially careful review.
 5. **What are the likely false positives?** Check ordinary words, personal-name patterns, project/company-style identifiers, gaming handles, developer usernames, and multilingual identifiers.
 6. **What regression data changes with it?** Add newly discovered legitimate identifiers to `conformance/safe-usernames.json` and add important blocked behavior to the reserved conformance/tests.
 7. **What does the policy diff show?** Review newly blocked identifiers, newly allowed identifiers, partial-match additions/removals, category changes, and total dataset deltas in CI.
@@ -56,9 +56,9 @@ The current-data guard:
 
 - expands schema-v2 combinations exactly as the runtime loader does;
 - checks for malformed/duplicate concrete entries within a dataset;
-- checks partial-safe minimum lengths;
+- surfaces short explicitly partial-safe entries for heightened review instead of assuming a fixed length threshold proves safety;
 - compares **every short reserved token** against the full known-safe username corpus;
-- fails if a partial-safe token would collide with a known-safe identifier;
+- fails if a partial-safe short token would collide with a known-safe identifier;
 - reports guarded collisions where a short exact-only token appears inside a known-safe identifier, making regressions such as `admin` → `badminton` visible.
 
 The dataset-diff step compares the pull request to its base and reports:
