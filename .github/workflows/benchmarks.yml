@@ -3,7 +3,7 @@ name: .NET Benchmarks
 on:
   push:
     branches:
-      - "release/0.7.0"
+      - "release/0.7.2"
     paths:
       - "platforms/dotnet/src/**"
       - "platforms/dotnet/benchmarks/**"
