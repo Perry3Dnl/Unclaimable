@@ -2,6 +2,87 @@
 
 All notable changes to Unclaimable are documented here.
 
+## 0.7.2 - 2026-09-15
+
+Configuration and optional-geography release focused on making the default username policy more practical while keeping strict protections independently available.
+
+### Added
+
+- `Rule.CountryNames` for opt-in whole-identifier matching against a broad built-in country-name and common-alias list.
+- `Rule.PopularCityNames` for opt-in whole-identifier matching against a curated global list of major and widely recognized cities.
+- `Options.EnableRule(...)` and `Options.DisableRule(...)` helpers for incremental rule configuration without replacing the legacy `DisabledRules` mask.
+- `Options.EnabledOptionalRules` for inspecting the enabled opt-in rule set.
+- `MatchKind.CountryName` and `MatchKind.PopularCityName`, appended as numeric values `18` and `19`.
+- Reason-specific validation-message support for the two geography rejection reasons.
+- Regression coverage for geography defaults, independent enable/disable behavior, compact whole-identifier forms, category independence, option capture, deny-first precedence, and false-positive protection.
+
+### Changed
+
+- `Rule.Numbers` is disabled by default. Ordinary alphanumeric identifiers such as `user7` and `john2026` are now accepted unless another enabled protection rejects them.
+- `Pattern.NumericOnly` remains enabled by default, so an identifier consisting only of decimal digits remains rejected even though digits are otherwise permitted.
+- Country-name and popular-city-name rules are disabled by default and must be explicitly enabled.
+- The shared conformance corpus now treats ordinary alphanumeric identifiers such as `ordinary123` as claimable under the default policy.
+- The benchmark workflow targets `release/0.7.2`.
+
+### Geography behavior
+
+- Geography matching is whole-identifier only and does not create generic substring rules. For example, enabling the rules can reject `france`, `New York`, or `United Kingdom`, while `francelover`, `newyorker`, and similar compounds remain claimable unless another rule applies.
+- Compact matching can recognize separator/space variants when the relevant structural rules are relaxed. Disabling `Rule.CompactMatching` disables that geography compaction too.
+- Country matching takes precedence for country/city overlaps such as `singapore` when both geography rules are enabled.
+- `AllowedIdentifiers` does not bypass an explicitly enabled geography rule; the enabled deny rule still runs.
+
+### Default policy
+
+The 0.7.2 default rule/pattern matrix intentionally separates “digits may appear” from “numeric-only identifiers are allowed”:
+
+- `Rule.Numbers`: disabled;
+- `Rule.CountryNames`: disabled;
+- `Rule.PopularCityNames`: disabled;
+- `Pattern.NumericOnly`: enabled;
+- `Pattern.Repeated`: enabled;
+- `Pattern.SymbolOnly`: enabled;
+- `Pattern.AsciiArt`: enabled;
+- `Pattern.UppercaseOnly`: disabled.
+
+All existing reserved-name categories, strict curated partial matching, obfuscation matching, Unicode-confusable matching, profanity protection, length rules, whitespace/separator restrictions, blocked characters, and Unicode structural protections retain their established defaults.
+
+### Compatibility and release validation
+
+- Existing `Rule` numeric values remain unchanged; the geography flags are appended as bits `12` and `13`.
+- Existing `MatchKind` numeric values remain unchanged; geography reasons are appended as values `18` and `19`.
+- `DisabledRules` remains a legacy full-mask property. Assigning it replaces the mask; `EnableRule(...)` and `DisableRule(...)` are preferred for incremental configuration.
+- Package validation remains against published NuGet `0.7.0` while 0.7.1 is staged but not yet published.
+- Release validation covers 518 tests, source builds without localized packs, NuGet package metadata/content validation, packaged-consumer restore/execution, and public-API package validation.
+- The release workflow remains tag-gated for NuGet publishing; preparing 0.7.2 does not create a tag or publish a package.
+
+## 0.7.1 - 2026-09-15
+
+Reserved-vocabulary expansion focused on systematically covering application-owned identities, states, governance terms, operational concepts, and other exact names that should not normally be claimable.
+
+### Added
+
+- Broad exact-value sweeps across Authentication, Automation, Commerce, Communications, Community, Developer, Finance, Governance, Identity, Infrastructure, Legal, Moderation, Official, Operations, Security, and English System data.
+- Representative additions include `member`, `membership`, `vote`, `voting`, `ballot`, `election`, `active`, `inactive`, `pending`, `enabled`, `disabled`, `authentication`, `announcement`, `apikey`, `treasury`, `username`, `loadbalancer`, `banned`, `verified`, `operations`, `buyer`, `legalhold`, and `phishing`.
+- Bulk category-ownership regression coverage that disables the owning category for newly added exact values and verifies that another category does not silently continue reserving the same identifier.
+
+### Matching behavior
+
+- The vocabulary expansion uses exact reserved values rather than turning generic roots into broad substring filters.
+- `vote` does not make `devote` reserved, `member` does not make `rememberme` reserved, and `active` does not make `hyperactive` reserved.
+- Existing category ownership is preserved when a value was already protected elsewhere; the sweep removed cross-category collisions found during validation instead of duplicating them.
+
+### Dataset
+
+- Built-in dataset coverage increases from 10,748 to **11,150 filter entries**.
+- Built-in unique values increase from 10,650 to **11,039 unique values**.
+- The category count remains **23**.
+
+### Compatibility
+
+- No existing public C# API or enum numeric value is intentionally removed or renumbered.
+- This release intentionally expands reserved-name outcomes for newly covered exact identifiers.
+- Full test, source-build, package-content, packaged-consumer, and public-API compatibility validation is required before release.
+
 ## 0.7.0 - 2026-09-15
 
 Identifier-pattern release focused on rejecting suspicious or degenerate identifier shapes without turning those checks into reserved-name entries.
@@ -132,7 +213,7 @@ This release marks a more stable point in Unclaimable's development: the core va
 
 - Built-in entries from disabled categories are excluded before the checker's exact, compact, partial, Unicode-confusable, and obfuscation indexes are constructed, so category selection has consistent semantics across the entire reserved-name pipeline.
 - The release compatibility workflow now checks the exported public API against `v0.4.0`, verifies unchanged default behavior against `v0.4.0`, and separately verifies the 0.3-style valid-Unicode behavior available through the 0.4.0 opt-outs.
-- GitHub, NuGet, and XML documentation now describes category selection, exact built-in exceptions, application-reservation matching modes, their precedence rules, and the exact trim → NFKC → invariant-lowercase normalization contract.
+- GitHub and NuGet documentation describe category selection, exact built-in exceptions, application-reservation matching modes, their precedence rules, and the exact trim → NFKC → invariant-lowercase normalization contract.
 
 ### Compatibility
 
@@ -162,13 +243,13 @@ Validation-quality release that keeps the 0.3.0 public API, enum numeric values,
 - `RejectFormatCharacters` now defaults to `true` as part of the strict policy. Applications that legitimately require Unicode formatting characters such as joiners can explicitly set it to `false`.
 - `ConsistentCompactMatching` now defaults to `true`, so disabling `Rule.CompactMatching` has the same effect across direct compact, partial, and obfuscation paths.
 - Options continue to be captured when a `Checker` is constructed, while runtime `IPolicy` character updates remain live.
-- Public XML documentation now explicitly describes null handling, structural `IsReserved` failures, strictness-driven partial matching, captured options, live runtime policy updates, transformed legacy offsets, and UTF-16 index/length units.
+- Public XML documentation explicitly describes null handling, structural `IsReserved` failures, strictness-driven partial matching, captured options, live runtime policy updates, transformed legacy offsets, and UTF-16 index/length units.
 - No built-in datasets were expanded in this release; 0.4.0 intentionally retains the 0.3.0 dataset contents.
 
 ### Fixed
 
-- Malformed UTF-16 input is now rejected as `MatchKind.InvalidCharacters` before normalization or character-policy calls instead of potentially throwing. `IsClaimable` returns `false`, and `CheckDetailed` reports the invalid UTF-16 code-unit index and skips reserved-name normalization.
-- `[ClaimableUsername]` fallback minimum/maximum-length messages now include the effective threshold, including when the attribute runs without dependency injection.
+- Malformed UTF-16 input is rejected as `MatchKind.InvalidCharacters` before normalization or character-policy calls instead of potentially throwing. `IsClaimable` returns `false`, and `CheckDetailed` reports the invalid UTF-16 code-unit index and skips reserved-name normalization.
+- `[ClaimableUsername]` fallback minimum/maximum-length messages include the effective threshold, including when the attribute runs without dependency injection.
 - Length placeholders prefer the checker result's captured `LengthLimit`, preventing later mutations to registered `Options` from changing the message for a checker that already captured different settings.
 
 0.4.0 preserves the established public API and curated datasets, but it intentionally strengthens default validation for invisible-only, control, and format-character identifiers and enables consistent compact-rule handling by default.
@@ -188,10 +269,10 @@ Third public NuGet release, focused on broader semantic coverage, maintainable d
 
 ### Changed
 
-- Safe compound profanity values can now participate in partial matching by default without making short ambiguous entries such as `ass` generic substring rules.
-- Dataset statistics now include concrete values expanded from schema-v2 combinations.
-- Language-pack tests now validate both literal values and generated schema-v2 combinations.
-- NuGet and GitHub-facing documentation now reflects the 0.3.0 dataset totals and expanded category set.
+- Safe compound profanity values can participate in partial matching by default without making short ambiguous entries such as `ass` generic substring rules.
+- Dataset statistics include concrete values expanded from schema-v2 combinations.
+- Language-pack tests validate both literal values and generated schema-v2 combinations.
+- NuGet and GitHub-facing documentation reflects the 0.3.0 dataset totals and expanded category set.
 
 ### Fixed
 
@@ -218,7 +299,7 @@ Second public NuGet release, focused on substantially broader built-in dataset c
 - Expanded the existing brand, technology, profanity, role, support, and system datasets with substantially more coverage.
 - Expanded German, Spanish, French, Italian, Dutch, and Portuguese localized datasets.
 - Updated both README files with current category totals, package installation guidance, and the full supported-language list.
-- NuGet package metadata now uses the dedicated NuGet README while GitHub continues to render the repository README.
+- NuGet package metadata uses the dedicated NuGet README while GitHub continues to render the repository README.
 
 ### Fixed
 

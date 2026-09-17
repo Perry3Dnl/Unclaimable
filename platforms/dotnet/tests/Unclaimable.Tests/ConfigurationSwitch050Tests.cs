@@ -66,11 +66,11 @@ public sealed class ConfigurationSwitch060Tests
 
         Assert.Equal(testCase.ExpectedKind, new Checker(options).Check(testCase.Input).MatchKind);
 
-        options.DisabledRules |= rule;
+        options.DisableRule(rule);
         var disabled = new Checker(options);
         Assert.True(disabled.IsClaimable(testCase.Input), $"Rule '{rule}' remained active after disable.");
 
-        options.DisabledRules &= ~rule;
+        options.EnableRule(rule);
         Assert.Equal(testCase.ExpectedKind, new Checker(options).Check(testCase.Input).MatchKind);
         Assert.True(disabled.IsClaimable(testCase.Input));
     }
@@ -279,7 +279,7 @@ public sealed class ConfigurationSwitch060Tests
             case Rule.TrailingSeparator:
                 return new RuleCase(new Options(), "qzxvorn.", MatchKind.TrailingSeparator);
             case Rule.Numbers:
-                return new RuleCase(new Options(), "qzxvorn2", MatchKind.NumbersNotAllowed);
+                return new RuleCase(new Options().EnableRule(Rule.Numbers), "qzxvorn2", MatchKind.NumbersNotAllowed);
             case Rule.CompactMatching:
             {
                 var options = new Options
@@ -372,9 +372,12 @@ public sealed class ConfigurationSwitch060Tests
                     value => value.UnicodeConfusableMatching = true);
             }
             case ToggleOption.NumberRestriction:
-                return new ToggleCase(new Options(), "qzxvorn2", MatchKind.NumbersNotAllowed,
+            {
+                var options = new Options().EnableRule(Rule.Numbers);
+                return new ToggleCase(options, "qzxvorn2", MatchKind.NumbersNotAllowed,
                     value => value.AllowNumbers = true,
                     value => value.AllowNumbers = false);
+            }
             case ToggleOption.InvisibleOnlyProtection:
                 return new ToggleCase(new Options(), "\u0301\u0301\u0301", MatchKind.InvalidCharacters,
                     value => value.RejectInvisibleOnlyIdentifiers = false,

@@ -52,7 +52,7 @@ public sealed partial class Options
         return this;
     }
 
-    internal IReadOnlyList<ReservationRegistration> Reservations => _reservations;
+    internal IReadOnlyList<ReservationRegistration> Reservations => BuildEffectiveReservations();
 
     internal bool IsCategoryEnabled(string category)
     {

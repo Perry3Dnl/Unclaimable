@@ -53,23 +53,29 @@ public sealed class CheckerTests
     }
 
     [Fact]
-    public void NumbersAreRejectedByDefault()
+    public void NumbersAreAllowedByDefault()
     {
-        var result = Checker.Default.Check("ordinary2");
-
-        Assert.True(result.IsReserved);
-        Assert.Equal(MatchKind.NumbersNotAllowed, result.MatchKind);
-        Assert.Equal("2", result.OffendingCharacter);
+        Assert.True((new Options().DisabledRules & Rule.Numbers) != 0);
+        Assert.True(Checker.Default.IsClaimable("ordinary2"));
     }
 
     [Fact]
-    public void UnicodeDecimalDigitsAreRejectedByDefault()
+    public void UnicodeDecimalDigitsAreAllowedByDefaultInsideIdentifiers()
     {
-        var result = Checker.Default.Check("user\u0661");
+        Assert.True(Checker.Default.IsClaimable("user\u0661"));
+    }
+
+    [Theory]
+    [InlineData("ordinary2", "2")]
+    [InlineData("user\u0661", "\u0661")]
+    public void NumberRuleCanBeExplicitlyEnabled(string value, string expectedCharacter)
+    {
+        var options = new Options().EnableRule(Rule.Numbers);
+        var result = new Checker(options).Check(value);
 
         Assert.True(result.IsReserved);
         Assert.Equal(MatchKind.NumbersNotAllowed, result.MatchKind);
-        Assert.Equal("\u0661", result.OffendingCharacter);
+        Assert.Equal(expectedCharacter, result.OffendingCharacter);
     }
 
     [Fact]
@@ -180,7 +186,8 @@ public sealed class CheckerTests
     [Fact]
     public void DetailedCheckCollectsPolicyAndReservedNameDiagnostics()
     {
-        var checker = new Checker(new Options());
+        var options = new Options().EnableRule(Rule.Numbers);
+        var checker = new Checker(options);
         var result = checker.CheckDetailed("superadmin2", includeMessages: true);
 
         Assert.True(result.IsReserved);

@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "category": "infrastructure",
+  "language": "global",
+  "description": "Standalone networking, hosting, compute, storage, cloud, and infrastructure-platform identities.",
+  "values": [
+    "blockstorage",
+    "caching",
+    "cloud",
+    "cloudservice",
+    "compute",
+    "databases",
+    "datacenter",
+    "domainservice",
+    "firewall",
+    "hosting",
+    "infrastructure",
+    "infraplatform",
+    "loadbalancer",
+    "messagequeue",
+    "network",
+    "networking",
+    "objectstorage",
+    "virtualmachine",
+    "virtualmachines"
+  ]
+}

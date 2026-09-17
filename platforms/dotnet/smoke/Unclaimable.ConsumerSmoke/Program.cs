@@ -16,7 +16,8 @@ var checker = Checker.Default;
 Require(checker.Check("customersupport").Category == "support", "English support names should be reserved by default.");
 Require(checker.Check("myloginverificationteamx").MatchKind == MatchKind.Partial, "Explicit high-risk partial entries should be protected in strict mode.");
 Require(checker.IsClaimable("supportive"), "Ordinary words that merely contain short reserved terms should remain claimable.");
-Require(checker.Check("ordinary2").MatchKind == MatchKind.NumbersNotAllowed, "Numbers should be blocked by default.");
+Require(checker.IsClaimable("ordinary2"), "Numbers should be allowed inside identifiers by default.");
+Require(checker.Check("123456789").MatchKind == MatchKind.NumericOnly, "Numeric-only identifiers should still be blocked by the default numeric-only pattern.");
 Require(checker.Check("ordinary-user").MatchKind == MatchKind.BlockedCharacter, "Hyphens should be blocked by default.");
 Require(checker.Check("ordinary_user").MatchKind == MatchKind.BlockedCharacter, "Underscores should be blocked by default.");
 Require(checker.Check("ordinary user").MatchKind == MatchKind.BlockedCharacter, "Whitespace should be blocked by default.");
@@ -59,6 +60,10 @@ Require(extendedChecker.Check("serviceclient").Category == "support", "French la
 Require(extendedChecker.Check("servicioalcliente").Category == "support", "Spanish language data should be embedded in the package.");
 Require(extendedChecker.Check("servizioclienti").Category == "support", "Italian language data should be embedded in the package.");
 Require(extendedChecker.Check("atendimentocliente").Category == "support", "Portuguese language data should be embedded in the package.");
+
+var numberRestrictedOptions = new Options().EnableRule(Rule.Numbers);
+var numberRestrictedChecker = new Checker(numberRestrictedOptions);
+Require(numberRestrictedChecker.Check("ordinary2").MatchKind == MatchKind.NumbersNotAllowed, "Applications should be able to reject numbers explicitly.");
 
 var relaxed = new Checker(new Options
 {

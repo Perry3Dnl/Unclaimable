@@ -1,0 +1,31 @@
+{
+  "schema": 1,
+  "category": "identity",
+  "language": "global",
+  "description": "Standalone account, profile, identity, and user-identifier names that applications commonly own.",
+  "values": [
+    "accountalias",
+    "accountholder",
+    "accountidentity",
+    "accountname",
+    "displayname",
+    "handle",
+    "identitycheck",
+    "identityrecord",
+    "identitystatus",
+    "memberidentity",
+    "memberprofile",
+    "profileid",
+    "profileidentity",
+    "profileowner",
+    "registrant",
+    "registrants",
+    "screenname",
+    "subscriberidentity",
+    "subscriberprofile",
+    "userid",
+    "useridentity",
+    "username",
+    "userprofile"
+  ]
+}

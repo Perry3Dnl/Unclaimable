@@ -58,6 +58,7 @@ public sealed class ValidationMessageOptionsTests
         using var provider = new ServiceCollection()
             .AddUnclaimable(options =>
             {
+                options.EnableRule(Rule.Numbers);
                 options.Messages.NumbersNotAllowed = "{FieldName}: '{Character}' is not allowed at index {Index}.";
             })
             .BuildServiceProvider();

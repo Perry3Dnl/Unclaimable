@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "category": "moderation",
+  "language": "global",
+  "description": "Standalone moderation, enforcement, review, appeal, and account-action identities.",
+  "values": [
+    "approved",
+    "ban",
+    "banned",
+    "bans",
+    "contentreview",
+    "flag",
+    "flagged",
+    "flags",
+    "integrity",
+    "mute",
+    "muted",
+    "mutes",
+    "rejected",
+    "removed",
+    "restricted",
+    "reviewqueue",
+    "sanction",
+    "sanctions",
+    "suspended",
+    "suspension",
+    "suspensions",
+    "violation",
+    "violations",
+    "warning",
+    "warnings"
+  ]
+}

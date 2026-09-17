@@ -38,7 +38,11 @@ public enum MatchKind
     /// <summary>The value matched a disallowed ASCII-art pattern.</summary>
     AsciiArt = 16,
     /// <summary>The value contained cased letters and all of them were uppercase.</summary>
-    UppercaseOnly = 17
+    UppercaseOnly = 17,
+    /// <summary>The complete identifier matched the enabled country-name rule.</summary>
+    CountryName = 18,
+    /// <summary>The complete identifier matched the enabled popular-city-name rule.</summary>
+    PopularCityName = 19
 }
 
 /// <summary>
