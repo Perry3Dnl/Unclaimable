@@ -4,11 +4,13 @@
 </h1>
 
 [![build](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml)
-[![line coverage](https://img.shields.io/badge/line%20coverage-%E2%89%A598%25-brightgreen.svg)](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml)
+[![latest line coverage](https://img.shields.io/badge/latest%20line%20coverage-98.07%25-brightgreen.svg)](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml)
 [![NuGet](https://img.shields.io/nuget/v/Unclaimable.svg?label=nuget)](https://www.nuget.org/packages/Unclaimable)
 [![NuGet downloads](https://img.shields.io/nuget/dt/Unclaimable.svg?label=downloads)](https://www.nuget.org/packages/Unclaimable)
 [![license](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
 [![target](https://img.shields.io/badge/.NET-netstandard2.0-512BD4.svg)](platforms/dotnet/src/Unclaimable/Unclaimable.csproj)
+
+Latest measured production line coverage: **98.07%**. Engineering target: **100%**; enforced CI minimum: **98%**.
 
 **Strict, fast username and identifier validation for .NET.**
 
@@ -147,7 +149,6 @@ The sweep also added bulk category-ownership regression checks so newly added ex
 | --- | --- | --- |
 | [`Unclaimable`](https://www.nuget.org/packages/Unclaimable) | `netstandard2.0` | dependency-free runtime core and embedded datasets |
 | `Unclaimable.AspNetCore` | `net8.0` | ASP.NET Core DI and DataAnnotations integration |
-
 Release-candidate install commands:
 
 ```bash
@@ -297,8 +298,7 @@ The global `placeholders` category reserves literal null-like and missing-value 
 
 ```text
 null
-undefined
-empty
+undefinedempty
 emptyvalue
 none
 nil
@@ -448,7 +448,6 @@ Reject it safely inside a larger identifier?      partialValues / partial: true
 Ordinary `values` do not automatically become generic substring roots. This is why words such as `vote`, `member`, and `active` can be exact-reserved without blocking `devote`, `rememberme`, or `hyperactive`.
 
 ## Unicode protection
-
 Unclaimable uses Unicode NFKC normalization, invariant casing, and selected confusable mappings for common impersonation characters, especially common Greek and Cyrillic lookalikes.
 
 Malformed UTF-16 is rejected before normalization. Invisible-only identifiers, control characters, and format characters are rejected by default.
