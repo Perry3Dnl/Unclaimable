@@ -149,6 +149,7 @@ The sweep also added bulk category-ownership regression checks so newly added ex
 | --- | --- | --- |
 | [`Unclaimable`](https://www.nuget.org/packages/Unclaimable) | `netstandard2.0` | dependency-free runtime core and embedded datasets |
 | `Unclaimable.AspNetCore` | `net8.0` | ASP.NET Core DI and DataAnnotations integration |
+
 Release-candidate install commands:
 
 ```bash
@@ -298,7 +299,8 @@ The global `placeholders` category reserves literal null-like and missing-value 
 
 ```text
 null
-undefinedempty
+undefined
+empty
 emptyvalue
 none
 nil
@@ -448,6 +450,7 @@ Reject it safely inside a larger identifier?      partialValues / partial: true
 Ordinary `values` do not automatically become generic substring roots. This is why words such as `vote`, `member`, and `active` can be exact-reserved without blocking `devote`, `rememberme`, or `hyperactive`.
 
 ## Unicode protection
+
 Unclaimable uses Unicode NFKC normalization, invariant casing, and selected confusable mappings for common impersonation characters, especially common Greek and Cyrillic lookalikes.
 
 Malformed UTF-16 is rejected before normalization. Invisible-only identifiers, control characters, and format characters are rejected by default.
