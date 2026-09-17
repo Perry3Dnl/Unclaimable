@@ -2,94 +2,104 @@
 
 Strict, fast username and identifier validation for .NET.
 
-**Source version prepared for release: 0.7.2**
+**Current release: 0.7.4**
 
-Unclaimable helps decide whether a username, handle, slug, account name, tenant name, or similar identifier should be claimable. It combines curated reserved-name datasets with structural validation, compact matching, curated partial matching, obfuscation detection, selected Unicode lookalikes, localized filtering, category controls, application-specific rules, and configurable identifier-pattern checks.
+Unclaimable helps decide whether a username, handle, slug, account name, tenant name, or similar identifier should be claimable. It combines curated reserved-name datasets with structural validation, configurable matching, identifier-shape checks, Unicode-aware protections, optional protected-identity lists, and ASP.NET Core integration.
 
-## What's new in 0.7.2
+## Install
 
-0.7.2 makes the default username policy more practical and adds optional geography protections.
-
-### Numbers are allowed in ordinary usernames by default
-
-`Rule.Numbers` is disabled by default in 0.7.2, so values such as:
-
-```text
-user7
-john2026
-player123
+```bash
+dotnet add package Unclaimable --version 0.7.4
 ```
 
-can be claimable when no other protection rejects them.
+ASP.NET Core integration:
 
-`Pattern.NumericOnly` remains enabled by default, so a value made only of decimal digits is still rejected:
-
-```text
-123456789
+```bash
+dotnet add package Unclaimable.AspNetCore --version 0.7.4
 ```
 
-Applications that want the old no-numbers policy can enable it explicitly:
+## What's new in 0.7.4
+
+0.7.4 adds ten opt-in protected-identity lists. All are disabled by default:
+
+```csharp
+Rule.Nationalities
+Rule.Currencies
+Rule.Religions
+Rule.Landmarks
+Rule.Events
+Rule.Awards
+Rule.FictionalCharacters
+Rule.Franchises
+Rule.Professions
+Rule.Military
+```
+
+Enable only the lists your application needs:
+
+```csharp
+builder.Services.AddUnclaimable(options =>
+{
+    options.EnableRule(
+        Rule.Nationalities |
+        Rule.Currencies |
+        Rule.FictionalCharacters |
+        Rule.Franchises);
+});
+```
+
+Representative protected identities include `dutch`, `euro`, `bitcoin`, `christianity`, `eiffeltower`, `olympics`, `nobelprize`, `darthvader`, `starwars`, `doctor`, and `airforce`.
+
+These lists use whole-identifier protection. They support normalized exact matching, case-insensitive matching, compact separator/punctuation forms, configured obfuscation/leetspeak matching, and selected Unicode-confusable matching. They do **not** become generic substring roots, so values such as `doctorwho`, `starwarsfan`, or `americanfootball` are not rejected merely because they contain a protected identity.
+
+## Celebrity-name protection from 0.7.3
+
+0.7.3 added the opt-in `Rule.CelebrityNames` list with 100 protected high-profile identity forms, including values such as `trump`, `donaldtrump`, `taylorswift`, `cristianoronaldo`, `messi`, `elonmusk`, and `mrbeast`.
+
+```csharp
+options.EnableRule(Rule.CelebrityNames);
+```
+
+Celebrity matching follows the same whole-identifier contract as the 0.7.4 identity lists. `trump`, `TRUMP`, compact forms, supported obfuscations, and selected confusable forms can be rejected without turning `trump` into a broad substring rule that blocks unrelated words such as `trumpet`.
+
+## Practical defaults from 0.7.2
+
+Ordinary mixed alphanumeric usernames are allowed by default:
+
+```text
+user7       -> can be claimable
+john2026    -> can be claimable
+player123   -> can be claimable
+```
+
+`Rule.Numbers` is disabled by default, while `Pattern.NumericOnly` remains enabled. Therefore:
+
+```text
+123456789   -> rejected as NumericOnly
+```
+
+Applications that want to reject every decimal digit can enable that rule explicitly:
 
 ```csharp
 options.EnableRule(Rule.Numbers);
 ```
 
-### Optional country and city rules
-
-Two new rules are available and **disabled by default**:
+0.7.2 also added two opt-in geography rules:
 
 ```csharp
 Rule.CountryNames
 Rule.PopularCityNames
 ```
 
-Enable either or both explicitly:
+They are whole-identifier checks. Enabling them can reject `france`, `United Kingdom`, `amsterdam`, or `New York` without turning those names into generic substring filters.
 
-```csharp
-builder.Services.AddUnclaimable(options =>
-{
-    options.EnableRule(Rule.CountryNames | Rule.PopularCityNames);
-});
-```
+## Reserved-vocabulary expansion from 0.7.1
 
-These are whole-identifier checks, not broad substring filters. When enabled, `france`, `United Kingdom`, `amsterdam`, or `New York` can be rejected, while ordinary compounds such as `francelover`, `newyorker`, and `amsterdammer` remain claimable unless another protection applies.
+The 0.7.1 work expanded exact reserved-name coverage across authentication, automation, commerce, communications, community, developer, finance, governance, identity, infrastructure, legal, moderation, official, operations, security, and system vocabulary.
 
-Compact geography matching follows `Rule.CompactMatching`, so separator/space variants are recognized only when compact matching and the relevant structural configuration allow them.
+Representative exact values include `member`, `vote`, `active`, `authentication`, `announcement`, `apikey`, `treasury`, `username`, `loadbalancer`, `banned`, `verified`, `operations`, `buyer`, `legalhold`, and `phishing`.
 
-### New rule configuration helpers
-
-Use `EnableRule(...)` and `DisableRule(...)` for incremental configuration:
-
-```csharp
-options.DisableRule(Rule.Whitespace);
-options.EnableRule(Rule.Numbers);
-```
-
-`DisabledRules` remains available for compatibility, but assigning it replaces the full mask.
-
-## 0.7.1 vocabulary expansion
-
-The staged 0.7.1 dataset sweep expanded exact reserved-name coverage across Authentication, Automation, Commerce, Communications, Community, Developer, Finance, Governance, Identity, Infrastructure, Legal, Moderation, Official, Operations, Security, and English System data.
-
-Representative exact additions include `member`, `vote`, `voting`, `active`, `pending`, `authentication`, `announcement`, `apikey`, `treasury`, `username`, `loadbalancer`, `banned`, `verified`, `operations`, `buyer`, `legalhold`, and `phishing`.
-
-Generic additions remain exact values rather than broad substring roots: `vote` does not block `devote`, `member` does not block `rememberme`, and `active` does not block `hyperactive`.
-
-## Install
-
-After the 0.7.2 release is published:
-
-```bash
-dotnet add package Unclaimable --version 0.7.2
-```
-
-ASP.NET Core integration:
-
-```bash
-dotnet add package Unclaimable.AspNetCore --version 0.7.2
-```
-
-Until publication, use the current NuGet release or the CI-generated 0.7.2 package artifacts.
+Generic values remain exact rather than broad substring roots: `vote` does not block `devote`, `member` does not block `rememberme`, and `active` does not block `hyperactive`.
 
 ## Quick start
 
@@ -98,9 +108,10 @@ using Unclaimable;
 
 var checker = new Checker();
 
-if (checker.IsClaimable(userName))
+var result = checker.Check("candidate7");
+if (result.IsClaimable)
 {
-    // Continue with your own availability/database check.
+    // Continue with your own database/availability check.
 }
 ```
 
@@ -110,9 +121,9 @@ ASP.NET Core:
 builder.Services.AddUnclaimable();
 ```
 
-`null` is accepted so required-field validation can remain separate, for example through `[Required]`.
+`null` is accepted by Unclaimable so required-field validation can remain a separate concern, for example through `[Required]`.
 
-## Default protection in 0.7.2
+## Default protection in 0.7.4
 
 The default policy includes:
 
@@ -130,84 +141,49 @@ The default policy includes:
 - whitespace restrictions;
 - built-in `-` and `_` blocking;
 - leading and trailing separator restrictions;
-- numeric-only pattern protection;
-- repeated-pattern protection;
-- symbol-only pattern protection;
-- conservative ASCII-art protection.
+- numeric-only, repeated-pattern, symbol-only, and conservative ASCII-art checks.
 
-The following protections are disabled by default:
+The following protections are disabled by default and must be explicitly enabled when wanted:
 
-- `Rule.Numbers` — mixed alphanumeric identifiers are allowed;
+- `Rule.Numbers`;
 - `Rule.CountryNames`;
 - `Rule.PopularCityNames`;
+- `Rule.CelebrityNames`;
+- `Rule.Nationalities`;
+- `Rule.Currencies`;
+- `Rule.Religions`;
+- `Rule.Landmarks`;
+- `Rule.Events`;
+- `Rule.Awards`;
+- `Rule.FictionalCharacters`;
+- `Rule.Franchises`;
+- `Rule.Professions`;
+- `Rule.Military`;
 - `Pattern.UppercaseOnly`;
 - generic profanity substring matching;
 - ASCII-only input restriction.
 
-`IsReserved` means “this value cannot be claimed under this checker,” including structural, pattern, geography, and reserved-name failures.
+Passing or disabling one deny rule never positively clears an identifier through the rest of the pipeline.
 
-## Default matrix
+## Rule configuration
 
-| Setting | Default |
-| --- | --- |
-| Localized language | English |
-| Built-in categories | all 23 enabled |
-| `Strictness` | `Strict` |
-| Compact matching | enabled |
-| Curated partial matching | enabled through strict mode |
-| Obfuscation / leetspeak matching | enabled |
-| Unicode-confusable matching | enabled |
-| Profanity matching | enabled |
-| Minimum length | `3` |
-| Maximum length | `32` |
-| `Rule.Numbers` | disabled |
-| `Rule.CountryNames` | disabled |
-| `Rule.PopularCityNames` | disabled |
-| Whitespace | rejected |
-| Built-in `-` and `_` | blocked |
-| Leading/trailing separators | rejected |
-| Invisible-only identifiers | rejected |
-| Unicode control characters | rejected |
-| Unicode format characters | rejected |
-| `Pattern.NumericOnly` | enabled |
-| `Pattern.Repeated` | enabled |
-| `Pattern.SymbolOnly` | enabled |
-| `Pattern.AsciiArt` | enabled |
-| `Pattern.UppercaseOnly` | disabled |
-
-## Geography rules
-
-Country and city rules are independent and opt-in:
+Use the incremental helpers rather than replacing the full legacy rule mask:
 
 ```csharp
-var countries = new Options()
-    .EnableRule(Rule.CountryNames);
+var options = new Options();
 
-var cities = new Options()
-    .EnableRule(Rule.PopularCityNames);
+options.EnableRule(Rule.CountryNames | Rule.CelebrityNames);
+options.DisableRule(Rule.Whitespace);
+options.EnableRule(Rule.Numbers);
 ```
 
-Or enable both:
+`Options.EnabledOptionalRules` exposes currently enabled opt-in rules.
 
-```csharp
-var options = new Options()
-    .EnableRule(Rule.CountryNames | Rule.PopularCityNames);
-```
-
-They use dedicated result reasons:
-
-```csharp
-MatchKind.CountryName
-MatchKind.PopularCityName
-```
-
-Country matching wins for overlaps such as `singapore` when both are enabled.
-
-These opt-in deny rules are not bypassed by `AllowedIdentifiers`. If an application explicitly enables `Rule.CountryNames`, adding `france` to `AllowedIdentifiers` does not positively clear the country-name rule.
+`DisabledRules` remains for compatibility as a full mask. Assigning it replaces the mask; prefer `EnableRule(...)` and `DisableRule(...)` for incremental configuration.
 
 ## Pattern configuration
 
-Pattern checks are configured independently from `Rule` flags:
+Pattern checks are configured independently from rule flags:
 
 ```csharp
 var options = new Options();
@@ -215,119 +191,64 @@ var options = new Options();
 options.EnablePattern(Pattern.UppercaseOnly);
 options.DisablePattern(Pattern.AsciiArt);
 options.DisablePattern(Pattern.NumericOnly | Pattern.Repeated);
-
-var checker = new Checker(options);
 ```
 
-`Pattern.NumericOnly`, `Pattern.Repeated`, `Pattern.SymbolOnly`, and `Pattern.AsciiArt` are enabled by default. `Pattern.UppercaseOnly` is opt-in.
-
-Pattern checks are deny rules, not allow rules. Disabling one protection never clears an identifier through the remaining checks. For example, disabling `UppercaseOnly` does not make `ADMIN` claimable because the reserved-name pipeline still resolves it to `admin`.
-
-## Placeholder identifiers
-
-The global `placeholders` category protects literal null-like or missing-value identifiers including:
+Default pattern state:
 
 ```text
-null
-undefined
-empty
-emptyvalue
-none
-nil
-unset
-missing
-unknown
-notset
-novalue
-nullvalue
-undefinedvalue
-missingvalue
-placeholder
-placeholdervalue
-defaultvalue
+NumericOnly    on
+Repeated       on
+SymbolOnly     on
+AsciiArt       on
+UppercaseOnly  off
 ```
 
-Disable the category only when the application intentionally permits these identifiers:
+## Category selection
+
+Every built-in category is enabled by default:
 
 ```csharp
-options.DisableCategory(Category.Placeholders);
+options.DisableCategory(Category.Brands);
+options.DisableCategory(Category.Technology);
 ```
 
-The literal string `"null"` is reserved by default; actual C# `null` remains accepted.
+Disabled categories are excluded before exact, compact, partial, Unicode-confusable, and obfuscation indexes are constructed.
 
-## Dataset coverage
+## Exact allowed identifiers
 
-0.7.2 carries **11,150 filter entries across 23 categories**, representing **11,039 unique values within those categories**.
+`AllowedIdentifiers` is a narrow exception for complete built-in reserved identifiers after trim → NFKC → invariant-lowercase normalization.
 
-These totals describe stored dataset entries. Normalization, compact matching, explicitly authorized partial matching, obfuscation detection, Unicode-confusable matching, structural rules, patterns, and opt-in geography rules can reject additional forms without storing every spelling.
+```csharp
+options.AllowedIdentifiers.Add("superadmin");
+```
+
+It does not bypass structural rules, pattern rules, opt-in geography/protected-identity rules, or explicit application reservations.
+
+## Application reservations
+
+```csharp
+options.Reserve("acme", matching: ReservedMatchMode.Exact);
+options.Reserve("internalbot", matching: ReservedMatchMode.Default);
+```
+
+`ReservedMatchMode.Exact` performs whole-identifier matching. `ReservedMatchMode.Default` participates in the configured matching pipeline.
 
 ## Language support
 
 English is enabled by default. Additional localized datasets are available for Dutch, German, French, Spanish, Italian, Portuguese, Polish, Turkish, Indonesian, Czech, Vietnamese, Hungarian, Swedish, and Romanian.
 
 ```csharp
-var options = new Options();
 options.AddLanguage(Language.Dutch);
 options.AddLanguage(Language.German);
-
-var checker = new Checker(options);
 ```
-
-Global categories remain active independently of localized language selection unless their category is explicitly disabled.
-
-## Configuration example
-
-```csharp
-builder.Services.AddUnclaimable(options =>
-{
-    options.MinimumLength = 4;
-    options.MaximumLength = 24;
-
-    options.AddLanguage(Language.Dutch);
-
-    options.DisableCategory(Category.Brands);
-    options.DisableCategory(Category.Technology);
-
-    options.EnableRule(Rule.CountryNames);
-    options.EnableRule(Rule.Numbers);
-    options.DisableRule(Rule.Whitespace);
-
-    options.EnablePattern(Pattern.UppercaseOnly);
-    options.DisablePattern(Pattern.AsciiArt);
-
-    options.AllowedIdentifiers.Add("superadmin");
-
-    options.Reserve("acme", matching: ReservedMatchMode.Exact);
-    options.Reserve("internalbot", matching: ReservedMatchMode.Default);
-
-    options.AdditionalReserved.Add("examplebrand");
-    options.AdditionalBlockedCharacters("^", "$");
-});
-```
-
-Every built-in category remains enabled unless explicitly disabled. Category selection is applied before exact, compact, partial, Unicode-confusable, and obfuscation indexes are built.
-
-`AllowedIdentifiers` is an exact normalized exception for built-in reserved-name matching. Structural validation, pattern checks, opt-in geography checks, and explicit application reservations still take precedence.
-
-`ReservedMatchMode.Exact` performs whole-identifier matching after trim → NFKC → invariant lowercase. `ReservedMatchMode.Default` uses the configured matching pipeline. `AdditionalReserved` retains its established behavior.
-
-## Curated partial matching
-
-Built-in dataset entries distinguish between reserving a complete identifier and safely rejecting the same value inside a larger identifier.
-
-Schema-v2 `partialValues` and generated combinations with `"partial": true` are eligible for built-in substring matching. Ordinary exact `values` remain protected through exact and the other configured matching paths but do not become generic substring rules.
-
-This is why short or ordinary protected roots can remain reserved without causing false positives in unrelated words.
 
 ## Unicode scope
 
-Matching uses Unicode NFKC normalization and selected confusable mappings for common impersonation characters, especially common Greek and Cyrillic lookalikes.
+Unclaimable uses Unicode NFKC normalization and selected confusable mappings for common impersonation characters, especially common Greek and Cyrillic lookalikes.
 
-This is **not a complete Unicode Technical Standard #39 confusable implementation**. Passing Unclaimable does not prove that an identifier contains no possible Unicode spoofing technique.
+This is **not** a complete Unicode Technical Standard #39 implementation. Passing Unclaimable does not prove that no visual spoofing technique exists.
 
 Applications should separately define canonical username storage, case sensitivity, database uniqueness/collation, display-name behavior, and URL/routing normalization.
-
-Unclaimable is a defense-in-depth policy and reserved-name library, not a complete anti-impersonation or identity system.
 
 ## Detailed results
 
@@ -346,27 +267,11 @@ For multiple diagnostics:
 var detailed = checker.CheckDetailed(userName, includeMessages: true);
 ```
 
-## ASP.NET Core DataAnnotations
-
-```csharp
-using System.ComponentModel.DataAnnotations;
-using Unclaimable.AspNetCore;
-
-public sealed class SignupModel
-{
-    [Required]
-    [ClaimableUsername]
-    public string UserName { get; set; } = string.Empty;
-}
-```
-
-Reason-specific messages are available for reserved-name, structural, pattern, country-name, and popular-city-name failures.
-
 ## Release quality
 
-The 0.7.2 release candidate is gated by the full unit/regression suite, the shared conformance corpus, public-API package validation, source builds without localized language packs, NuGet package-content validation, and a clean packaged-consumer restore/run.
+0.7.4 is validated with **644 passing tests**, package-content validation, packaged-consumer smoke tests, public-API compatibility checks, source builds without localized language packs, and a production line-coverage gate.
 
-The publishing workflow remains tag-gated. Preparing version 0.7.2 does not publish it.
+Latest measured production line coverage before release: **98.07%** (`1,775 / 1,810`). The engineering target is **100%** and CI enforces a **98% minimum**.
 
 Full documentation and source:
 
