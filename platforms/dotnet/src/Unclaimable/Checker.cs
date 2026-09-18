@@ -237,14 +237,16 @@ public sealed partial class Checker : IChecker
 
         foreach (var reservation in options.Reservations)
         {
-            var entry = new ReservedEntry(reservation.Value, "custom");
+            var entry = new ReservedEntry(reservation.Value, reservation.Category);
             if (reservation.Matching == ReservedMatchMode.Exact)
             {
                 AddExactCustom(entry);
             }
             else
             {
-                AddCustomDefault(entry);
+                AddCustomDefault(
+                    entry,
+                    includeInPartialMatching: reservation.Matching != ReservedMatchMode.WholeIdentifier);
             }
         }
 
