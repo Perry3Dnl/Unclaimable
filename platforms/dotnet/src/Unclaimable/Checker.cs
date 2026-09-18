@@ -183,8 +183,16 @@ public sealed partial class Checker : IChecker
                 "PartialMatchMinimumLength must be at least 1.");
         }
 
+        if (options.RepeatedPatternMinimumLength < 2)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(options.RepeatedPatternMinimumLength),
+                "RepeatedPatternMinimumLength must be at least 2.");
+        }
+
         _policy = policy;
         _enabledPatterns = options.EnabledPatterns;
+        _repeatedPatternMinimumLength = options.RepeatedPatternMinimumLength;
         _minimumLengthEnabled = options.IsRuleEnabled(Rule.MinimumLength);
         _maximumLengthEnabled = options.IsRuleEnabled(Rule.MaximumLength);
         _whitespaceEnabled = options.IsRuleEnabled(Rule.Whitespace);
