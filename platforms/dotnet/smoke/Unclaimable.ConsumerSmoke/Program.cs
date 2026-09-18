@@ -165,8 +165,8 @@ Require(ExtendedData.TotalEntries > 30000, "Packaged Extended data should contai
 var extendedDataOptions = new Options();
 extendedDataOptions.UseExtendedData();
 var extendedDataChecker = new Checker(extendedDataOptions);
-Require(extendedDataChecker.IsReserved("Thakur College of Engineering and Technology"), "Extended education data should be active after opt-in.");
-Require(extendedDataChecker.IsReserved("Aeroestación Yabotí"), "Extended transport data should be active after opt-in.");
+Require(extendedDataChecker.IsReserved("aalborguniversity"), "Extended education data should be active after opt-in.");
+Require(extendedDataChecker.IsReserved("aalborgairport"), "Extended transport data should be active after opt-in.");
 var noEducationOptions = new Options();
 noEducationOptions.UseExtendedData(extended => extended.DisableCategory(ExtendedCategory.Education));
 Require(new Checker(noEducationOptions).IsClaimable("Thakur College of Engineering and Technology"), "Extended categories should be independently disableable.");
