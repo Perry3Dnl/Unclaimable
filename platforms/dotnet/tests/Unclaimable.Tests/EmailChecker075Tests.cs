@@ -428,6 +428,254 @@ public sealed class EmailChecker075Tests
         Assert.True(checker.CheckExistingAddress("admin@example.com").IsAllowed);
     }
 
+    public static IEnumerable<object[]> AsciiConfusableMappingCases()
+    {
+        yield return new object[] { "o.com", "0.com" };
+        yield return new object[] { "l.com", "1.com" };
+        yield return new object[] { "z.com", "2.com" };
+        yield return new object[] { "e.com", "3.com" };
+        yield return new object[] { "a.com", "4.com" };
+        yield return new object[] { "s.com", "5.com" };
+        yield return new object[] { "g.com", "6.com" };
+        yield return new object[] { "g.com", "9.com" };
+        yield return new object[] { "t.com", "7.com" };
+        yield return new object[] { "b.com", "8.com" };
+    }
+
+    [Theory]
+    [MemberData(nameof(AsciiConfusableMappingCases))]
+    public void EveryAsciiDomainConfusableMappingIsCovered(string protectedDomain, string spoofDomain)
+    {
+        var result = CreateProtectedChecker(protectedDomain)
+            .CheckExistingAddress("bluegarden@" + spoofDomain);
+
+        Assert.Equal(EmailFailureKind.SuspiciousDomain, result.FailureKind);
+        Assert.Equal(DomainLookalikeKind.Confusable, result.DomainLookalikeKind);
+    }
+
+    public static IEnumerable<object[]> UnicodeConfusableMappingCases()
+    {
+        yield return new object[] { "a.com", "а.com" };
+        yield return new object[] { "b.com", "в.com" };
+        yield return new object[] { "e.com", "е.com" };
+        yield return new object[] { "k.com", "к.com" };
+        yield return new object[] { "m.com", "м.com" };
+        yield return new object[] { "h.com", "н.com" };
+        yield return new object[] { "o.com", "о.com" };
+        yield return new object[] { "p.com", "р.com" };
+        yield return new object[] { "c.com", "с.com" };
+        yield return new object[] { "t.com", "т.com" };
+        yield return new object[] { "y.com", "у.com" };
+        yield return new object[] { "x.com", "х.com" };
+        yield return new object[] { "s.com", "ѕ.com" };
+        yield return new object[] { "i.com", "і.com" };
+        yield return new object[] { "j.com", "ј.com" };
+        yield return new object[] { "l.com", "ӏ.com" };
+        yield return new object[] { "a.com", "α.com" };
+        yield return new object[] { "b.com", "β.com" };
+        yield return new object[] { "e.com", "ε.com" };
+        yield return new object[] { "i.com", "ι.com" };
+        yield return new object[] { "k.com", "κ.com" };
+        yield return new object[] { "m.com", "μ.com" };
+        yield return new object[] { "v.com", "ν.com" };
+        yield return new object[] { "o.com", "ο.com" };
+        yield return new object[] { "p.com", "ρ.com" };
+        yield return new object[] { "t.com", "τ.com" };
+        yield return new object[] { "y.com", "υ.com" };
+        yield return new object[] { "x.com", "χ.com" };
+        yield return new object[] { "c.com", "ς.com" };
+        yield return new object[] { "i.com", "ı.com" };
+    }
+
+    [Theory]
+    [MemberData(nameof(UnicodeConfusableMappingCases))]
+    public void EveryUnicodeDomainConfusableMappingIsCovered(string protectedDomain, string spoofDomain)
+    {
+        var result = CreateProtectedChecker(protectedDomain)
+            .CheckExistingAddress("bluegarden@" + spoofDomain);
+
+        Assert.Equal(EmailFailureKind.SuspiciousDomain, result.FailureKind);
+        Assert.Equal(DomainLookalikeKind.Confusable, result.DomainLookalikeKind);
+    }
+
+    [Fact]
+    public void CombiningMarkHomographIsDetected()
+    {
+        var result = CreateProtectedChecker("cafe.com")
+            .CheckExistingAddress("bluegarden@café.com");
+
+        Assert.Equal(EmailFailureKind.SuspiciousDomain, result.FailureKind);
+        Assert.Equal(DomainLookalikeKind.Confusable, result.DomainLookalikeKind);
+    }
+
+    [Fact]
+    public void InternationalizedDomainsAndLocalPartsCanBeValid()
+    {
+        var options = new EmailOptions();
+        options.ProtectedDomains.Add("bücher.de");
+        var checker = new EmailChecker(options);
+
+        var exact = checker.CheckExistingAddress("bücher@BÜCHER.DE");
+        Assert.True(exact.IsAllowed);
+        Assert.Equal("xn--bcher-kva.de", exact.Domain);
+
+        var idnTld = new EmailChecker().CheckExistingAddress("bluegarden@example.рф");
+        Assert.True(idnTld.IsAllowed);
+        Assert.StartsWith("example.xn--", idnTld.Domain);
+    }
+
+    [Theory]
+    [InlineData("!#$%&'*+-/=?^_\u0060{|}~@example.com")]
+    [InlineData("😀@example.com")]
+    public void ValidExtendedLocalPartFormsAreAccepted(string address)
+    {
+        Assert.True(new EmailChecker().CheckExistingAddress(address).IsAllowed);
+    }
+
+    [Fact]
+    public void InvalidUnicodeAndAsciiLocalPartCharactersAreRejected()
+    {
+        var checker = new EmailChecker();
+
+        Assert.Equal(
+            EmailFailureKind.InvalidLocalPart,
+            checker.CheckExistingAddress("blue(garden@example.com").FailureKind);
+        Assert.Equal(
+            EmailFailureKind.InvalidLocalPart,
+            checker.CheckExistingAddress("blue\u00A0garden@example.com").FailureKind);
+        Assert.Equal(
+            EmailFailureKind.InvalidLocalPart,
+            checker.CheckExistingAddress("blue\u200Dgarden@example.com").FailureKind);
+        Assert.Equal(
+            EmailFailureKind.InvalidLocalPart,
+            checker.CheckExistingAddress("blue\uE000garden@example.com").FailureKind);
+
+        var lowSurrogate = "blue" + '\uDC00' + "@example.com";
+        Assert.Equal(
+            EmailFailureKind.InvalidLocalPart,
+            checker.CheckExistingAddress(lowSurrogate).FailureKind);
+    }
+
+    [Fact]
+    public void OversizedMalformedAndInvalidIdnDomainsAreRejected()
+    {
+        var checker = new EmailChecker();
+
+        Assert.Equal(
+            EmailFailureKind.InvalidDomain,
+            checker.CheckExistingAddress("bluegarden@.example.com").FailureKind);
+        Assert.Equal(
+            EmailFailureKind.InvalidDomain,
+            checker.CheckExistingAddress("bluegarden@example.com.").FailureKind);
+        Assert.Equal(
+            EmailFailureKind.InvalidDomain,
+            checker.CheckExistingAddress("bluegarden@example..com").FailureKind);
+        Assert.Equal(
+            EmailFailureKind.InvalidDomain,
+            checker.CheckExistingAddress("bluegarden@example_.com").FailureKind);
+        Assert.Equal(
+            EmailFailureKind.InvalidDomain,
+            checker.CheckExistingAddress("bluegarden@" + new string('a', 64) + ".com").FailureKind);
+
+        var malformedIdn = "bluegarden@" + '\uD800' + ".com";
+        Assert.Equal(
+            EmailFailureKind.InvalidDomain,
+            checker.CheckExistingAddress(malformedIdn).FailureKind);
+
+        var oversizedDomain =
+            new string('a', 63) + "." +
+            new string('b', 63) + "." +
+            new string('c', 63) + "." +
+            new string('d', 61) + ".com";
+        Assert.Equal(
+            EmailFailureKind.InvalidDomain,
+            checker.CheckExistingAddress("bluegarden@" + oversizedDomain).FailureKind);
+    }
+
+    [Fact]
+    public void TotalMailboxLengthLimitIsEnforced()
+    {
+        var domain =
+            new string('a', 62) + "." +
+            new string('b', 62) + "." +
+            new string('c', 62) + ".com";
+        var address = new string('q', 64) + "@" + domain;
+
+        Assert.Equal(
+            EmailFailureKind.InvalidFormat,
+            new EmailChecker().CheckExistingAddress(address).FailureKind);
+    }
+
+    [Fact]
+    public void UnrelatedDomainsRemainAllowedWhenBrandProtectionIsEnabled()
+    {
+        var checker = CreateProtectedChecker("google.com");
+
+        Assert.True(checker.CheckExistingAddress("bluegarden@ordinary-example.net").IsAllowed);
+    }
+
+    [Fact]
+    public void ShortProtectedLabelsDoNotTriggerLabelReuse()
+    {
+        var checker = CreateProtectedChecker("aa.com");
+
+        Assert.True(checker.CheckExistingAddress("bluegarden@aa.net").IsAllowed);
+    }
+
+    [Fact]
+    public void DuplicateProtectedAndIssuingDomainConfigurationIsSafe()
+    {
+        var options = new EmailOptions();
+        options.ProtectedDomains.Add("google.com");
+        options.IssuingDomains.Add("GOOGLE.COM");
+
+        var checker = new EmailChecker(options);
+
+        Assert.True(checker.CheckNewAddress("bluegarden@google.com").IsAllowed);
+        Assert.Equal(
+            DomainLookalikeKind.Typographical,
+            checker.CheckExistingAddress("bluegarden@gogle.com").DomainLookalikeKind);
+    }
+
+    [Fact]
+    public void ConstructorGuardsRejectNullDependenciesAndNegativeDistance()
+    {
+        Assert.Throws<ArgumentNullException>(() => new EmailChecker((EmailOptions)null!));
+        Assert.Throws<ArgumentNullException>(
+            () => new EmailChecker((global::Unclaimable.IChecker)null!, new EmailOptions()));
+        Assert.Throws<ArgumentNullException>(
+            () => new EmailChecker(new global::Unclaimable.Checker(), null!));
+
+        var options = new EmailOptions { MaximumDomainEditDistance = -1 };
+        Assert.Throws<ArgumentOutOfRangeException>(() => new EmailChecker(options));
+    }
+
+    [Fact]
+    public void IsAllowedConvenienceMethodUsesTheRequestedPurpose()
+    {
+        var options = new EmailOptions();
+        options.IssuingDomains.Add("google.com");
+        var checker = new EmailChecker(options);
+
+        Assert.True(checker.IsAllowed("bluegarden@example.com", EmailAddressPurpose.ExistingAddress));
+        Assert.False(checker.IsAllowed("bluegarden@example.com", EmailAddressPurpose.NewAddress));
+    }
+
+    [Fact]
+    public void EmailResultExposesParsedAndDiagnosticState()
+    {
+        var result = CreateProtectedChecker("google.com")
+            .CheckExistingAddress("bluegarden@gogle.com");
+
+        Assert.Equal("bluegarden@gogle.com", result.Address);
+        Assert.Equal(EmailAddressPurpose.ExistingAddress, result.Purpose);
+        Assert.Equal("bluegarden", result.LocalPart);
+        Assert.Equal("gogle.com", result.Domain);
+        Assert.NotNull(result.LocalPartResult);
+        Assert.True(result.IsSuspiciousDomain);
+        Assert.Equal("google.com", result.MatchedProtectedDomain);
+    }
+
     [Fact]
     public void InvalidPurposeIsRejected()
     {
