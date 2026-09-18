@@ -24,6 +24,13 @@ public sealed partial class Options
     /// </summary>
     public Pattern EnabledPatterns => _enabledPatterns;
 
+    /// <summary>
+    /// Minimum number of Unicode text elements that a repeated span must contain before
+    /// <see cref="Pattern.Repeated"/> rejects it. The repeated span may occur anywhere
+    /// inside the identifier. Defaults to 4.
+    /// </summary>
+    public int RepeatedPatternMinimumLength { get; set; } = 4;
+
     /// <summary>Enables one or more pattern checks without changing the remaining pattern configuration.</summary>
     /// <param name="pattern">One pattern or a bitwise combination of supported patterns.</param>
     /// <returns>This options instance.</returns>
