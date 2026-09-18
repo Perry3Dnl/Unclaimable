@@ -95,6 +95,8 @@ The test suite also covers substitutions, extra/missing letters, uppercase domai
 
 A local-part rejection remains the primary `EmailFailureKind` when both sides fail, but the domain result is still retained. For example, `admin@lidi.nl` can report `ReservedLocalPart` while `DomainLookalikeKind` still reports the `lidl.nl` typo.
 
+The Unicode/confusable and leetspeak mapping table used for domain skeletons is shared from the `Unclaimable` core package. `Unclaimable.Email` adds domain-specific IDN/punycode normalization and protected-domain policy on top of that shared base, so generic confusable fixes are made once in Core.
+
 
 All first-party packages use version `0.7.5`.
 
@@ -349,9 +351,9 @@ var detailed = checker.CheckDetailed(userName, includeMessages: true);
 
 ## Release quality
 
-The 0.7.4 core release was validated with **644 passing tests**, package-content validation, packaged-consumer smoke tests, public-API compatibility checks, source builds without localized language packs, and a production line-coverage gate.
+The 0.7.5 release line is validated with **820 passing tests**, package-content validation, packaged-consumer smoke tests, public-API compatibility checks, source builds without localized language packs, and a production line-coverage gate covering `Unclaimable`, `Unclaimable.AspNetCore`, and `Unclaimable.Email`.
 
-Latest measured production line coverage before release: **98.07%** (`1,775 / 1,810`). The engineering target is **100%** and CI enforces a **98% minimum**.
+Latest measured production line coverage: **98.26%** (`2,147 / 2,185`); branch coverage: **83.55%** (`1,366 / 1,635`). The engineering target is **100%** and CI enforces a **98% minimum**.
 
 Full documentation and source:
 
