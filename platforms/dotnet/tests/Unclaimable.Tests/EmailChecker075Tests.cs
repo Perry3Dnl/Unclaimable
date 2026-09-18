@@ -10,7 +10,7 @@ public sealed class EmailChecker075Tests
     [InlineData("blue.garden+tag@example.com")]
     [InlineData("blue_garden@example.com")]
     [InlineData("blue-garden@example.com")]
-    [InlineData("x@example.com")]
+    [InlineData("q@example.com")]
     [InlineData("12345@example.com")]
     public void ExistingAddressesAllowOrdinaryEmailLocalParts(string address)
     {
