@@ -59,6 +59,7 @@ $packages = @(
         Assembly = "Unclaimable"
         RequiresCoreDependency = $false
         ReadmeHeading = "# Unclaimable"
+        ForbiddenReadmeText = @("Unclaimable.AspNetCore", "Unclaimable.Email", "Unclaimable.Extended")
     },
     @{
         Id = "Unclaimable.AspNetCore"
@@ -66,6 +67,7 @@ $packages = @(
         Assembly = "Unclaimable.AspNetCore"
         RequiresCoreDependency = $true
         ReadmeHeading = "# Unclaimable.AspNetCore"
+        ForbiddenReadmeText = @("Unclaimable.Email", "Unclaimable.Extended")
     },
     @{
         Id = "Unclaimable.Email"
@@ -73,6 +75,7 @@ $packages = @(
         Assembly = "Unclaimable.Email"
         RequiresCoreDependency = $true
         ReadmeHeading = "# Unclaimable.Email"
+        ForbiddenReadmeText = @("Unclaimable.AspNetCore", "Unclaimable.Extended")
     },
     @{
         Id = "Unclaimable.Extended"
@@ -80,6 +83,7 @@ $packages = @(
         Assembly = "Unclaimable.Extended"
         RequiresCoreDependency = $true
         ReadmeHeading = "# Unclaimable.Extended"
+        ForbiddenReadmeText = @("Unclaimable.AspNetCore", "Unclaimable.Email")
     }
 )
 
@@ -114,6 +118,10 @@ foreach ($package in $packages) {
         $readmeText = Get-ZipEntryText -Archive $archive -Entry $readmeEntry
         $readmeFirstLine = (($readmeText -split "\r?\n")[0]).Trim()
         Assert-True ($readmeFirstLine -eq $package.ReadmeHeading) "$id package README starts with '$readmeFirstLine' instead of '$($package.ReadmeHeading)'."
+
+        foreach ($forbiddenText in $package.ForbiddenReadmeText) {
+            Assert-True ($readmeText.IndexOf($forbiddenText, [System.StringComparison]::Ordinal) -lt 0) "$id package README contains sibling-package documentation '$forbiddenText'."
+        }
 
         foreach ($otherId in $validatedReadmes.Keys) {
             Assert-True (-not [string]::Equals($validatedReadmes[$otherId], $readmeText, [System.StringComparison]::Ordinal)) "$id and $otherId contain identical NuGet README content."
