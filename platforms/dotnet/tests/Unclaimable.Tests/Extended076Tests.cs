@@ -82,7 +82,7 @@ public sealed class Extended076Tests
         AssertCategory(checker, "reddeadredemption", "entertainment");
         AssertCategory(checker, "airtrafficcontroller", "professions");
         AssertCategory(checker, "officieelaccount", "multilingual");
-        AssertCategory(checker, "fuckboi", "slangprofanity");
+        AssertCategory(checker, "pillock", "slangprofanity");
         AssertCategory(checker, "celestia", "crypto");
         AssertCategory(checker, "kakaotalk", "platforms");
         AssertCategory(checker, "aargau", "geography");
