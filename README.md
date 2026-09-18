@@ -18,11 +18,33 @@ Prevent reserved, protected, misleading, degenerate, and unsafe identifiers befo
 
 [**NuGet**](https://www.nuget.org/packages/Unclaimable) · [**Changelog**](CHANGELOG.md)
 
-## Current release: 0.7.4
+## Current release: 0.7.5
 
-0.7.4 is the cumulative release after 0.7.0 and includes the staged 0.7.1–0.7.3 work plus the latest test-coverage hardening.
+0.7.5 introduces the `Unclaimable.Email` package while keeping every first-party package on the same release version.
 
-### New opt-in identity lists
+### Email identity protection
+
+`Unclaimable.Email` validates both sides of an email address. The local part is checked with an email-adapted Unclaimable policy, while application-configured protected domains are checked for typographical variants, adjacent transpositions, common Unicode/ASCII confusables, protected-label reuse, and embedded-domain impersonation.
+
+```csharp
+using Unclaimable.Email;
+
+var options = new EmailOptions();
+options.ProtectedDomains.Add("lidl.nl");
+options.IssuingDomains.Add("lidl.nl");
+
+var emailChecker = new EmailChecker(options);
+
+var existing = emailChecker.CheckExistingAddress("admin@lidi.nl");
+// ReservedLocalPart, while DomainLookalikeKind also reports the lidl.nl typo.
+
+var created = emailChecker.CheckNewAddress("bluegarden@lidl.nl");
+// Allowed when the local part is claimable and the issuing domain is approved.
+```
+
+Exact protected domains and their real subdomains are accepted. Issuing domains are automatically protected. The package validates practical unquoted mailbox syntax and DNS/IDN domain shape locally; it does not perform DNS or MX lookups and does not claim that a mailbox exists.
+
+### 0.7.4 opt-in identity lists
 
 0.7.4 adds ten whole-identifier protection lists, all disabled by default:
 
@@ -124,12 +146,14 @@ Generic words remain exact rather than broad substring roots: `vote` does not bl
 | --- | --- | --- |
 | [`Unclaimable`](https://www.nuget.org/packages/Unclaimable) | `netstandard2.0` | dependency-free runtime core and embedded datasets |
 | `Unclaimable.AspNetCore` | `net8.0` | ASP.NET Core DI and DataAnnotations integration |
+| `Unclaimable.Email` | `netstandard2.0` | email local-part policy and protected-domain impersonation checks |
 
 Install the current release:
 
 ```bash
-dotnet add package Unclaimable --version 0.7.4
-dotnet add package Unclaimable.AspNetCore --version 0.7.4
+dotnet add package Unclaimable --version 0.7.5
+dotnet add package Unclaimable.AspNetCore --version 0.7.5
+dotnet add package Unclaimable.Email --version 0.7.5
 ```
 
 ## Quick start
@@ -154,7 +178,7 @@ builder.Services.AddUnclaimable();
 
 `null` is accepted by Unclaimable so required-field validation remains a separate concern.
 
-## Default policy in 0.7.4
+## Default core policy in 0.7.5
 
 `new Options()` keeps strong protection while allowing ordinary alphanumeric usernames.
 
@@ -436,6 +460,10 @@ Production coverage is measured only across `Unclaimable` and `Unclaimable.AspNe
 CI also validates source builds without localized language packs, NuGet package contents and metadata, packaged-consumer restore/execution, public API compatibility, deterministic builds, Source Link, portable PDBs, and `.snupkg` symbol packages.
 
 ## Release history
+
+### 0.7.5
+
+Adds the `Unclaimable.Email` package with local-part Unclaimable checks, configurable protected/issuing domains, and domain-lookalike detection.
 
 ### 0.7.4
 

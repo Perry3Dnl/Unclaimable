@@ -2,6 +2,34 @@
 
 All notable changes to Unclaimable are documented here.
 
+## 0.7.5 - 2026-09-18
+
+Email-identity release introducing a focused sibling package while keeping the first-party package line version-aligned.
+
+### Added
+
+- New `Unclaimable.Email` `netstandard2.0` package, versioned `0.7.5` together with `Unclaimable` and `Unclaimable.AspNetCore`.
+- `EmailChecker` / `IEmailChecker` with explicit `CheckExistingAddress(...)` and `CheckNewAddress(...)` flows.
+- Email-adapted local-part validation that preserves normal email punctuation and lengths while still applying the Unclaimable reserved-name, compact, curated partial, obfuscation, Unicode-confusable, category, language, and application-reservation pipeline.
+- `EmailOptions.ProtectedDomains` for application-owned or otherwise protected domains.
+- Protected-domain detection for bounded typo variants, adjacent transpositions, selected Unicode/ASCII confusables, protected registrant-label reuse, and embedded protected domains such as `lidl.nl.attacker.com`.
+- `EmailOptions.IssuingDomains` for applications that create addresses only on approved domains. Issuing domains are automatically protected against lookalikes.
+- Structured `EmailResult` diagnostics with a primary `EmailFailureKind`, the underlying Unclaimable local-part result, `DomainLookalikeKind`, and the matched protected domain.
+- Package-content validation, packaged-consumer smoke coverage, CI packing, compatibility packing, and tag-gated NuGet publishing for the new package.
+
+### Behavior
+
+- Existing external addresses are not treated as syntax-only. For example, `admin@lidi.nl` can report `ReservedLocalPart` while also retaining the `lidl.nl` protected-domain typo diagnostic.
+- Exact protected domains and their actual subdomains are accepted before lookalike detection.
+- New-address checks optionally require the address to use a configured issuing domain or its subdomain.
+- Email validation accepts practical unquoted mailbox local parts, including common `.`, `_`, `-`, and `+` forms, while rejecting malformed local-part dot usage and malformed UTF-16.
+- Domain parsing uses DNS-style labels plus IDN-to-ASCII normalization and a plausible top-level-domain shape check.
+- The package performs no DNS or MX lookup and does not claim that a syntactically accepted domain or mailbox exists.
+
+### Versioning
+
+- `Unclaimable`, `Unclaimable.AspNetCore`, and `Unclaimable.Email` all build and package as `0.7.5` from the shared `UnclaimableVersion` property.
+
 ## 0.7.2 - 2026-09-15
 
 Configuration and optional-geography release focused on making the default username policy more practical while keeping strict protections independently available.

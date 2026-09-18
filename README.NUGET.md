@@ -2,23 +2,52 @@
 
 Strict, fast username and identifier validation for .NET.
 
-**Current release: 0.7.4**
+**Current release: 0.7.5**
 
 Unclaimable helps decide whether a username, handle, slug, account name, tenant name, or similar identifier should be claimable. It combines curated reserved-name datasets with structural validation, configurable matching, identifier-shape checks, Unicode-aware protections, optional protected-identity lists, and ASP.NET Core integration.
 
 ## Install
 
 ```bash
-dotnet add package Unclaimable --version 0.7.4
+dotnet add package Unclaimable --version 0.7.5
 ```
 
 ASP.NET Core integration:
 
 ```bash
-dotnet add package Unclaimable.AspNetCore --version 0.7.4
+dotnet add package Unclaimable.AspNetCore --version 0.7.5
 ```
 
-## What's new in 0.7.4
+Email identity protection:
+
+```bash
+dotnet add package Unclaimable.Email --version 0.7.5
+```
+
+## What's new in 0.7.5
+
+0.7.5 adds `Unclaimable.Email`, a `netstandard2.0` sibling package that applies Unclaimable to an email local part and protects configured domains against common impersonation forms.
+
+```csharp
+using Unclaimable.Email;
+
+var options = new EmailOptions();
+options.ProtectedDomains.Add("lidl.nl");
+options.IssuingDomains.Add("lidl.nl");
+
+var checker = new EmailChecker(options);
+
+var external = checker.CheckExistingAddress("admin@lidi.nl");
+var created = checker.CheckNewAddress("bluegarden@lidl.nl");
+```
+
+Both existing and newly issued addresses run the local part through Unclaimable. Protected-domain diagnostics include typo/transposition, common Unicode and ASCII confusables, protected-label reuse, and embedded protected domains. Exact protected domains and their subdomains are accepted.
+
+The package validates practical unquoted mailbox syntax and DNS/IDN domain shape. It does not perform DNS or MX lookups and does not prove that a mailbox exists.
+
+All first-party packages use version `0.7.5`.
+
+## Protected identity lists from 0.7.4
 
 0.7.4 adds ten opt-in protected-identity lists. All are disabled by default:
 
@@ -123,7 +152,7 @@ builder.Services.AddUnclaimable();
 
 `null` is accepted by Unclaimable so required-field validation can remain a separate concern, for example through `[Required]`.
 
-## Default protection in 0.7.4
+## Default core protection in 0.7.5
 
 The default policy includes:
 
@@ -269,7 +298,7 @@ var detailed = checker.CheckDetailed(userName, includeMessages: true);
 
 ## Release quality
 
-0.7.4 is validated with **644 passing tests**, package-content validation, packaged-consumer smoke tests, public-API compatibility checks, source builds without localized language packs, and a production line-coverage gate.
+The 0.7.4 core release was validated with **644 passing tests**, package-content validation, packaged-consumer smoke tests, public-API compatibility checks, source builds without localized language packs, and a production line-coverage gate.
 
 Latest measured production line coverage before release: **98.07%** (`1,775 / 1,810`). The engineering target is **100%** and CI enforces a **98% minimum**.
 
