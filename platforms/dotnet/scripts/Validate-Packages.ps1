@@ -58,26 +58,32 @@ $packages = @(
         Framework = "netstandard2.0"
         Assembly = "Unclaimable"
         RequiresCoreDependency = $false
+        ReadmeHeading = "# Unclaimable"
     },
     @{
         Id = "Unclaimable.AspNetCore"
         Framework = "net8.0"
         Assembly = "Unclaimable.AspNetCore"
         RequiresCoreDependency = $true
+        ReadmeHeading = "# Unclaimable.AspNetCore"
     },
     @{
         Id = "Unclaimable.Email"
         Framework = "netstandard2.0"
         Assembly = "Unclaimable.Email"
         RequiresCoreDependency = $true
+        ReadmeHeading = "# Unclaimable.Email"
     },
     @{
         Id = "Unclaimable.Extended"
         Framework = "netstandard2.0"
         Assembly = "Unclaimable.Extended"
         RequiresCoreDependency = $true
+        ReadmeHeading = "# Unclaimable.Extended"
     }
 )
+
+$validatedReadmes = @{}
 
 foreach ($package in $packages) {
     $id = $package.Id
@@ -102,6 +108,18 @@ foreach ($package in $packages) {
         foreach ($expectedEntry in $expectedEntries) {
             Assert-True ($entryNames -contains $expectedEntry) "$id package is missing '$expectedEntry'."
         }
+
+        $readmeEntry = $archive.Entries | Where-Object { $_.FullName -eq "README.NUGET.md" } | Select-Object -First 1
+        Assert-True ($null -ne $readmeEntry) "$id package README could not be opened."
+        $readmeText = Get-ZipEntryText -Archive $archive -Entry $readmeEntry
+        $readmeFirstLine = (($readmeText -split "\r?\n")[0]).Trim()
+        Assert-True ($readmeFirstLine -eq $package.ReadmeHeading) "$id package README starts with '$readmeFirstLine' instead of '$($package.ReadmeHeading)'."
+
+        foreach ($otherId in $validatedReadmes.Keys) {
+            Assert-True (-not [string]::Equals($validatedReadmes[$otherId], $readmeText, [System.StringComparison]::Ordinal)) "$id and $otherId contain identical NuGet README content."
+        }
+
+        $validatedReadmes[$id] = $readmeText
 
         if ($id -eq "Unclaimable.Extended") {
             Assert-True ($entryNames -contains "data/SOURCES.md") "Unclaimable.Extended package is missing data/SOURCES.md."
