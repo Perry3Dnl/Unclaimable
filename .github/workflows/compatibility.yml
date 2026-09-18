@@ -1,4 +1,4 @@
-name: .NET 0.7.5 Compatibility
+name: .NET 0.7.6 Compatibility
 
 on:
   push:
