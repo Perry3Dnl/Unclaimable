@@ -5,6 +5,7 @@ namespace Unclaimable;
 
 public sealed partial class Checker
 {
+    private const int MinimumSingleElementRunLength = 7;
     private const int MinimumRepeatedPatternElements = 8;
     private const int MinimumPatternRepetitions = 4;
     private const int MaximumRepeatedUnitElements = 4;
@@ -191,6 +192,24 @@ public sealed partial class Checker
             elements.Add(enumerator.GetTextElement());
         }
 
+        if (elements.Count >= MinimumSingleElementRunLength)
+        {
+            var isSingleElementRun = true;
+            for (var index = 1; index < elements.Count; index++)
+            {
+                if (!string.Equals(elements[index], elements[0], StringComparison.Ordinal))
+                {
+                    isSingleElementRun = false;
+                    break;
+                }
+            }
+
+            if (isSingleElementRun)
+            {
+                return true;
+            }
+        }
+
         if (elements.Count < MinimumRepeatedPatternElements)
         {
             return false;
@@ -198,7 +217,7 @@ public sealed partial class Checker
 
         var maximumUnitLength = Math.Min(MaximumRepeatedUnitElements, elements.Count / MinimumPatternRepetitions);
 
-        for (var unitLength = 1; unitLength <= maximumUnitLength; unitLength++)
+        for (var unitLength = 2; unitLength <= maximumUnitLength; unitLength++)
         {
             if (elements.Count % unitLength != 0
                 || elements.Count / unitLength < MinimumPatternRepetitions)
