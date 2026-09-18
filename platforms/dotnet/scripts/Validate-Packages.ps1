@@ -70,6 +70,12 @@ $packages = @(
         Framework = "netstandard2.0"
         Assembly = "Unclaimable.Email"
         RequiresCoreDependency = $true
+    },
+    @{
+        Id = "Unclaimable.Extended"
+        Framework = "netstandard2.0"
+        Assembly = "Unclaimable.Extended"
+        RequiresCoreDependency = $true
     }
 )
 
