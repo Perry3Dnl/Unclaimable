@@ -32,10 +32,7 @@ public static class ExtendedOptionsExtensions
                 continue;
             }
 
-            options.Reserve(
-                entry.Value,
-                entry.Category,
-                global::Unclaimable.ReservedMatchMode.WholeIdentifier);
+            options.AddSupplementalWholeIdentifier(entry.Value, entry.Category);
         }
 
         return options;
