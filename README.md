@@ -4,13 +4,13 @@
 </h1>
 
 [![build](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml)
-[![latest line coverage](https://img.shields.io/badge/latest%20line%20coverage-98.26%25-brightgreen.svg)](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml)
+[![latest line coverage](https://img.shields.io/badge/latest%20line%20coverage-98.16%25-brightgreen.svg)](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml)
 [![NuGet](https://img.shields.io/nuget/v/Unclaimable.svg?label=nuget)](https://www.nuget.org/packages/Unclaimable)
 [![NuGet downloads](https://img.shields.io/nuget/dt/Unclaimable.svg?label=downloads)](https://www.nuget.org/packages/Unclaimable)
 [![license](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
 [![target](https://img.shields.io/badge/.NET-netstandard2.0-512BD4.svg)](platforms/dotnet/src/Unclaimable/Unclaimable.csproj)
 
-Latest measured production line coverage: **98.26%**. Engineering target: **100%**; enforced CI minimum: **98%**.
+Latest measured production line coverage: **98.16%**. Engineering target: **100%**; enforced CI minimum: **98%**.
 
 **Strict, fast username and identifier validation for .NET.**
 
@@ -18,9 +18,9 @@ Prevent reserved, protected, misleading, degenerate, and unsafe identifiers befo
 
 [**NuGet**](https://www.nuget.org/packages/Unclaimable) · [**Changelog**](CHANGELOG.md)
 
-## Current release: 0.7.6
+## Current release: 0.7.7
 
-0.7.6 introduces the optional `Unclaimable.Extended` package while keeping every first-party package on the same release version.
+0.7.7 corrects the NuGet package documentation so each first-party package ships a dedicated README describing only that package. Runtime behavior and datasets are unchanged from 0.7.6.
 
 ## Unclaimable.Extended
 
@@ -266,10 +266,10 @@ Generic words remain exact rather than broad substring roots: `vote` does not bl
 Install the current release:
 
 ```bash
-dotnet add package Unclaimable --version 0.7.6
-dotnet add package Unclaimable.AspNetCore --version 0.7.6
-dotnet add package Unclaimable.Email --version 0.7.6
-dotnet add package Unclaimable.Extended --version 0.7.6
+dotnet add package Unclaimable --version 0.7.7
+dotnet add package Unclaimable.AspNetCore --version 0.7.7
+dotnet add package Unclaimable.Email --version 0.7.7
+dotnet add package Unclaimable.Extended --version 0.7.7
 ```
 
 ## Quick start

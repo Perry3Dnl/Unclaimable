@@ -58,26 +58,36 @@ $packages = @(
         Framework = "netstandard2.0"
         Assembly = "Unclaimable"
         RequiresCoreDependency = $false
+        ReadmeHeading = "# Unclaimable"
+        ForbiddenReadmeText = @("Unclaimable.AspNetCore", "Unclaimable.Email", "Unclaimable.Extended")
     },
     @{
         Id = "Unclaimable.AspNetCore"
         Framework = "net8.0"
         Assembly = "Unclaimable.AspNetCore"
         RequiresCoreDependency = $true
+        ReadmeHeading = "# Unclaimable.AspNetCore"
+        ForbiddenReadmeText = @("Unclaimable.Email", "Unclaimable.Extended")
     },
     @{
         Id = "Unclaimable.Email"
         Framework = "netstandard2.0"
         Assembly = "Unclaimable.Email"
         RequiresCoreDependency = $true
+        ReadmeHeading = "# Unclaimable.Email"
+        ForbiddenReadmeText = @("Unclaimable.AspNetCore", "Unclaimable.Extended")
     },
     @{
         Id = "Unclaimable.Extended"
         Framework = "netstandard2.0"
         Assembly = "Unclaimable.Extended"
         RequiresCoreDependency = $true
+        ReadmeHeading = "# Unclaimable.Extended"
+        ForbiddenReadmeText = @("Unclaimable.AspNetCore", "Unclaimable.Email")
     }
 )
+
+$validatedReadmes = @{}
 
 foreach ($package in $packages) {
     $id = $package.Id
@@ -102,6 +112,22 @@ foreach ($package in $packages) {
         foreach ($expectedEntry in $expectedEntries) {
             Assert-True ($entryNames -contains $expectedEntry) "$id package is missing '$expectedEntry'."
         }
+
+        $readmeEntry = $archive.Entries | Where-Object { $_.FullName -eq "README.NUGET.md" } | Select-Object -First 1
+        Assert-True ($null -ne $readmeEntry) "$id package README could not be opened."
+        $readmeText = Get-ZipEntryText -Archive $archive -Entry $readmeEntry
+        $readmeFirstLine = (($readmeText -split "\r?\n")[0]).Trim()
+        Assert-True ($readmeFirstLine -eq $package.ReadmeHeading) "$id package README starts with '$readmeFirstLine' instead of '$($package.ReadmeHeading)'."
+
+        foreach ($forbiddenText in $package.ForbiddenReadmeText) {
+            Assert-True ($readmeText.IndexOf($forbiddenText, [System.StringComparison]::Ordinal) -lt 0) "$id package README contains sibling-package documentation '$forbiddenText'."
+        }
+
+        foreach ($otherId in $validatedReadmes.Keys) {
+            Assert-True (-not [string]::Equals($validatedReadmes[$otherId], $readmeText, [System.StringComparison]::Ordinal)) "$id and $otherId contain identical NuGet README content."
+        }
+
+        $validatedReadmes[$id] = $readmeText
 
         if ($id -eq "Unclaimable.Extended") {
             Assert-True ($entryNames -contains "data/SOURCES.md") "Unclaimable.Extended package is missing data/SOURCES.md."

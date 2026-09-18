@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.7 - 2026-09-18
+
+### Fixed
+
+- Give each NuGet package its own package-specific `README.NUGET.md` instead of embedding the same project-wide README in every package.
+- Keep the Core package README focused on Core, the ASP.NET Core package README focused on DI/DataAnnotations integration, the Email package README focused on email identity protection, and the Extended package README focused on Extended datasets.
+- Add package validation that verifies the expected README heading and rejects duplicate README contents across first-party packages.
+- Update Core and ASP.NET Core package-validation baselines to the published `0.7.6` packages.
+
+
 ## 0.7.6 - 2026-09-18
 
 ### Added
