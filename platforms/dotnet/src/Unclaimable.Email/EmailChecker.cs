@@ -267,8 +267,13 @@ public sealed class EmailChecker : IEmailChecker
         parsed = null;
         localPart = null;
 
-        if (string.IsNullOrEmpty(address)
-            || !string.Equals(address, address.Trim(), StringComparison.Ordinal))
+        if (address is null || address.Length == 0)
+        {
+            failureKind = EmailFailureKind.InvalidFormat;
+            return false;
+        }
+
+        if (!string.Equals(address, address.Trim(), StringComparison.Ordinal))
         {
             failureKind = EmailFailureKind.InvalidFormat;
             return false;
