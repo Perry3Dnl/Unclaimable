@@ -199,7 +199,11 @@ public sealed class EmailChecker075Tests
     {
         var checker = CreateProtectedChecker(protectedDomain);
 
+        var titleCaseDomain =
+            char.ToUpperInvariant(protectedDomain[0]) + protectedDomain.Substring(1);
+
         Assert.True(checker.CheckExistingAddress("bluegarden@" + protectedDomain).IsAllowed);
+        Assert.True(checker.CheckExistingAddress("bluegarden@" + titleCaseDomain).IsAllowed);
         Assert.True(checker.CheckExistingAddress("bluegarden@" + protectedDomain.ToUpperInvariant()).IsAllowed);
         Assert.True(checker.CheckExistingAddress("bluegarden@mail." + protectedDomain).IsAllowed);
         Assert.True(checker.CheckExistingAddress("bluegarden@deep.mail." + protectedDomain).IsAllowed);
