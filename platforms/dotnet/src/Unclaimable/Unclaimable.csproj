@@ -16,8 +16,7 @@
     <PackageTags>username;validation;security;reserved-names</PackageTags>
 
     <EnablePackageValidation>true</EnablePackageValidation>
-    <!-- 0.7.1 through 0.7.3 are staged but not published yet; validate against the latest published package. -->
-    <PackageValidationBaselineVersion>0.7.0</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>0.7.6</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,7 +31,7 @@
 
   <ItemGroup>
     <EmbeddedResource Include="../../../../data/**/reserved.json" LogicalName="Unclaimable.Data.%(RecursiveDir)%(Filename)%(Extension)" />
-    <None Include="../../../../README.NUGET.md" Pack="true" PackagePath="/" />
+    <None Include="README.NUGET.md" Pack="true" PackagePath="/" />
     <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
   </ItemGroup>
 
