@@ -44,6 +44,57 @@ var created = emailChecker.CheckNewAddress("bluegarden@lidl.nl");
 
 Exact protected domains and their real subdomains are accepted. Issuing domains are automatically protected. The package validates practical unquoted mailbox syntax and DNS/IDN domain shape locally; it does not perform DNS or MX lookups and does not claim that a mailbox exists.
 
+#### Protected-domain checks and tested spoof forms
+
+Protected-domain matching is deterministic and runs in this order:
+
+1. Parse and IDN-normalize the domain to lowercase ASCII.
+2. Accept an exact configured protected domain or a real subdomain of it.
+3. Reject an embedded protected domain such as `google.com.attacker.com`.
+4. Decode IDN/punycode back to Unicode and compare a confusable skeleton. This covers selected Greek/Cyrillic lookalikes and common ASCII substitutions such as `0/o`, `2/z`, `3/e`, `4/a`, `5/s`, `6|9/g`, `7/t`, `8/b`, and `1/l`.
+5. Apply bounded Damerau-Levenshtein typo matching. The default maximum distance is `1`, so one insertion, deletion, substitution, or adjacent transposition is suspicious.
+6. Reject reuse of the protected registrant label on another TLD, hyphenated lure domain, or unrelated domain hierarchy.
+
+The v0.7.5 regression suite exercises McDonald's, Nike, Google, Amazon, Visa, and Nvidia. Representative outcomes:
+
+| Protected domain | Candidate domain | Result | Why |
+| --- | --- | --- | --- |
+| `mcdonalds.com` | `mcdonalds.com` | allowed | exact configured domain |
+| `mcdonalds.com` | `mail.mcdonalds.com` | allowed | genuine subdomain |
+| `mcdonalds.com` | `mcdonald.com` | `Typographical` | one deletion |
+| `mcdonalds.com` | `mcdnoalds.com` | `Typographical` | adjacent transposition |
+| `mcdonalds.com` | `mcd0nalds.com` | `Confusable` | ASCII `0/o` |
+| `mcdonalds.com` | `mcdоnalds.com` | `Confusable` | Cyrillic `о` for Latin `o` |
+| `mcdonalds.com` | `xn--mcdnalds-pbh.com` | `Confusable` | punycode decodes to the Unicode homograph |
+| `mcdonalds.com` | `mcdonalds.net` | `ProtectedLabelReuse` | protected label on another TLD |
+| `mcdonalds.com` | `mcdonalds-login.com` | `ProtectedLabelReuse` | protected label reused in a lure label |
+| `mcdonalds.com` | `mcdonalds.com.attacker.com` | `EmbeddedProtectedDomain` | real domain text embedded before an attacker-controlled suffix |
+| `nike.com` | `nkie.com` | `Typographical` | adjacent transposition |
+| `nike.com` | `nik3.com` | `Confusable` | ASCII `3/e` |
+| `nike.com` | `nіke.com` | `Confusable` | Cyrillic `і` for Latin `i` |
+| `google.com` | `gogle.com` | `Typographical` | one deletion |
+| `google.com` | `gooogle.com` | `Typographical` | one insertion |
+| `google.com` | `googel.com` | `Typographical` | adjacent transposition |
+| `google.com` | `g00gle.com` | `Confusable` | repeated ASCII `0/o` |
+| `google.com` | `xn--gogle-rce.com` | `Confusable` | punycode Unicode homograph |
+| `google.com` | `google.co` | `Typographical` | TLD deletion |
+| `amazon.com` | `Amazon.com` | allowed | domain comparison is case-insensitive after normalization |
+| `amazon.com` | `amazone.com` | `Typographical` | explicit one-character insertion case |
+| `amazon.com` | `amaz0n.com` | `Confusable` | ASCII `0/o` |
+| `amazon.com` | `ama2on.com` | `Confusable` | ASCII `2/z` |
+| `visa.com` | `vsia.com` | `Typographical` | adjacent transposition |
+| `visa.com` | `vi5a.com` | `Confusable` | ASCII `5/s` |
+| `visa.com` | `vіsa.com` | `Confusable` | Cyrillic `і` |
+| `nvidia.com` | `nvidai.com` | `Typographical` | adjacent transposition |
+| `nvidia.com` | `nvidi4.com` | `Confusable` | ASCII `4/a` |
+| `nvidia.com` | `nvіdia.com` | `Confusable` | Cyrillic `і` |
+| `nvidia.com` | `nvidia.net` | `ProtectedLabelReuse` | protected label on another TLD |
+
+The test suite also covers substitutions, extra/missing letters, uppercase domain input, nested real subdomains, hyphen-prefix and hyphen-suffix lure domains, multiple protected brands in the same checker, and distance-2 typo matching when `MaximumDomainEditDistance = 2`.
+
+A local-part rejection remains the primary `EmailFailureKind` when both sides fail, but the domain result is still retained. For example, `admin@lidi.nl` can report `ReservedLocalPart` while `DomainLookalikeKind` still reports the `lidl.nl` typo.
+
+
 ### 0.7.4 opt-in identity lists
 
 0.7.4 adds ten whole-identifier protection lists, all disabled by default:
