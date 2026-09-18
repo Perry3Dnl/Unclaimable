@@ -31,7 +31,7 @@ public enum MatchKind
     TrailingSeparator = 12,
     /// <summary>The value consisted only of Unicode decimal digits.</summary>
     NumericOnly = 13,
-    /// <summary>The value consisted of a repeated short pattern.</summary>
+    /// <summary>The value contained a repeated short pattern.</summary>
     RepeatedPattern = 14,
     /// <summary>The value contained no Unicode letters or numbers.</summary>
     SymbolOnly = 15,
