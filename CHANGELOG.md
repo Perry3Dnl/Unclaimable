@@ -8,7 +8,7 @@ Repeated-pattern hotfix.
 
 - Detect repeated spans anywhere inside an identifier instead of only when the complete identifier is made from one repeated unit.
 - Reject embedded repeated runs such as `sssssssss2234423`, `useraaaa12`, and `testabababab99`.
-- Cover short repeated units consistently, including single-character and multi-character repetition boundaries.
+- Cover repeated units consistently while avoiding incidental two-cycle substrings inside ordinary words; multi-character units require sustained repetition, while single-character runs still honor the configured minimum.
 
 ### Added
 
