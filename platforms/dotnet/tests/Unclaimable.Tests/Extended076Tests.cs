@@ -65,11 +65,16 @@ public sealed class Extended076Tests
         options.UseExtendedData();
         var checker = new Checker(options);
 
+        AssertCategory(checker, "1stdibscom", "companies");
+        AssertCategory(checker, "9round", "regionalbrands");
         AssertCategory(checker, "aalborguniversity", "education");
         AssertCategory(checker, "aalborgairport", "transport");
         AssertCategory(checker, "kashimaantlers", "sports");
         AssertCategory(checker, "raiffeisenbankinternational", "financialinstitutions");
         AssertCategory(checker, "rijkswaterstaat", "government");
+        AssertCategory(checker, "worldmeteorologicalorganization", "internationalorganizations");
+        AssertCategory(checker, "süddeutschezeitung", "media");
+        AssertCategory(checker, "boehringeringelheim", "healthcare");
         AssertCategory(checker, "johanneskepler", "historicalfigures");
         AssertCategory(checker, "friedrichmerz", "publicfigures");
         AssertCategory(checker, "sabrinacarpenter", "celebrities");
@@ -77,8 +82,9 @@ public sealed class Extended076Tests
         AssertCategory(checker, "reddeadredemption", "entertainment");
         AssertCategory(checker, "airtrafficcontroller", "professions");
         AssertCategory(checker, "officieelaccount", "multilingual");
+        AssertCategory(checker, "fuckboi", "slangprofanity");
         AssertCategory(checker, "celestia", "crypto");
-        AssertCategory(checker, "protonmail", "platforms");
+        AssertCategory(checker, "kakaotalk", "platforms");
         AssertCategory(checker, "aargau", "geography");
     }
 
