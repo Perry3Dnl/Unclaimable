@@ -74,6 +74,8 @@ public sealed class Pattern070Tests
     [InlineData("hahaha")]
     [InlineData("sssssssss2234423")]
     [InlineData("useraaaa12")]
+    [InlineData("testabababab99")]
+    [InlineData("zabcabc9")]
     public void RepeatedRejectsRepeatedSpansAtOrAboveTheConfiguredMinimum(string value)
     {
         var result = new Checker().Check(value);
