@@ -64,6 +64,8 @@ public sealed class Pattern070Tests
     [Theory]
     [InlineData("ddddddd")]
     [InlineData("aaaaaaaaaaaaaaaa")]
+    [InlineData("asasasasasa")]
+    [InlineData("asasasasasas")]
     [InlineData("abababababababab")]
     [InlineData("abcabcabcabc")]
     [InlineData("AaAaAaAaAaAa")]
