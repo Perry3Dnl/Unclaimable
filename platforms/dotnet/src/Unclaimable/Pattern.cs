@@ -14,7 +14,7 @@ public enum Pattern
     /// <summary>Reject identifiers made entirely of Unicode decimal digits.</summary>
     NumericOnly = 1 << 0,
 
-    /// <summary>Reject identifiers formed by repeating a short unit multiple times.</summary>
+    /// <summary>Reject identifiers containing a repeated short unit whose repeated span meets the configured minimum length.</summary>
     Repeated = 1 << 1,
 
     /// <summary>Reject identifiers that contain no Unicode letters or numbers.</summary>
