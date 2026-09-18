@@ -30,6 +30,10 @@
   <ItemGroup>
     <None Include="../../../../conformance/cases.json" Link="conformance-cases.json" CopyToOutputDirectory="PreserveNewest" />
     <None Include="../../../../conformance/safe-usernames.json" Link="safe-usernames.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../../../data/global/brands/core/reserved.json" Link="email-dataset-brands-core.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../../../data/global/brands/extended/reserved.json" Link="email-dataset-brands-extended.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../../../data/global/technology/core/reserved.json" Link="email-dataset-technology-core.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../../../../data/global/technology/extended/reserved.json" Link="email-dataset-technology-extended.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
