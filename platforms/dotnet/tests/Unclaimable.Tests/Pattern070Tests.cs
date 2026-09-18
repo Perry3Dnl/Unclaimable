@@ -14,6 +14,7 @@ public sealed class Pattern070Tests
         Assert.True((options.EnabledPatterns & Pattern.SymbolOnly) != 0);
         Assert.True((options.EnabledPatterns & Pattern.AsciiArt) != 0);
         Assert.False((options.EnabledPatterns & Pattern.UppercaseOnly) != 0);
+        Assert.Equal(4, options.RepeatedPatternMinimumLength);
     }
 
     [Theory]
@@ -62,14 +63,18 @@ public sealed class Pattern070Tests
     }
 
     [Theory]
-    [InlineData("ddddddd")]
+    [InlineData("dddd")]
     [InlineData("aaaaaaaaaaaaaaaa")]
+    [InlineData("asas")]
     [InlineData("asasasasasa")]
     [InlineData("asasasasasas")]
     [InlineData("abababababababab")]
     [InlineData("abcabcabcabc")]
     [InlineData("AaAaAaAaAaAa")]
-    public void RepeatedRejectsLongShortUnitRepetitions(string value)
+    [InlineData("hahaha")]
+    [InlineData("sssssssss2234423")]
+    [InlineData("useraaaa12")]
+    public void RepeatedRejectsRepeatedSpansAtOrAboveTheConfiguredMinimum(string value)
     {
         var result = new Checker().Check(value);
 
@@ -78,13 +83,56 @@ public sealed class Pattern070Tests
     }
 
     [Theory]
-    [InlineData("aaaaaa")]
-    [InlineData("hahaha")]
+    [InlineData("aaa")]
     [InlineData("bookkeeper")]
     [InlineData("Hannah")]
-    public void RepeatedDoesNotRejectOrdinaryShortOrNaturalRepetition(string value)
+    public void RepeatedDoesNotRejectSpansBelowTheDefaultMinimum(string value)
     {
         Assert.True(new Checker().Check(value).IsClaimable);
+    }
+
+    [Fact]
+    public void RepeatedPatternMinimumLengthCanBeRaised()
+    {
+        var options = new Options
+        {
+            RepeatedPatternMinimumLength = 8
+        };
+        var checker = new Checker(options);
+
+        Assert.True(checker.Check("sssssss2234423").IsClaimable);
+
+        var result = checker.Check("ssssssss2234423");
+        Assert.True(result.IsReserved);
+        Assert.Equal(MatchKind.RepeatedPattern, result.MatchKind);
+    }
+
+    [Fact]
+    public void RepeatedPatternMinimumLengthIsCapturedWhenCheckerIsConstructed()
+    {
+        var options = new Options
+        {
+            RepeatedPatternMinimumLength = 8
+        };
+        var captured = new Checker(options);
+
+        options.RepeatedPatternMinimumLength = 4;
+
+        Assert.True(captured.Check("ssss2234423").IsClaimable);
+        Assert.Equal(
+            MatchKind.RepeatedPattern,
+            new Checker(options).Check("ssss2234423").MatchKind);
+    }
+
+    [Fact]
+    public void RepeatedPatternMinimumLengthMustAllowAtLeastOneRepetition()
+    {
+        var options = new Options
+        {
+            RepeatedPatternMinimumLength = 1
+        };
+
+        Assert.Throws<ArgumentOutOfRangeException>(() => new Checker(options));
     }
 
     [Fact]
