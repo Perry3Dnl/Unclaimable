@@ -122,7 +122,7 @@ public sealed class ClaimableUsernameAttribute : ValidationAttribute
             MatchKind.LeadingSeparator => "{FieldName} cannot start with a separator.",
             MatchKind.TrailingSeparator => "{FieldName} cannot end with a separator.",
             MatchKind.NumericOnly => "{FieldName} cannot consist only of numbers.",
-            MatchKind.RepeatedPattern => "{FieldName} cannot consist of a repeated short pattern.",
+            MatchKind.RepeatedPattern => "{FieldName} cannot contain a repeated short pattern.",
             MatchKind.SymbolOnly => "{FieldName} must contain at least one letter or number.",
             MatchKind.AsciiArt => "{FieldName} matches a disallowed ASCII-art pattern.",
             MatchKind.UppercaseOnly => "{FieldName} cannot consist only of uppercase letters.",
