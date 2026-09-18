@@ -18,7 +18,8 @@ Email-identity release introducing a focused sibling package while keeping the f
 - Package-content validation, packaged-consumer smoke coverage, CI packing, compatibility packing, and tag-gated NuGet publishing for the new package.
 - Shared internal confusable normalization in the `Unclaimable` core package, consumed by `Unclaimable.Email`, so selected Unicode and leetspeak mappings have one source of truth.
 - Expanded brand-domain regression coverage for McDonald's, Nike, Google, Amazon, Visa, and Nvidia, including `amazone.com`, insertion/deletion/substitution/transposition cases, Unicode and punycode homographs, alternate TLDs, hyphen lure domains, embedded protected domains, casing, and legitimate subdomains.
-- Production coverage now includes `Unclaimable.Email`; the expanded v0.7.5 suite passes 820 tests at 98.26% line coverage (`2,147 / 2,185`).
+- Production coverage now includes `Unclaimable.Email`; the expanded v0.7.5 suite passes 3,560 tests at 98.26% line coverage (`2,147 / 2,185`).
+- Dataset-driven email-domain behavior tests derive 913 current protected labels from the built-in core/extended brands and technology datasets and automatically exercise generated typo, TLD-reuse, lure-domain, embedded-domain, ASCII-confusable, Unicode-homograph, and punycode-homograph variants.
 
 ### Behavior
 
