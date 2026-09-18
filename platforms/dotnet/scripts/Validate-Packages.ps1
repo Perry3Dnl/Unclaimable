@@ -103,6 +103,11 @@ foreach ($package in $packages) {
             Assert-True ($entryNames -contains $expectedEntry) "$id package is missing '$expectedEntry'."
         }
 
+        if ($id -eq "Unclaimable.Extended") {
+            Assert-True ($entryNames -contains "data/SOURCES.md") "Unclaimable.Extended package is missing data/SOURCES.md."
+            Assert-True ($entryNames -contains "data/THIRD_PARTY_NOTICES.md") "Unclaimable.Extended package is missing data/THIRD_PARTY_NOTICES.md."
+        }
+
         $nuspecEntry = $archive.Entries | Where-Object { $_.FullName -like "*.nuspec" } | Select-Object -First 1
         Assert-True ($null -ne $nuspecEntry) "$id package does not contain a .nuspec file."
 
