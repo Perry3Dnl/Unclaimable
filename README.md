@@ -18,9 +18,9 @@ Prevent reserved, protected, misleading, degenerate, and unsafe identifiers befo
 
 [**NuGet**](https://www.nuget.org/packages/Unclaimable) · [**Changelog**](CHANGELOG.md)
 
-## Current release: 0.7.7
+## Current release: 0.7.8
 
-0.7.7 corrects the NuGet package documentation so each first-party package ships a dedicated README describing only that package. Runtime behavior and datasets are unchanged from 0.7.6.
+0.7.8 is a repeated-pattern hotfix. `Pattern.Repeated` now catches repeated spans inside larger identifiers, not only values made entirely from repetition. `Options.RepeatedPatternMinimumLength` controls the minimum repeated span and defaults to `4` Unicode text elements.
 
 ## Unclaimable.Extended
 
@@ -266,10 +266,10 @@ Generic words remain exact rather than broad substring roots: `vote` does not bl
 Install the current release:
 
 ```bash
-dotnet add package Unclaimable --version 0.7.7
-dotnet add package Unclaimable.AspNetCore --version 0.7.7
-dotnet add package Unclaimable.Email --version 0.7.7
-dotnet add package Unclaimable.Extended --version 0.7.7
+dotnet add package Unclaimable --version 0.7.8
+dotnet add package Unclaimable.AspNetCore --version 0.7.8
+dotnet add package Unclaimable.Email --version 0.7.8
+dotnet add package Unclaimable.Extended --version 0.7.8
 ```
 
 ## Quick start
