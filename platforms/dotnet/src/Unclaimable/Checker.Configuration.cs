@@ -30,7 +30,7 @@ public sealed partial class Checker
 
     private void AddCustomDefault(ReservedEntry entry, bool includeInPartialMatching = true)
     {
-        Add(entry);
+        Add(entry, includeInPartialMatching);
 
         var exact = NormalizeExact(entry.Value);
         if (exact is null)
