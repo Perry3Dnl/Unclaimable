@@ -2,12 +2,12 @@
 
 ASP.NET Core dependency-injection and DataAnnotations integration for Unclaimable.
 
-**Package version: 0.7.7**
+**Package version: 0.7.8**
 
 ## Install
 
 ```bash
-dotnet add package Unclaimable.AspNetCore --version 0.7.7
+dotnet add package Unclaimable.AspNetCore --version 0.7.8
 ```
 
 The required `Unclaimable` core dependency is installed transitively.
