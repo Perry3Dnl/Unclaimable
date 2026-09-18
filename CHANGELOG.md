@@ -16,6 +16,9 @@ Email-identity release introducing a focused sibling package while keeping the f
 - `EmailOptions.IssuingDomains` for applications that create addresses only on approved domains. Issuing domains are automatically protected against lookalikes.
 - Structured `EmailResult` diagnostics with a primary `EmailFailureKind`, the underlying Unclaimable local-part result, `DomainLookalikeKind`, and the matched protected domain.
 - Package-content validation, packaged-consumer smoke coverage, CI packing, compatibility packing, and tag-gated NuGet publishing for the new package.
+- Shared internal confusable normalization in the `Unclaimable` core package, consumed by `Unclaimable.Email`, so selected Unicode and leetspeak mappings have one source of truth.
+- Expanded brand-domain regression coverage for McDonald's, Nike, Google, Amazon, Visa, and Nvidia, including `amazone.com`, insertion/deletion/substitution/transposition cases, Unicode and punycode homographs, alternate TLDs, hyphen lure domains, embedded protected domains, casing, and legitimate subdomains.
+- Production coverage now includes `Unclaimable.Email`; the expanded v0.7.5 suite passes 820 tests at 98.26% line coverage (`2,147 / 2,185`).
 
 ### Behavior
 
