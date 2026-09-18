@@ -8,30 +8,19 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <WarningsAsErrors>$(WarningsAsErrors);1591</WarningsAsErrors>
 
-    <PackageId>Unclaimable</PackageId>
+    <PackageId>Unclaimable.Email</PackageId>
     <Version>$(UnclaimableVersion)</Version>
-    <Description>Fast, dependency-free reserved username detection backed by the shared Unclaimable datasets.</Description>
+    <Description>Email-address identity and protected-domain impersonation checks for Unclaimable.</Description>
     <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
     <PackageIcon>unclaimable-icon.png</PackageIcon>
-    <PackageTags>username;validation;security;reserved-names</PackageTags>
+    <PackageTags>email;validation;security;impersonation;phishing</PackageTags>
 
     <EnablePackageValidation>true</EnablePackageValidation>
-    <!-- 0.7.1 through 0.7.3 are staged but not published yet; validate against the latest published package. -->
-    <PackageValidationBaselineVersion>0.7.0</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../Unclaimable/Unclaimable.csproj" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
-      <_Parameter1>Unclaimable.Email</_Parameter1>
-    </AssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="../../../../data/**/reserved.json" LogicalName="Unclaimable.Data.%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="../../../../README.NUGET.md" Pack="true" PackagePath="/" />
     <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
   </ItemGroup>

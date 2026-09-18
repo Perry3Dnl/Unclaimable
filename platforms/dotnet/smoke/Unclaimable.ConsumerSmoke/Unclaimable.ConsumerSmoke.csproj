@@ -12,6 +12,8 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Unclaimable" Version="$(UnclaimableVersion)" />
     <PackageReference Include="Unclaimable.AspNetCore" Version="$(UnclaimableVersion)" />
+    <PackageReference Include="Unclaimable.Email" Version="$(UnclaimableVersion)" />
+    <PackageReference Include="Unclaimable.Extended" Version="$(UnclaimableVersion)" />
   </ItemGroup>
 
 </Project>

@@ -1,6 +1,55 @@
 # Changelog
 
+## 0.7.6 - 2026-09-18
+
+### Added
+
+- New `Unclaimable.Extended` `netstandard2.0` package, versioned together with all first-party packages through the shared `UnclaimableVersion` property.
+- 36,313 optional additional identifiers across 21 Extended groups: companies, regional brands, financial institutions, government/public bodies, international organizations, sports, education, media, transport, healthcare, historical figures, public figures, celebrities, fiction, entertainment, professions, multilingual reserved vocabulary, regional slang/profanity, crypto, platforms, and geography.
+- `Options.UseExtendedData(...)` explicit opt-in registration with per-group enable/disable controls and exact Extended exceptions.
+- `ReservedMatchMode.WholeIdentifier` and categorized `Options.Reserve(value, category, matching)` in Core, allowing sibling packages to reuse exact, compact, Unicode-confusable, and obfuscation matching without enabling generic substring matching.
+- Deterministic embedded dataset snapshots with source/provenance notes shipped in the Extended package.
+- Extended package integration in coverage, package validation, compatibility packing, release packing/publishing, and packaged-consumer smoke tests.
+
+### Compatibility
+
+- No existing Core dataset is removed or moved. Installing `Unclaimable.Extended` alone changes no validation result; applications must call `UseExtendedData()`.
+- Existing `ReservedMatchMode` numeric values remain unchanged: `Default = 0`, `Exact = 1`; `WholeIdentifier = 2` is additive.
+- Core entries are indexed before Extended entries, preserving Core diagnostics/categories when the same identity exists in both datasets.
+
 All notable changes to Unclaimable are documented here.
+
+## 0.7.5 - 2026-09-18
+
+Email-identity release introducing a focused sibling package while keeping the first-party package line version-aligned.
+
+### Added
+
+- New `Unclaimable.Email` `netstandard2.0` package, versioned `0.7.5` together with `Unclaimable` and `Unclaimable.AspNetCore`.
+- `EmailChecker` / `IEmailChecker` with explicit `CheckExistingAddress(...)` and `CheckNewAddress(...)` flows.
+- Email-adapted local-part validation that preserves normal email punctuation and lengths while still applying the Unclaimable reserved-name, compact, curated partial, obfuscation, Unicode-confusable, category, language, and application-reservation pipeline.
+- `EmailOptions.ProtectedDomains` for application-owned or otherwise protected domains.
+- Protected-domain detection for bounded typo variants, adjacent transpositions, selected Unicode/ASCII confusables, protected registrant-label reuse, and embedded protected domains such as `lidl.nl.attacker.com`.
+- `EmailOptions.IssuingDomains` for applications that create addresses only on approved domains. Issuing domains are automatically protected against lookalikes.
+- Structured `EmailResult` diagnostics with a primary `EmailFailureKind`, the underlying Unclaimable local-part result, `DomainLookalikeKind`, and the matched protected domain.
+- Package-content validation, packaged-consumer smoke coverage, CI packing, compatibility packing, and tag-gated NuGet publishing for the new package.
+- Shared internal confusable normalization in the `Unclaimable` core package, consumed by `Unclaimable.Email`, so selected Unicode and leetspeak mappings have one source of truth.
+- Expanded brand-domain regression coverage for McDonald's, Nike, Google, Amazon, Visa, and Nvidia, including `amazone.com`, insertion/deletion/substitution/transposition cases, Unicode and punycode homographs, alternate TLDs, hyphen lure domains, embedded protected domains, casing, and legitimate subdomains.
+- Production coverage now includes `Unclaimable.Email`; the expanded v0.7.5 suite passes 3,560 tests at 98.26% line coverage (`2,147 / 2,185`).
+- Dataset-driven email-domain behavior tests derive 913 current protected labels from the built-in core/extended brands and technology datasets and automatically exercise generated typo, TLD-reuse, lure-domain, embedded-domain, ASCII-confusable, Unicode-homograph, and punycode-homograph variants.
+
+### Behavior
+
+- Existing external addresses are not treated as syntax-only. For example, `admin@lidi.nl` can report `ReservedLocalPart` while also retaining the `lidl.nl` protected-domain typo diagnostic.
+- Exact protected domains and their actual subdomains are accepted before lookalike detection.
+- New-address checks optionally require the address to use a configured issuing domain or its subdomain.
+- Email validation accepts practical unquoted mailbox local parts, including common `.`, `_`, `-`, and `+` forms, while rejecting malformed local-part dot usage and malformed UTF-16.
+- Domain parsing uses DNS-style labels plus IDN-to-ASCII normalization and a plausible top-level-domain shape check.
+- The package performs no DNS or MX lookup and does not claim that a syntactically accepted domain or mailbox exists.
+
+### Versioning
+
+- `Unclaimable`, `Unclaimable.AspNetCore`, and `Unclaimable.Email` all build and package as `0.7.5` from the shared `UnclaimableVersion` property.
 
 ## 0.7.2 - 2026-09-15
 

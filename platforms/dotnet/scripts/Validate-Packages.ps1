@@ -64,6 +64,18 @@ $packages = @(
         Framework = "net8.0"
         Assembly = "Unclaimable.AspNetCore"
         RequiresCoreDependency = $true
+    },
+    @{
+        Id = "Unclaimable.Email"
+        Framework = "netstandard2.0"
+        Assembly = "Unclaimable.Email"
+        RequiresCoreDependency = $true
+    },
+    @{
+        Id = "Unclaimable.Extended"
+        Framework = "netstandard2.0"
+        Assembly = "Unclaimable.Extended"
+        RequiresCoreDependency = $true
     }
 )
 
@@ -89,6 +101,11 @@ foreach ($package in $packages) {
 
         foreach ($expectedEntry in $expectedEntries) {
             Assert-True ($entryNames -contains $expectedEntry) "$id package is missing '$expectedEntry'."
+        }
+
+        if ($id -eq "Unclaimable.Extended") {
+            Assert-True ($entryNames -contains "data/SOURCES.md") "Unclaimable.Extended package is missing data/SOURCES.md."
+            Assert-True ($entryNames -contains "data/THIRD_PARTY_NOTICES.md") "Unclaimable.Extended package is missing data/THIRD_PARTY_NOTICES.md."
         }
 
         $nuspecEntry = $archive.Entries | Where-Object { $_.FullName -like "*.nuspec" } | Select-Object -First 1

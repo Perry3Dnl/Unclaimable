@@ -2,6 +2,8 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.DependencyInjection;
 using Unclaimable;
 using Unclaimable.AspNetCore;
+using Unclaimable.Email;
+using Unclaimable.Extended;
 
 static void Require(bool condition, string message)
 {
@@ -100,6 +102,12 @@ Require(configurableChecker.IsReserved("mysuperadminx"), "Allowed identifiers sh
 Require(configurableChecker.IsReserved("ACME"), "Exact application reservations should use case/Unicode normalization.");
 Require(configurableChecker.IsClaimable("acmeorchid"), "Exact application reservations should not block ordinary compounds.");
 
+var wholeOptions = new Options();
+wholeOptions.Reserve("Example Identity", "examplecategory", ReservedMatchMode.WholeIdentifier);
+var wholeChecker = new Checker(wholeOptions);
+Require(wholeChecker.Check("ExampleIdentity").Category == "examplecategory", "WholeIdentifier reservations should preserve categories and compact matching.");
+Require(wholeChecker.IsClaimable("MyExampleIdentityFan"), "WholeIdentifier reservations should not become generic substring roots.");
+
 var startupOptions = new Options();
 startupOptions.AdditionalBlockedCharacters("^", "$");
 var startupChecker = new Checker(startupOptions);
@@ -138,6 +146,30 @@ Require(
 Require(
     rejectedResults.Count == 1 && rejectedResults[0].ErrorMessage == "UserName 'examplebrand' is reserved.",
     "ClaimableUsernameAttribute should use the configured reason-specific validation message.");
+
+var emailOptions = new EmailOptions();
+emailOptions.ProtectedDomains.Add("lidl.nl");
+emailOptions.IssuingDomains.Add("lidl.nl");
+var emailChecker = new EmailChecker(emailOptions);
+Require(
+    emailChecker.CheckExistingAddress("admin@lidi.nl").FailureKind == EmailFailureKind.ReservedLocalPart,
+    "Packaged email consumers should still apply Unclaimable to external email local parts.");
+Require(
+    emailChecker.CheckExistingAddress("bluegarden@lidi.nl").DomainLookalikeKind == DomainLookalikeKind.Typographical,
+    "Packaged email consumers should detect protected-domain typo variants.");
+Require(
+    emailChecker.CheckNewAddress("bluegarden@lidl.nl").IsAllowed,
+    "Packaged email consumers should be able to issue an ordinary local part on an approved exact domain.");
+
+Require(ExtendedData.TotalEntries > 30000, "Packaged Extended data should contain the large optional snapshot.");
+var extendedDataOptions = new Options();
+extendedDataOptions.UseExtendedData();
+var extendedDataChecker = new Checker(extendedDataOptions);
+Require(extendedDataChecker.IsReserved("aalborguniversity"), "Extended education data should be active after opt-in.");
+Require(extendedDataChecker.IsReserved("aalborgairport"), "Extended transport data should be active after opt-in.");
+var noEducationOptions = new Options();
+noEducationOptions.UseExtendedData(extended => extended.DisableCategory(ExtendedCategory.Education));
+Require(new Checker(noEducationOptions).IsClaimable("aalborguniversity"), "Extended categories should be independently disableable.");
 
 Console.WriteLine("Packaged Unclaimable consumer smoke test passed.");
 

@@ -47,8 +47,31 @@ public sealed partial class Options
             throw new ArgumentException("A reserved identifier cannot be null, empty, or whitespace.", nameof(value));
         }
 
+        return Reserve(value, "custom", matching);
+    }
+
+    /// <summary>Adds a categorized reserved identifier using the requested matching mode.</summary>
+    /// <param name="value">The identifier to reserve.</param>
+    /// <param name="category">The diagnostic category returned when the identifier matches.</param>
+    /// <param name="matching">How the reservation participates in reserved-name matching.</param>
+    /// <returns>This options instance.</returns>
+    public Options Reserve(
+        string value,
+        string category,
+        ReservedMatchMode matching = ReservedMatchMode.Default)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException("A reserved identifier cannot be null, empty, or whitespace.", nameof(value));
+        }
+
+        if (string.IsNullOrWhiteSpace(category))
+        {
+            throw new ArgumentException("A reservation category cannot be null, empty, or whitespace.", nameof(category));
+        }
+
         ValidateReservedMatchMode(matching, nameof(matching));
-        _reservations.Add(new ReservationRegistration(value, matching));
+        _reservations.Add(new ReservationRegistration(value, category.Trim(), matching));
         return this;
     }
 
@@ -140,13 +163,15 @@ public sealed partial class Options
 
     internal sealed class ReservationRegistration
     {
-        internal ReservationRegistration(string value, ReservedMatchMode matching)
+        internal ReservationRegistration(string value, string category, ReservedMatchMode matching)
         {
             Value = value;
+            Category = category;
             Matching = matching;
         }
 
         internal string Value { get; }
+        internal string Category { get; }
         internal ReservedMatchMode Matching { get; }
     }
 }

@@ -58,7 +58,7 @@ if ($env:GITHUB_STEP_SUMMARY) {
 
 New work should aim to cover all reachable production paths. The 98% floor is a regression guardrail, not the target.
 
-Production assemblies only: `Unclaimable` and `Unclaimable.AspNetCore`. Test assemblies and generated files are excluded.
+Production assemblies only: `Unclaimable`, `Unclaimable.AspNetCore`, `Unclaimable.Email`, and `Unclaimable.Extended`. Test assemblies and generated files are excluded.
 "@ | Add-Content -Path $env:GITHUB_STEP_SUMMARY
 }
 

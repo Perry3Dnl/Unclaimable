@@ -61,6 +61,7 @@ jobs:
         run: ./platforms/dotnet/scripts/Test-Coverage.ps1 -ResultsPath ./artifacts/coverage -MinimumLineCoverage 98
 
       - name: Upload coverage report
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: unclaimable-coverage
@@ -75,12 +76,20 @@ jobs:
           rm -rf "$trimmed_dir/data/languages"
           dotnet build "$trimmed_dir/platforms/dotnet/src/Unclaimable/Unclaimable.csproj" --configuration Release
           dotnet build "$trimmed_dir/platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj" --configuration Release
+          dotnet build "$trimmed_dir/platforms/dotnet/src/Unclaimable.Email/Unclaimable.Email.csproj" --configuration Release
+          dotnet build "$trimmed_dir/platforms/dotnet/src/Unclaimable.Extended/Unclaimable.Extended.csproj" --configuration Release
 
       - name: Pack core
         run: dotnet pack platforms/dotnet/src/Unclaimable/Unclaimable.csproj --configuration Release --output artifacts
 
       - name: Pack ASP.NET Core integration
         run: dotnet pack platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj --configuration Release --output artifacts
+
+      - name: Pack email integration
+        run: dotnet pack platforms/dotnet/src/Unclaimable.Email/Unclaimable.Email.csproj --configuration Release --output artifacts
+
+      - name: Pack extended datasets
+        run: dotnet pack platforms/dotnet/src/Unclaimable.Extended/Unclaimable.Extended.csproj --configuration Release --output artifacts
 
       - name: Validate package contents and metadata
         shell: pwsh

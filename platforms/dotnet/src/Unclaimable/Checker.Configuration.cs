@@ -28,9 +28,9 @@ public sealed partial class Checker
         }
     }
 
-    private void AddCustomDefault(ReservedEntry entry)
+    private void AddCustomDefault(ReservedEntry entry, bool includeInPartialMatching = true)
     {
-        Add(entry);
+        Add(entry, includeInPartialMatching);
 
         var exact = NormalizeExact(entry.Value);
         if (exact is null)
@@ -49,7 +49,7 @@ public sealed partial class Checker
             _customCompact.Add(compact, entry);
         }
 
-        if (compact.Length >= _partialMatchMinimumLength)
+        if (includeInPartialMatching && compact.Length >= _partialMatchMinimumLength)
         {
             _customPartialEntries.Add(new PartialEntry(exact, compact, entry));
         }
