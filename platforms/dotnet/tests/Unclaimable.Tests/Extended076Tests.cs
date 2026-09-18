@@ -74,7 +74,7 @@ public sealed class Extended076Tests
         AssertCategory(checker, "rijkswaterstaat", "government");
         AssertCategory(checker, "worldmeteorologicalorganization", "internationalorganizations");
         AssertCategory(checker, "süddeutschezeitung", "media");
-        AssertCategory(checker, "boehringeringelheim", "healthcare");
+        AssertCategory(checker, "americanoncologynetwork", "healthcare");
         AssertCategory(checker, "johanneskepler", "historicalfigures");
         AssertCategory(checker, "friedrichmerz", "publicfigures");
         AssertCategory(checker, "sabrinacarpenter", "celebrities");
