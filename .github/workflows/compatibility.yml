@@ -1,4 +1,4 @@
-name: .NET 0.7.6 Compatibility
+name: .NET 0.7.7 Compatibility
 
 on:
   push:
@@ -39,10 +39,10 @@ jobs:
 
       # 0.7.1, 0.7.2, and 0.7.3 are staged but not published yet. Keep the package-validation
       # baseline on the latest package that actually exists on NuGet.org.
-      - name: Validate core public API against latest published NuGet baseline (v0.7.0)
+      - name: Validate core public API against latest published NuGet baseline (v0.7.6)
         run: dotnet pack platforms/dotnet/src/Unclaimable/Unclaimable.csproj --configuration Release --output artifacts/compat
 
-      - name: Validate ASP.NET Core public API against latest published NuGet baseline (v0.7.0)
+      - name: Validate ASP.NET Core public API against latest published NuGet baseline (v0.7.6)
         run: dotnet pack platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj --configuration Release --output artifacts/compat
 
       - name: Validate new email package can be packed
