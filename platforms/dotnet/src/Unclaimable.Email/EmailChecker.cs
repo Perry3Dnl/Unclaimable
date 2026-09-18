@@ -32,8 +32,7 @@ public sealed class EmailChecker : IEmailChecker
             Domain = domain;
             Skeleton = skeleton;
 
-            var separator = domain.IndexOf('.');
-            RegistrantLabel = separator < 0 ? domain : domain.Substring(0, separator);
+            RegistrantLabel = domain.Substring(0, domain.IndexOf('.'));
         }
 
         public string Domain { get; }
@@ -637,11 +636,6 @@ public sealed class EmailChecker : IEmailChecker
 
     private static bool IsWithinDamerauLevenshteinDistance(string left, string right, int maximumDistance)
     {
-        if (string.Equals(left, right, StringComparison.Ordinal))
-        {
-            return true;
-        }
-
         if (Math.Abs(left.Length - right.Length) > maximumDistance)
         {
             return false;
