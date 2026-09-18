@@ -16,7 +16,7 @@
     <PackageTags>username;validation;security;reserved-names</PackageTags>
 
     <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>0.7.6</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>0.7.7</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <ItemGroup>
