@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Unclaimable;
 using Unclaimable.AspNetCore;
 using Unclaimable.Email;
+using Unclaimable.Extended;
 
 static void Require(bool condition, string message)
 {
@@ -153,6 +154,22 @@ Require(
 Require(
     emailChecker.CheckNewAddress("bluegarden@lidl.nl").IsAllowed,
     "Packaged email consumers should be able to issue an ordinary local part on an approved exact domain.");
+
+var extendedOptions = new Options();
+Require(
+    new Checker(extendedOptions).IsClaimable("harvarduniversity"),
+    "Installing Unclaimable.Extended alone should not activate Extended data.");
+extendedOptions.UseExtendedData(extended => extended.DisableCategory(ExtendedCategory.Sports));
+var extendedChecker = new Checker(extendedOptions);
+Require(
+    extendedChecker.IsReserved("harvarduniversity"),
+    "Packaged Extended consumers should activate education data through UseExtendedData().");
+Require(
+    extendedChecker.Check("harvarduniversity").Category == "education",
+    "Packaged Extended results should preserve the Extended category.");
+Require(
+    extendedChecker.IsClaimable("arsenalfc"),
+    "Disabled Extended categories should not participate in matching.");
 
 Console.WriteLine("Packaged Unclaimable consumer smoke test passed.");
 
