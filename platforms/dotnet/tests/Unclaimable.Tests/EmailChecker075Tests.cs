@@ -83,6 +83,170 @@ public sealed class EmailChecker075Tests
         Assert.False(result.IsSuspiciousDomain);
     }
 
+    public static IEnumerable<object[]> BrandDomainSpoofCases()
+    {
+        // McDonald's
+        yield return new object[] { "mcdonalds.com", "mcdonald.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "mcdonalds.com", "mcdonaldss.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "mcdonalds.com", "mcdnoalds.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "mcdonalds.com", "mcdonaldz.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "mcdonalds.com", "mcd0nalds.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "mcdonalds.com", "mcdоnalds.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "mcdonalds.com", "xn--mcdnalds-pbh.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "mcdonalds.com", "mcdonalds.net", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "mcdonalds.com", "mcdonalds-login.com", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "mcdonalds.com", "login-mcdonalds.com", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "mcdonalds.com", "mcdonalds.secure-login.example.com", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "mcdonalds.com", "mcdonalds.com.attacker.com", DomainLookalikeKind.EmbeddedProtectedDomain };
+
+        // Nike
+        yield return new object[] { "nike.com", "nie.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "nike.com", "niike.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "nike.com", "nkie.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "nike.com", "nixe.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "nike.com", "nik3.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "nike.com", "nіke.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "nike.com", "xn--nke-jhd.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "nike.com", "nike.net", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "nike.com", "nike-login.com", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "nike.com", "login-nike.com", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "nike.com", "nike.com.attacker.com", DomainLookalikeKind.EmbeddedProtectedDomain };
+
+        // Google
+        yield return new object[] { "google.com", "gogle.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "google.com", "gooogle.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "google.com", "googel.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "google.com", "googxe.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "google.com", "g00gle.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "google.com", "goog1e.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "google.com", "goo9le.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "google.com", "gοogle.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "google.com", "xn--gogle-rce.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "google.com", "google.co", DomainLookalikeKind.Typographical };
+        yield return new object[] { "google.com", "google.net", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "google.com", "google-login.com", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "google.com", "login-google.com", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "google.com", "google.secure-login.example.com", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "google.com", "google.com.attacker.com", DomainLookalikeKind.EmbeddedProtectedDomain };
+
+        // Amazon, including the explicit "amazone" typo.
+        yield return new object[] { "amazon.com", "amazone.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "amazon.com", "amazn.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "amazon.com", "amaozn.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "amazon.com", "amazxn.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "amazon.com", "amaz0n.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "amazon.com", "ama2on.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "amazon.com", "amazοn.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "amazon.com", "xn--amazn-uce.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "amazon.com", "amazon.net", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "amazon.com", "amazon-login.com", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "amazon.com", "amazon.com.attacker.com", DomainLookalikeKind.EmbeddedProtectedDomain };
+
+        // Visa
+        yield return new object[] { "visa.com", "vis.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "visa.com", "viisa.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "visa.com", "vsia.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "visa.com", "viza.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "visa.com", "vi5a.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "visa.com", "vіsa.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "visa.com", "xn--vsa-jhd.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "visa.com", "visa.net", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "visa.com", "visa-login.com", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "visa.com", "visa.com.attacker.com", DomainLookalikeKind.EmbeddedProtectedDomain };
+
+        // Nvidia
+        yield return new object[] { "nvidia.com", "nvida.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "nvidia.com", "nnvidia.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "nvidia.com", "nvidai.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "nvidia.com", "nvidix.com", DomainLookalikeKind.Typographical };
+        yield return new object[] { "nvidia.com", "nvidi4.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "nvidia.com", "nvіdia.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "nvidia.com", "xn--nvdia-o2e.com", DomainLookalikeKind.Confusable };
+        yield return new object[] { "nvidia.com", "nvidia.net", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "nvidia.com", "nvidia-login.com", DomainLookalikeKind.ProtectedLabelReuse };
+        yield return new object[] { "nvidia.com", "nvidia.com.attacker.com", DomainLookalikeKind.EmbeddedProtectedDomain };
+    }
+
+    [Theory]
+    [MemberData(nameof(BrandDomainSpoofCases))]
+    public void BrandDomainSpoofMatrixIsRejected(
+        string protectedDomain,
+        string candidateDomain,
+        DomainLookalikeKind expectedKind)
+    {
+        var result = CreateProtectedChecker(protectedDomain)
+            .CheckExistingAddress("bluegarden@" + candidateDomain);
+
+        Assert.False(result.IsAllowed);
+        Assert.Equal(EmailFailureKind.SuspiciousDomain, result.FailureKind);
+        Assert.Equal(expectedKind, result.DomainLookalikeKind);
+        Assert.Equal(protectedDomain, result.MatchedProtectedDomain);
+    }
+
+    public static IEnumerable<object[]> ProtectedBrandDomains()
+    {
+        yield return new object[] { "mcdonalds.com" };
+        yield return new object[] { "nike.com" };
+        yield return new object[] { "google.com" };
+        yield return new object[] { "amazon.com" };
+        yield return new object[] { "visa.com" };
+        yield return new object[] { "nvidia.com" };
+    }
+
+    [Theory]
+    [MemberData(nameof(ProtectedBrandDomains))]
+    public void ProtectedBrandDomainsAllowExactCaseVariantsAndRealSubdomains(string protectedDomain)
+    {
+        var checker = CreateProtectedChecker(protectedDomain);
+
+        Assert.True(checker.CheckExistingAddress("bluegarden@" + protectedDomain).IsAllowed);
+        Assert.True(checker.CheckExistingAddress("bluegarden@" + protectedDomain.ToUpperInvariant()).IsAllowed);
+        Assert.True(checker.CheckExistingAddress("bluegarden@mail." + protectedDomain).IsAllowed);
+        Assert.True(checker.CheckExistingAddress("bluegarden@deep.mail." + protectedDomain).IsAllowed);
+    }
+
+    [Fact]
+    public void MultipleProtectedBrandsReportTheSpecificDomainThatMatched()
+    {
+        var options = new EmailOptions();
+        foreach (var data in ProtectedBrandDomains())
+        {
+            options.ProtectedDomains.Add((string)data[0]);
+        }
+
+        var checker = new EmailChecker(options);
+
+        Assert.Equal(
+            "nike.com",
+            checker.CheckExistingAddress("bluegarden@nik3.com").MatchedProtectedDomain);
+        Assert.Equal(
+            "amazon.com",
+            checker.CheckExistingAddress("bluegarden@amazone.com").MatchedProtectedDomain);
+        Assert.Equal(
+            "google.com",
+            checker.CheckExistingAddress("bluegarden@xn--gogle-rce.com").MatchedProtectedDomain);
+    }
+
+    [Fact]
+    public void DistanceTwoSpoofsAreOptInThroughMaximumDomainEditDistance()
+    {
+        var defaultOptions = new EmailOptions();
+        defaultOptions.ProtectedDomains.Add("google.com");
+        Assert.True(
+            new EmailChecker(defaultOptions)
+                .CheckExistingAddress("bluegarden@ggoglee.com")
+                .IsAllowed);
+
+        var expandedOptions = new EmailOptions { MaximumDomainEditDistance = 2 };
+        expandedOptions.ProtectedDomains.Add("google.com");
+
+        var result = new EmailChecker(expandedOptions)
+            .CheckExistingAddress("bluegarden@ggoglee.com");
+
+        Assert.Equal(EmailFailureKind.SuspiciousDomain, result.FailureKind);
+        Assert.Equal(DomainLookalikeKind.Typographical, result.DomainLookalikeKind);
+    }
+
     [Fact]
     public void LookalikeChecksCanBeIndependentlyDisabled()
     {
