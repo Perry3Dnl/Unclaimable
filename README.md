@@ -22,8 +22,6 @@ Prevent reserved, protected, misleading, degenerate, and unsafe identifiers befo
 
 0.7.6 introduces the optional `Unclaimable.Extended` package while keeping every first-party package on the same release version.
 
-### Email identity protection
-
 ## Unclaimable.Extended
 
 0.7.6 adds the optional `Unclaimable.Extended` package. It uses the Core matching engine and contributes a much larger identity snapshot without moving or removing anything that already ships in `Unclaimable`.
@@ -80,6 +78,8 @@ The first 0.7.6 snapshot contains **36,313 additional identifiers**:
 Extended entries use `ReservedMatchMode.WholeIdentifier`: exact, compact, selected Unicode-confusable, and obfuscation checks still apply, but these large datasets do not become arbitrary substring roots. Core entries are indexed first, so an identifier already protected by Core keeps its existing Core match/category when Extended is enabled.
 
 Large imported sets are embedded as deterministic snapshots; the package performs no runtime data downloads. Source/provenance information is shipped in `data/SOURCES.md` inside the package.
+
+### Email identity protection
 
 `Unclaimable.Email` validates both sides of an email address. The local part is checked with an email-adapted Unclaimable policy, while application-configured protected domains are checked for typographical variants, adjacent transpositions, common Unicode/ASCII confusables, protected-label reuse, and embedded-domain impersonation.
 
