@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Unclaimable;
 using Unclaimable.AspNetCore;
 using Unclaimable.Email;
+using Unclaimable.Extended;
 
 static void Require(bool condition, string message)
 {
@@ -101,6 +102,12 @@ Require(configurableChecker.IsReserved("mysuperadminx"), "Allowed identifiers sh
 Require(configurableChecker.IsReserved("ACME"), "Exact application reservations should use case/Unicode normalization.");
 Require(configurableChecker.IsClaimable("acmeorchid"), "Exact application reservations should not block ordinary compounds.");
 
+var wholeOptions = new Options();
+wholeOptions.Reserve("Example Identity", "examplecategory", ReservedMatchMode.WholeIdentifier);
+var wholeChecker = new Checker(wholeOptions);
+Require(wholeChecker.Check("ExampleIdentity").Category == "examplecategory", "WholeIdentifier reservations should preserve categories and compact matching.");
+Require(wholeChecker.IsClaimable("MyExampleIdentityFan"), "WholeIdentifier reservations should not become generic substring roots.");
+
 var startupOptions = new Options();
 startupOptions.AdditionalBlockedCharacters("^", "$");
 var startupChecker = new Checker(startupOptions);
@@ -153,6 +160,16 @@ Require(
 Require(
     emailChecker.CheckNewAddress("bluegarden@lidl.nl").IsAllowed,
     "Packaged email consumers should be able to issue an ordinary local part on an approved exact domain.");
+
+Require(ExtendedData.TotalEntries > 30000, "Packaged Extended data should contain the large optional snapshot.");
+var extendedDataOptions = new Options();
+extendedDataOptions.UseExtendedData();
+var extendedDataChecker = new Checker(extendedDataOptions);
+Require(extendedDataChecker.IsReserved("Thakur College of Engineering and Technology"), "Extended education data should be active after opt-in.");
+Require(extendedDataChecker.IsReserved("Aeroestación Yabotí"), "Extended transport data should be active after opt-in.");
+var noEducationOptions = new Options();
+noEducationOptions.UseExtendedData(extended => extended.DisableCategory(ExtendedCategory.Education));
+Require(new Checker(noEducationOptions).IsClaimable("Thakur College of Engineering and Technology"), "Extended categories should be independently disableable.");
 
 Console.WriteLine("Packaged Unclaimable consumer smoke test passed.");
 
