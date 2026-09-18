@@ -230,6 +230,13 @@ public sealed partial class Checker : IChecker
                 includeInPartialMatching: entry.SafePartial || (isProfanity && options.ProfanityPartialMatching));
         }
 
+        foreach (var supplemental in options.SupplementalReservations)
+        {
+            Add(
+                new ReservedEntry(supplemental.Value, supplemental.Category),
+                includeInPartialMatching: false);
+        }
+
         foreach (var value in options.AdditionalReserved)
         {
             AddCustomDefault(new ReservedEntry(value, "custom"));
