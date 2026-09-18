@@ -5,12 +5,10 @@ namespace Unclaimable;
 
 public sealed partial class Checker
 {
-    private const int MinimumSingleElementRunLength = 7;
-    private const int MinimumRepeatedPatternElements = 8;
-    private const int MinimumPatternRepetitions = 4;
     private const int MaximumRepeatedUnitElements = 4;
 
     private readonly Pattern _enabledPatterns;
+    private readonly int _repeatedPatternMinimumLength;
 
     private bool TryFindFirstPatternViolation(string? value, out Result? violation)
     {
@@ -182,7 +180,7 @@ public sealed partial class Checker
                || category == UnicodeCategory.OtherSymbol;
     }
 
-    private static bool IsRepeatedPattern(string value)
+    private bool IsRepeatedPattern(string value)
     {
         var elements = new List<string>();
         var enumerator = StringInfo.GetTextElementEnumerator(value.ToLowerInvariant());
@@ -192,56 +190,56 @@ public sealed partial class Checker
             elements.Add(enumerator.GetTextElement());
         }
 
-        if (elements.Count >= MinimumSingleElementRunLength)
-        {
-            var isSingleElementRun = true;
-            for (var index = 1; index < elements.Count; index++)
-            {
-                if (!string.Equals(elements[index], elements[0], StringComparison.Ordinal))
-                {
-                    isSingleElementRun = false;
-                    break;
-                }
-            }
-
-            if (isSingleElementRun)
-            {
-                return true;
-            }
-        }
-
-        if (elements.Count < MinimumRepeatedPatternElements)
+        if (elements.Count < _repeatedPatternMinimumLength)
         {
             return false;
         }
 
-        var maximumUnitLength = Math.Min(MaximumRepeatedUnitElements, elements.Count / MinimumPatternRepetitions);
-
-        for (var unitLength = 2; unitLength <= maximumUnitLength; unitLength++)
+        for (var startIndex = 0; startIndex <= elements.Count - _repeatedPatternMinimumLength; startIndex++)
         {
-            if (elements.Count % unitLength != 0
-                || elements.Count / unitLength < MinimumPatternRepetitions)
-            {
-                continue;
-            }
+            var remaining = elements.Count - startIndex;
+            var maximumUnitLength = Math.Min(MaximumRepeatedUnitElements, remaining / 2);
 
-            var repeated = true;
-            for (var index = unitLength; index < elements.Count; index++)
+            for (var unitLength = 1; unitLength <= maximumUnitLength; unitLength++)
             {
-                if (!string.Equals(elements[index], elements[index % unitLength], StringComparison.Ordinal))
+                var matchedLength = unitLength;
+                var nextUnitStart = startIndex + unitLength;
+
+                while (nextUnitStart + unitLength <= elements.Count
+                       && RepeatedUnitMatches(elements, startIndex, nextUnitStart, unitLength))
                 {
-                    repeated = false;
-                    break;
-                }
-            }
+                    matchedLength += unitLength;
+                    if (matchedLength >= _repeatedPatternMinimumLength)
+                    {
+                        return true;
+                    }
 
-            if (repeated)
-            {
-                return true;
+                    nextUnitStart += unitLength;
+                }
             }
         }
 
         return false;
+    }
+
+    private static bool RepeatedUnitMatches(
+        IReadOnlyList<string> elements,
+        int firstUnitStart,
+        int candidateUnitStart,
+        int unitLength)
+    {
+        for (var offset = 0; offset < unitLength; offset++)
+        {
+            if (!string.Equals(
+                    elements[firstUnitStart + offset],
+                    elements[candidateUnitStart + offset],
+                    StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static bool IsUppercaseOnlyPattern(string value)
@@ -355,7 +353,7 @@ public sealed partial class Checker
             case MatchKind.NumericOnly:
                 return "Value cannot consist only of numbers.";
             case MatchKind.RepeatedPattern:
-                return "Value cannot consist of a repeated short pattern.";
+                return "Value cannot contain a repeated short pattern.";
             case MatchKind.SymbolOnly:
                 return "Value must contain at least one letter or number.";
             case MatchKind.AsciiArt:
