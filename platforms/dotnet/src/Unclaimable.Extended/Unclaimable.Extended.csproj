@@ -23,5 +23,6 @@
     <None Include="../../../../README.NUGET.md" Pack="true" PackagePath="/" />
     <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
     <None Include="Data/SOURCES.md" Pack="true" PackagePath="data/" />
+    <None Include="Data/THIRD_PARTY_NOTICES.md" Pack="true" PackagePath="data/" />
   </ItemGroup>
 </Project>
