@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);1591</WarningsAsErrors>
+    <PackageId>Unclaimable.Extended</PackageId>
+    <Version>$(UnclaimableVersion)</Version>
+    <Description>Large optional reserved-identity datasets for Unclaimable.</Description>
+    <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
+    <PackageIcon>unclaimable-icon.png</PackageIcon>
+    <PackageTags>username;validation;security;reserved-names;brands;companies;datasets</PackageTags>
+    <EnablePackageValidation>true</EnablePackageValidation>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Unclaimable/Unclaimable.csproj" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Data/*.json" LogicalName="Unclaimable.Extended.Data.%(Filename)%(Extension)" />
+    <None Include="../../../../README.NUGET.md" Pack="true" PackagePath="/" />
+    <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
+    <None Include="Data/SOURCES.md" Pack="true" PackagePath="data/" />
+  </ItemGroup>
+</Project>
