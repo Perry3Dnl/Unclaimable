@@ -15,15 +15,14 @@
     <PackageTags>username;validation;security;aspnetcore;reserved-names</PackageTags>
 
     <EnablePackageValidation>true</EnablePackageValidation>
-    <!-- 0.7.1 through 0.7.3 are staged but not published yet; validate against the latest published package. -->
-    <PackageValidationBaselineVersion>0.7.0</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>0.7.6</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="../Unclaimable/Unclaimable.csproj" />
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
-    <None Include="../../../../README.NUGET.md" Pack="true" PackagePath="/" />
+    <None Include="README.NUGET.md" Pack="true" PackagePath="/" />
     <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
   </ItemGroup>
 
