@@ -4,13 +4,13 @@
 </h1>
 
 [![build](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml)
-[![latest line coverage](https://img.shields.io/badge/latest%20line%20coverage-98.07%25-brightgreen.svg)](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml)
+[![latest line coverage](https://img.shields.io/badge/latest%20line%20coverage-98.26%25-brightgreen.svg)](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml)
 [![NuGet](https://img.shields.io/nuget/v/Unclaimable.svg?label=nuget)](https://www.nuget.org/packages/Unclaimable)
 [![NuGet downloads](https://img.shields.io/nuget/dt/Unclaimable.svg?label=downloads)](https://www.nuget.org/packages/Unclaimable)
 [![license](https://img.shields.io/badge/license-MPL--2.0-blue.svg)](LICENSE)
 [![target](https://img.shields.io/badge/.NET-netstandard2.0-512BD4.svg)](platforms/dotnet/src/Unclaimable/Unclaimable.csproj)
 
-Latest measured production line coverage: **98.07%**. Engineering target: **100%**; enforced CI minimum: **98%**.
+Latest measured production line coverage: **98.26%**. Engineering target: **100%**; enforced CI minimum: **98%**.
 
 **Strict, fast username and identifier validation for .NET.**
 
@@ -93,6 +93,8 @@ The v0.7.5 regression suite exercises McDonald's, Nike, Google, Amazon, Visa, an
 The test suite also covers substitutions, extra/missing letters, uppercase domain input, nested real subdomains, hyphen-prefix and hyphen-suffix lure domains, multiple protected brands in the same checker, and distance-2 typo matching when `MaximumDomainEditDistance = 2`.
 
 A local-part rejection remains the primary `EmailFailureKind` when both sides fail, but the domain result is still retained. For example, `admin@lidi.nl` can report `ReservedLocalPart` while `DomainLookalikeKind` still reports the `lidl.nl` typo.
+
+The Unicode/confusable and leetspeak mapping table used for domain skeletons is shared from the `Unclaimable` core package. `Unclaimable.Email` adds domain-specific IDN/punycode normalization and protected-domain policy on top of that shared base, so generic confusable fixes are made once in Core.
 
 
 ### 0.7.4 opt-in identity lists
@@ -499,12 +501,12 @@ public sealed class SignupModel
 
 ## Test coverage and release quality
 
-The current release line has **644 passing tests**.
+The current 0.7.5 release line has **820 passing tests**.
 
-Production coverage is measured only across `Unclaimable` and `Unclaimable.AspNetCore`; test assemblies and generated files are excluded.
+Production coverage is measured across `Unclaimable`, `Unclaimable.AspNetCore`, and `Unclaimable.Email`; test assemblies and generated files are excluded.
 
-- latest measured line coverage: **98.07%** (`1,775 / 1,810`);
-- latest measured branch coverage: **81.14%** (`1,110 / 1,368`);
+- latest measured line coverage: **98.26%** (`2,147 / 2,185`);
+- latest measured branch coverage: **83.55%** (`1,366 / 1,635`);
 - engineering target: **100% production line coverage**;
 - enforced CI minimum: **98% production line coverage**.
 
