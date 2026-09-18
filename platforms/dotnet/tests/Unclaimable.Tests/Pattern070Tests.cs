@@ -125,7 +125,21 @@ public sealed class Pattern070Tests
     }
 
     [Fact]
-    public void RepeatedPatternMinimumLengthMustAllowAtLeastOneRepetition()
+    public void RepeatedPatternMinimumLengthOfTwoIsSupported()
+    {
+        var options = new Options
+        {
+            RepeatedPatternMinimumLength = 2
+        };
+
+        var result = new Checker(options).Check("aabc");
+
+        Assert.True(result.IsReserved);
+        Assert.Equal(MatchKind.RepeatedPattern, result.MatchKind);
+    }
+
+    [Fact]
+    public void RepeatedPatternMinimumLengthMustBeAtLeastTwo()
     {
         var options = new Options
         {
