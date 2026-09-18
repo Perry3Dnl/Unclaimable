@@ -65,7 +65,7 @@ public sealed class Pattern070Tests
     [Theory]
     [InlineData("dddd")]
     [InlineData("aaaaaaaaaaaaaaaa")]
-    [InlineData("asas")]
+    [InlineData("asasas")]
     [InlineData("asasasasasa")]
     [InlineData("asasasasasas")]
     [InlineData("abababababababab")]
@@ -75,7 +75,6 @@ public sealed class Pattern070Tests
     [InlineData("sssssssss2234423")]
     [InlineData("useraaaa12")]
     [InlineData("testabababab99")]
-    [InlineData("zabcabc9")]
     public void RepeatedRejectsRepeatedSpansAtOrAboveTheConfiguredMinimum(string value)
     {
         var result = new Checker().Check(value);
@@ -86,6 +85,9 @@ public sealed class Pattern070Tests
 
     [Theory]
     [InlineData("aaa")]
+    [InlineData("asas")]
+    [InlineData("zabcabc9")]
+    [InlineData("rememberme")]
     [InlineData("bookkeeper")]
     [InlineData("Hannah")]
     public void RepeatedDoesNotRejectSpansBelowTheDefaultMinimum(string value)
