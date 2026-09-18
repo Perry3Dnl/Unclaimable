@@ -2,12 +2,12 @@
 
 Fast, dependency-free reserved username and identifier validation for .NET.
 
-**Package version: 0.7.7**
+**Package version: 0.7.8**
 
 ## Install
 
 ```bash
-dotnet add package Unclaimable --version 0.7.7
+dotnet add package Unclaimable --version 0.7.8
 ```
 
 ## Quick start
@@ -41,6 +41,21 @@ The default policy combines:
 - numeric-only, repeated-pattern, symbol-only, and ASCII-art checks.
 
 Passing or disabling one rule never positively clears an identifier through the rest of the pipeline.
+
+## Repeated-pattern threshold
+
+`Pattern.Repeated` detects repeated spans anywhere inside an identifier. The minimum repeated span defaults to four Unicode text elements:
+
+```csharp
+var options = new Options
+{
+    RepeatedPatternMinimumLength = 4
+};
+
+var checker = new Checker(options);
+```
+
+Raise the value when an application intentionally permits shorter repetition. The minimum supported setting is `2`.
 
 ## Configure categories
 
