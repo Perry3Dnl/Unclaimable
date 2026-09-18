@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.7.8 - 2026-09-18
+
+Repeated-pattern hotfix.
+
+### Fixed
+
+- Detect repeated spans anywhere inside an identifier instead of only when the complete identifier is made from one repeated unit.
+- Reject embedded repeated runs such as `sssssssss2234423`, `useraaaa12`, and `testabababab99`.
+- Cover short repeated units consistently, including single-character and multi-character repetition boundaries.
+
+### Added
+
+- `Options.RepeatedPatternMinimumLength` for configuring the minimum repeated span in Unicode text elements. The default is `4`; the minimum supported value is `2`.
+- Regression coverage for default and custom thresholds, option capture, embedded repeated spans, and the lower configuration bound.
+
+### Compatibility
+
+- `Pattern.Repeated` remains enabled by default, but its detection is intentionally stricter in 0.7.8.
+- Core and ASP.NET Core package validation now use the published 0.7.7 packages as the compatibility baseline.
+- All first-party packages remain version-aligned at 0.7.8.
+
 ## 0.7.7 - 2026-09-18
 
 ### Fixed
