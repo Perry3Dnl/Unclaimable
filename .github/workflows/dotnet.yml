@@ -77,6 +77,7 @@ jobs:
           dotnet build "$trimmed_dir/platforms/dotnet/src/Unclaimable/Unclaimable.csproj" --configuration Release
           dotnet build "$trimmed_dir/platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj" --configuration Release
           dotnet build "$trimmed_dir/platforms/dotnet/src/Unclaimable.Email/Unclaimable.Email.csproj" --configuration Release
+          dotnet build "$trimmed_dir/platforms/dotnet/src/Unclaimable.Extended/Unclaimable.Extended.csproj" --configuration Release
 
       - name: Pack core
         run: dotnet pack platforms/dotnet/src/Unclaimable/Unclaimable.csproj --configuration Release --output artifacts
@@ -86,6 +87,9 @@ jobs:
 
       - name: Pack email integration
         run: dotnet pack platforms/dotnet/src/Unclaimable.Email/Unclaimable.Email.csproj --configuration Release --output artifacts
+
+      - name: Pack extended datasets
+        run: dotnet pack platforms/dotnet/src/Unclaimable.Extended/Unclaimable.Extended.csproj --configuration Release --output artifacts
 
       - name: Validate package contents and metadata
         shell: pwsh
