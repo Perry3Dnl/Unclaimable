@@ -47,3 +47,6 @@ jobs:
 
       - name: Validate new email package can be packed
         run: dotnet pack platforms/dotnet/src/Unclaimable.Email/Unclaimable.Email.csproj --configuration Release --output artifacts/compat
+
+      - name: Validate new Extended package can be packed
+        run: dotnet pack platforms/dotnet/src/Unclaimable.Extended/Unclaimable.Extended.csproj --configuration Release --output artifacts/compat
