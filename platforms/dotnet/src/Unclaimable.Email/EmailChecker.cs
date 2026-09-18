@@ -628,99 +628,11 @@ public sealed class EmailChecker : IEmailChecker
     private static string CreateNormalizedDomainSkeleton(string normalizedAsciiDomain)
     {
         var unicodeDomain = new IdnMapping().GetUnicode(normalizedAsciiDomain);
-        return CreateDomainSkeleton(unicodeDomain);
-    }
-
-    private static string CreateDomainSkeleton(string domain)
-    {
-        var decomposed = domain
-            .Normalize(NormalizationForm.FormD)
-            .ToLowerInvariant();
-
-        var builder = new StringBuilder(decomposed.Length);
-
-        for (var index = 0; index < decomposed.Length; index++)
-        {
-            var character = decomposed[index];
-            var category = CharUnicodeInfo.GetUnicodeCategory(decomposed, index);
-
-            if (category == UnicodeCategory.NonSpacingMark
-                || category == UnicodeCategory.SpacingCombiningMark
-                || category == UnicodeCategory.EnclosingMark)
-            {
-                continue;
-            }
-
-            char mapped;
-            if (TryMapDomainConfusable(character, out mapped))
-            {
-                builder.Append(mapped);
-            }
-            else
-            {
-                builder.Append(character);
-            }
-
-            if (char.IsHighSurrogate(character)
-                && index + 1 < decomposed.Length
-                && char.IsLowSurrogate(decomposed[index + 1]))
-            {
-                builder.Append(decomposed[index + 1]);
-                index++;
-            }
-        }
-
-        return builder.ToString().Normalize(NormalizationForm.FormC);
-    }
-
-    private static bool TryMapDomainConfusable(char character, out char mapped)
-    {
-        switch (character)
-        {
-            case '0': mapped = 'o'; return true;
-            case '1': mapped = 'l'; return true;
-            case '2': mapped = 'z'; return true;
-            case '3': mapped = 'e'; return true;
-            case '4': mapped = 'a'; return true;
-            case '5': mapped = 's'; return true;
-            case '6':
-            case '9': mapped = 'g'; return true;
-            case '7': mapped = 't'; return true;
-            case '8': mapped = 'b'; return true;
-            case (char)0x0430: mapped = 'a'; return true;
-            case (char)0x0432: mapped = 'b'; return true;
-            case (char)0x0435: mapped = 'e'; return true;
-            case (char)0x043A: mapped = 'k'; return true;
-            case (char)0x043C: mapped = 'm'; return true;
-            case (char)0x043D: mapped = 'h'; return true;
-            case (char)0x043E: mapped = 'o'; return true;
-            case (char)0x0440: mapped = 'p'; return true;
-            case (char)0x0441: mapped = 'c'; return true;
-            case (char)0x0442: mapped = 't'; return true;
-            case (char)0x0443: mapped = 'y'; return true;
-            case (char)0x0445: mapped = 'x'; return true;
-            case (char)0x0455: mapped = 's'; return true;
-            case (char)0x0456: mapped = 'i'; return true;
-            case (char)0x0458: mapped = 'j'; return true;
-            case (char)0x04CF: mapped = 'l'; return true;
-            case (char)0x03B1: mapped = 'a'; return true;
-            case (char)0x03B2: mapped = 'b'; return true;
-            case (char)0x03B5: mapped = 'e'; return true;
-            case (char)0x03B9: mapped = 'i'; return true;
-            case (char)0x03BA: mapped = 'k'; return true;
-            case (char)0x03BC: mapped = 'm'; return true;
-            case (char)0x03BD: mapped = 'v'; return true;
-            case (char)0x03BF: mapped = 'o'; return true;
-            case (char)0x03C1: mapped = 'p'; return true;
-            case (char)0x03C2: mapped = 'c'; return true;
-            case (char)0x03C4: mapped = 't'; return true;
-            case (char)0x03C5: mapped = 'y'; return true;
-            case (char)0x03C7: mapped = 'x'; return true;
-            case (char)0x0131: mapped = 'i'; return true;
-            default:
-                mapped = (char)0;
-                return false;
-        }
+        bool changed;
+        return global::Unclaimable.ConfusableNormalizer.CreateSkeleton(
+            unicodeDomain,
+            includeAsciiObfuscation: true,
+            out changed);
     }
 
     private static bool IsWithinDamerauLevenshteinDistance(string left, string right, int maximumDistance)
