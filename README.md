@@ -96,6 +96,10 @@ A local-part rejection remains the primary `EmailFailureKind` when both sides fa
 
 The Unicode/confusable and leetspeak mapping table used for domain skeletons is shared from the `Unclaimable` core package. `Unclaimable.Email` adds domain-specific IDN/punycode normalization and protected-domain policy on top of that shared base, so generic confusable fixes are made once in Core.
 
+The email-domain test suite is also data-driven. It loads the built-in core and extended `brands` and `technology` datasets and derives protected registrant labels from them, rather than relying only on a fixed list of example companies. In the current v0.7.5 dataset this produces **913 distinct protected labels** from 972 raw entries.
+
+For every derived label, the suite verifies exact-domain and real-subdomain acceptance plus generated deletion, insertion, substitution, adjacent-transposition, alternate-TLD, hyphen-lure, and embedded-domain attacks. Where the label contains supported lookalike characters, the same generated suite also checks ASCII confusables, Unicode homographs, and their punycode representations. Current coverage includes ASCII-confusable generation for **901** labels, Unicode/punycode generation for **912** labels, and transposition generation for all **913** labels. Future compatible additions to those datasets automatically become new email-domain behavior tests.
+
 
 ### 0.7.4 opt-in identity lists
 
@@ -501,7 +505,7 @@ public sealed class SignupModel
 
 ## Test coverage and release quality
 
-The current 0.7.5 release line has **820 passing tests**.
+The current 0.7.5 release line has **3,560 passing tests**.
 
 Production coverage is measured across `Unclaimable`, `Unclaimable.AspNetCore`, and `Unclaimable.Email`; test assemblies and generated files are excluded.
 
