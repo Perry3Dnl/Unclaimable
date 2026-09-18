@@ -24,6 +24,7 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Unclaimable/Unclaimable.csproj" />
     <ProjectReference Include="../../src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj" />
+    <ProjectReference Include="../../src/Unclaimable.Email/Unclaimable.Email.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);1591</WarningsAsErrors>
+
+    <PackageId>Unclaimable.Email</PackageId>
+    <Version>$(UnclaimableVersion)</Version>
+    <Description>Email-address identity and protected-domain impersonation checks for Unclaimable.</Description>
+    <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
+    <PackageIcon>unclaimable-icon.png</PackageIcon>
+    <PackageTags>email;validation;security;impersonation;phishing</PackageTags>
+
+    <EnablePackageValidation>true</EnablePackageValidation>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Unclaimable/Unclaimable.csproj" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+    <None Include="../../../../README.NUGET.md" Pack="true" PackagePath="/" />
+    <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
+  </ItemGroup>
+
+</Project>
