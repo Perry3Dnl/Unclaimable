@@ -43,7 +43,7 @@ public static class ExtendedOptionsExtensions
         var assembly = typeof(ExtendedOptionsExtensions).Assembly;
         var serializer = new DataContractJsonSerializer(typeof(ExtendedDocument));
         var entries = new List<ExtendedEntry>();
-        var ownership = new Dictionary<string, string>(StringComparer.Ordinal);
+        var seen = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var resourceName in assembly.GetManifestResourceNames()
                      .Where(name => name.StartsWith("Unclaimable.Extended.Data.", StringComparison.Ordinal)
@@ -75,20 +75,13 @@ public static class ExtendedOptionsExtensions
                         continue;
                     }
 
-                    var ownershipKey = value.Normalize().ToLowerInvariant();
-                    string? previousCategory;
-                    if (ownership.TryGetValue(ownershipKey, out previousCategory))
+                    var duplicateKey =
+                        document.Category + "\n" + value.Normalize().ToLowerInvariant();
+                    if (!seen.Add(duplicateKey))
                     {
-                        if (!string.Equals(previousCategory, document.Category, StringComparison.Ordinal))
-                        {
-                            throw new InvalidOperationException(
-                                $"Extended value '{value}' is owned by both '{previousCategory}' and '{document.Category}'.");
-                        }
-
                         continue;
                     }
 
-                    ownership.Add(ownershipKey, document.Category);
                     entries.Add(new ExtendedEntry(value, document.Category));
                 }
             }
