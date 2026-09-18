@@ -62,6 +62,7 @@ public sealed class Pattern070Tests
     }
 
     [Theory]
+    [InlineData("ddddddd")]
     [InlineData("aaaaaaaaaaaaaaaa")]
     [InlineData("abababababababab")]
     [InlineData("abcabcabcabc")]
@@ -75,6 +76,7 @@ public sealed class Pattern070Tests
     }
 
     [Theory]
+    [InlineData("aaaaaa")]
     [InlineData("hahaha")]
     [InlineData("bookkeeper")]
     [InlineData("Hannah")]
