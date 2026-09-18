@@ -169,7 +169,7 @@ Require(extendedDataChecker.IsReserved("aalborguniversity"), "Extended education
 Require(extendedDataChecker.IsReserved("aalborgairport"), "Extended transport data should be active after opt-in.");
 var noEducationOptions = new Options();
 noEducationOptions.UseExtendedData(extended => extended.DisableCategory(ExtendedCategory.Education));
-Require(new Checker(noEducationOptions).IsClaimable("Thakur College of Engineering and Technology"), "Extended categories should be independently disableable.");
+Require(new Checker(noEducationOptions).IsClaimable("aalborguniversity"), "Extended categories should be independently disableable.");
 
 Console.WriteLine("Packaged Unclaimable consumer smoke test passed.");
 
