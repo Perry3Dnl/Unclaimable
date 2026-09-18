@@ -2,31 +2,98 @@
 
 Strict, fast username and identifier validation for .NET.
 
-**Current release: 0.7.5**
+**Current release: 0.7.6**
 
 Unclaimable helps decide whether a username, handle, slug, account name, tenant name, or similar identifier should be claimable. It combines curated reserved-name datasets with structural validation, configurable matching, identifier-shape checks, Unicode-aware protections, optional protected-identity lists, and ASP.NET Core integration.
 
 ## Install
 
 ```bash
-dotnet add package Unclaimable --version 0.7.5
+dotnet add package Unclaimable --version 0.7.6
 ```
 
 ASP.NET Core integration:
 
 ```bash
-dotnet add package Unclaimable.AspNetCore --version 0.7.5
+dotnet add package Unclaimable.AspNetCore --version 0.7.6
 ```
 
 Email identity protection:
 
 ```bash
-dotnet add package Unclaimable.Email --version 0.7.5
+dotnet add package Unclaimable.Email --version 0.7.6
 ```
 
-## What's new in 0.7.5
+Large optional datasets:
 
-0.7.5 adds `Unclaimable.Email`, a `netstandard2.0` sibling package that applies Unclaimable to an email local part and protects configured domains against common impersonation forms.
+```bash
+dotnet add package Unclaimable.Extended --version 0.7.6
+```
+
+## What's new in 0.7.6
+
+0.7.6 adds `Unclaimable.Extended`, a `netstandard2.0` sibling package containing 36,313 optional additional identifiers across companies, regional brands, finance, government, international organizations, sports, education, media, transport, healthcare, historical/public figures, celebrities, fiction, entertainment, professions, multilingual vocabulary, regional slang/profanity, crypto, platforms, and geography.
+
+## Unclaimable.Extended
+
+0.7.6 adds the optional `Unclaimable.Extended` package. It uses the Core matching engine and contributes a much larger identity snapshot without moving or removing anything that already ships in `Unclaimable`.
+
+Installing the package alone does not change validation behavior. Enable it explicitly:
+
+```csharp
+using Unclaimable;
+using Unclaimable.Extended;
+
+var options = new Options();
+options.UseExtendedData();
+
+var checker = new Checker(options);
+```
+
+All Extended groups are enabled once you opt in. Disable only the groups your application does not need:
+
+```csharp
+options.UseExtendedData(extended =>
+{
+    extended.DisableCategory(ExtendedCategory.Celebrities);
+    extended.DisableCategory(ExtendedCategory.Sports);
+    extended.AllowedIdentifiers.Add("Aalborg University");
+});
+```
+
+The first 0.7.6 snapshot contains **36,313 additional identifiers**:
+
+| Extended group | Entries |
+| --- | ---: |
+| Companies | 12,500 |
+| Education | 10,155 |
+| Geography / administrative subdivisions | 3,722 |
+| Transport, airports and operators | 3,446 |
+| Sports clubs, teams and leagues | 2,740 |
+| Financial institutions | 1,105 |
+| Regional brands | 616 |
+| Healthcare / pharma | 608 |
+| Media organizations | 260 |
+| Professions / titles | 159 |
+| Celebrities | 120 |
+| Crypto projects | 120 |
+| Fictional characters / franchises | 114 |
+| Platforms / services | 99 |
+| Historical figures | 96 |
+| Entertainment properties | 91 |
+| Government / public bodies | 86 |
+| Public figures | 74 |
+| Multilingual reserved vocabulary | 72 |
+| Regional slang / profanity | 69 |
+| International organizations | 61 |
+
+Extended entries use `ReservedMatchMode.WholeIdentifier`: exact, compact, selected Unicode-confusable, and obfuscation checks still apply, but these large datasets do not become arbitrary substring roots. Core entries are indexed first, so an identifier already protected by Core keeps its existing Core match/category when Extended is enabled.
+
+Large imported sets are embedded as deterministic snapshots; the package performs no runtime data downloads. Source/provenance information is shipped in `data/SOURCES.md` inside the package.
+
+### Email identity protection from 0.7.5
+
+0.7.5 added `Unclaimable.Email`, a `netstandard2.0` sibling package that applies Unclaimable to an email local part and protects configured domains against common impersonation forms.
 
 ```csharp
 using Unclaimable.Email;
@@ -102,7 +169,7 @@ The email-domain test suite is also data-driven. It loads the built-in core and 
 For every derived label, the suite verifies exact-domain and real-subdomain acceptance plus generated deletion, insertion, substitution, adjacent-transposition, alternate-TLD, hyphen-lure, and embedded-domain attacks. Where the label contains supported lookalike characters, the same generated suite also checks ASCII confusables, Unicode homographs, and their punycode representations. Current coverage includes ASCII-confusable generation for **901** labels, Unicode/punycode generation for **912** labels, and transposition generation for all **913** labels. Future compatible additions to those datasets automatically become new email-domain behavior tests.
 
 
-All first-party packages use version `0.7.5`.
+All first-party packages use version `0.7.6`.
 
 ## Protected identity lists from 0.7.4
 
@@ -209,7 +276,7 @@ builder.Services.AddUnclaimable();
 
 `null` is accepted by Unclaimable so required-field validation can remain a separate concern, for example through `[Required]`.
 
-## Default core protection in 0.7.5
+## Default core protection in 0.7.6
 
 The default policy includes:
 
@@ -355,7 +422,7 @@ var detailed = checker.CheckDetailed(userName, includeMessages: true);
 
 ## Release quality
 
-The 0.7.5 release line is validated with **3,560 passing tests**, package-content validation, packaged-consumer smoke tests, public-API compatibility checks, source builds without localized language packs, and a production line-coverage gate covering `Unclaimable`, `Unclaimable.AspNetCore`, and `Unclaimable.Email`.
+The 0.7.5 release line is validated with **3,560 passing tests**, package-content validation, packaged-consumer smoke tests, public-API compatibility checks, source builds without localized language packs, and a production line-coverage gate covering `Unclaimable`, `Unclaimable.AspNetCore`, `Unclaimable.Email`, and `Unclaimable.Extended`.
 
 Latest measured production line coverage: **98.26%** (`2,147 / 2,185`); branch coverage: **83.55%** (`1,366 / 1,635`). The engineering target is **100%** and CI enforces a **98% minimum**.
 
