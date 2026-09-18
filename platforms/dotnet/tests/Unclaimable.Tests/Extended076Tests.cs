@@ -89,6 +89,21 @@ public sealed class Extended076Tests
     }
 
     [Fact]
+    public void CoreMatchesRemainAuthoritativeWhenExtendedContainsTheSameIdentity()
+    {
+        var core = new Checker().Check("google");
+
+        var options = new Options();
+        options.UseExtendedData();
+        var extended = new Checker(options).Check("google");
+
+        Assert.True(core.IsReserved);
+        Assert.Equal(core.MatchedValue, extended.MatchedValue);
+        Assert.Equal(core.Category, extended.Category);
+        Assert.Equal(core.MatchKind, extended.MatchKind);
+    }
+
+    [Fact]
     public void ExtendedCategoriesCanBeDisabledIndependently()
     {
         var options = new Options();
