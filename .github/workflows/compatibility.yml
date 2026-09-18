@@ -1,4 +1,4 @@
-name: .NET 0.7.4 Compatibility
+name: .NET 0.7.5 Compatibility
 
 on:
   push:
@@ -44,3 +44,6 @@ jobs:
 
       - name: Validate ASP.NET Core public API against latest published NuGet baseline (v0.7.0)
         run: dotnet pack platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj --configuration Release --output artifacts/compat
+
+      - name: Validate new email package can be packed
+        run: dotnet pack platforms/dotnet/src/Unclaimable.Email/Unclaimable.Email.csproj --configuration Release --output artifacts/compat

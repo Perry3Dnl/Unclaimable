@@ -92,6 +92,9 @@ jobs:
       - name: Pack ASP.NET Core integration
         run: dotnet pack platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj --configuration Release --output artifacts
 
+      - name: Pack email integration
+        run: dotnet pack platforms/dotnet/src/Unclaimable.Email/Unclaimable.Email.csproj --configuration Release --output artifacts
+
       - name: Validate package contents and metadata
         shell: pwsh
         run: ./platforms/dotnet/scripts/Validate-Packages.ps1 -ArtifactsPath ./artifacts
@@ -229,6 +232,23 @@ jobs:
           fi
 
           dotnet nuget push "artifacts/Unclaimable.AspNetCore.${VERSION}.nupkg" \
+            --api-key "$NUGET_API_KEY" \
+            --source https://api.nuget.org/v3/index.json \
+            $EXTRA_ARGS
+
+      - name: Publish email package
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+          VERSION: ${{ needs.build-and-validate.outputs.version }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          EXTRA_ARGS=""
+          if [ "$RUN_ATTEMPT" -gt 1 ]; then
+            EXTRA_ARGS="--skip-duplicate"
+          fi
+
+          dotnet nuget push "artifacts/Unclaimable.Email.${VERSION}.nupkg" \
             --api-key "$NUGET_API_KEY" \
             --source https://api.nuget.org/v3/index.json \
             $EXTRA_ARGS

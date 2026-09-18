@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.DependencyInjection;
 using Unclaimable;
 using Unclaimable.AspNetCore;
+using Unclaimable.Email;
 
 static void Require(bool condition, string message)
 {
@@ -138,6 +139,20 @@ Require(
 Require(
     rejectedResults.Count == 1 && rejectedResults[0].ErrorMessage == "UserName 'examplebrand' is reserved.",
     "ClaimableUsernameAttribute should use the configured reason-specific validation message.");
+
+var emailOptions = new EmailOptions();
+emailOptions.ProtectedDomains.Add("lidl.nl");
+emailOptions.IssuingDomains.Add("lidl.nl");
+var emailChecker = new EmailChecker(emailOptions);
+Require(
+    emailChecker.CheckExistingAddress("admin@lidi.nl").FailureKind == EmailFailureKind.ReservedLocalPart,
+    "Packaged email consumers should still apply Unclaimable to external email local parts.");
+Require(
+    emailChecker.CheckExistingAddress("bluegarden@lidi.nl").DomainLookalikeKind == DomainLookalikeKind.Typographical,
+    "Packaged email consumers should detect protected-domain typo variants.");
+Require(
+    emailChecker.CheckNewAddress("bluegarden@lidl.nl").IsAllowed,
+    "Packaged email consumers should be able to issue an ordinary local part on an approved exact domain.");
 
 Console.WriteLine("Packaged Unclaimable consumer smoke test passed.");
 

@@ -64,6 +64,12 @@ $packages = @(
         Framework = "net8.0"
         Assembly = "Unclaimable.AspNetCore"
         RequiresCoreDependency = $true
+    },
+    @{
+        Id = "Unclaimable.Email"
+        Framework = "netstandard2.0"
+        Assembly = "Unclaimable.Email"
+        RequiresCoreDependency = $true
     }
 )
 
