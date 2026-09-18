@@ -25,6 +25,7 @@
     <ProjectReference Include="../../src/Unclaimable/Unclaimable.csproj" />
     <ProjectReference Include="../../src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj" />
     <ProjectReference Include="../../src/Unclaimable.Email/Unclaimable.Email.csproj" />
+    <ProjectReference Include="../../src/Unclaimable.Extended/Unclaimable.Extended.csproj" />
   </ItemGroup>
 
   <ItemGroup>
