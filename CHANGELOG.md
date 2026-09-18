@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.7.6 - 2026-09-18
+
+### Added
+
+- New `Unclaimable.Extended` `netstandard2.0` package, versioned together with all first-party packages through the shared `UnclaimableVersion` property.
+- 36,313 optional additional identifiers across 21 Extended groups: companies, regional brands, financial institutions, government/public bodies, international organizations, sports, education, media, transport, healthcare, historical figures, public figures, celebrities, fiction, entertainment, professions, multilingual reserved vocabulary, regional slang/profanity, crypto, platforms, and geography.
+- `Options.UseExtendedData(...)` explicit opt-in registration with per-group enable/disable controls and exact Extended exceptions.
+- `ReservedMatchMode.WholeIdentifier` and categorized `Options.Reserve(value, category, matching)` in Core, allowing sibling packages to reuse exact, compact, Unicode-confusable, and obfuscation matching without enabling generic substring matching.
+- Deterministic embedded dataset snapshots with source/provenance notes shipped in the Extended package.
+- Extended package integration in coverage, package validation, compatibility packing, release packing/publishing, and packaged-consumer smoke tests.
+
+### Compatibility
+
+- No existing Core dataset is removed or moved. Installing `Unclaimable.Extended` alone changes no validation result; applications must call `UseExtendedData()`.
+- Existing `ReservedMatchMode` numeric values remain unchanged: `Default = 0`, `Exact = 1`; `WholeIdentifier = 2` is additive.
+- Core entries are indexed before Extended entries, preserving Core diagnostics/categories when the same identity exists in both datasets.
+
 All notable changes to Unclaimable are documented here.
 
 ## 0.7.5 - 2026-09-18
