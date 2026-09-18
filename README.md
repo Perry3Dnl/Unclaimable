@@ -294,7 +294,7 @@ builder.Services.AddUnclaimable();
 
 `null` is accepted by Unclaimable so required-field validation remains a separate concern.
 
-## Default core policy in 0.7.6
+## Default core policy in 0.7.8
 
 `new Options()` keeps strong protection while allowing ordinary alphanumeric usernames.
 
@@ -324,7 +324,7 @@ builder.Services.AddUnclaimable();
 | ASCII-only | disabled |
 | Generic profanity substring matching | disabled |
 | `Pattern.NumericOnly` | enabled |
-| `Pattern.Repeated` | enabled |
+| `Pattern.Repeated` | enabled; repeated-span minimum `4` |
 | `Pattern.SymbolOnly` | enabled |
 | `Pattern.AsciiArt` | enabled |
 | `Pattern.UppercaseOnly` | disabled |
