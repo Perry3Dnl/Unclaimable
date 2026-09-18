@@ -4,6 +4,8 @@ public sealed partial class Options
 {
     private readonly HashSet<Category> _disabledCategories = new HashSet<Category>();
     private readonly List<ReservationRegistration> _reservations = new List<ReservationRegistration>();
+    private readonly List<SupplementalReservationRegistration> _supplementalReservations =
+        new List<SupplementalReservationRegistration>();
 
     /// <summary>
     /// Complete identifiers that are allowed to bypass built-in reserved-name matches.
@@ -76,6 +78,25 @@ public sealed partial class Options
     }
 
     internal IReadOnlyList<ReservationRegistration> Reservations => BuildEffectiveReservations();
+
+    internal IReadOnlyList<SupplementalReservationRegistration> SupplementalReservations =>
+        _supplementalReservations;
+
+    internal void AddSupplementalWholeIdentifier(string value, string category)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            throw new ArgumentException("A supplemental identifier cannot be null, empty, or whitespace.", nameof(value));
+        }
+
+        if (string.IsNullOrWhiteSpace(category))
+        {
+            throw new ArgumentException("A supplemental category cannot be null, empty, or whitespace.", nameof(category));
+        }
+
+        _supplementalReservations.Add(
+            new SupplementalReservationRegistration(value, category.Trim()));
+    }
 
     internal bool IsCategoryEnabled(string category)
     {
@@ -159,6 +180,18 @@ public sealed partial class Options
             default:
                 throw new ArgumentOutOfRangeException(nameof(category));
         }
+    }
+
+    internal sealed class SupplementalReservationRegistration
+    {
+        internal SupplementalReservationRegistration(string value, string category)
+        {
+            Value = value;
+            Category = category;
+        }
+
+        internal string Value { get; }
+        internal string Category { get; }
     }
 
     internal sealed class ReservationRegistration
