@@ -25,6 +25,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>Unclaimable.Email</_Parameter1>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="../../../../data/**/reserved.json" LogicalName="Unclaimable.Data.%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="../../../../README.NUGET.md" Pack="true" PackagePath="/" />
     <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
