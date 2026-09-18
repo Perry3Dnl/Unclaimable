@@ -215,7 +215,7 @@ public sealed class EmailChecker : IEmailChecker
 
         if (_detectUnicodeLookalikes)
         {
-            var candidateSkeleton = CreateDomainSkeleton(originalDomain);
+            var candidateSkeleton = CreateNormalizedDomainSkeleton(normalizedDomain);
             foreach (var protectedDomain in _protectedDomains)
             {
                 if (string.Equals(candidateSkeleton, protectedDomain.Skeleton, StringComparison.Ordinal))
@@ -463,7 +463,7 @@ public sealed class EmailChecker : IEmailChecker
             {
                 destination.Add(
                     normalized,
-                    new ProtectedDomain(normalized, CreateDomainSkeleton(domain)));
+                    new ProtectedDomain(normalized, CreateNormalizedDomainSkeleton(normalized)));
             }
         }
     }
@@ -625,6 +625,12 @@ public sealed class EmailChecker : IEmailChecker
         return false;
     }
 
+    private static string CreateNormalizedDomainSkeleton(string normalizedAsciiDomain)
+    {
+        var unicodeDomain = new IdnMapping().GetUnicode(normalizedAsciiDomain);
+        return CreateDomainSkeleton(unicodeDomain);
+    }
+
     private static string CreateDomainSkeleton(string domain)
     {
         var decomposed = domain
@@ -673,8 +679,12 @@ public sealed class EmailChecker : IEmailChecker
         {
             case '0': mapped = 'o'; return true;
             case '1': mapped = 'l'; return true;
+            case '2': mapped = 'z'; return true;
             case '3': mapped = 'e'; return true;
+            case '4': mapped = 'a'; return true;
             case '5': mapped = 's'; return true;
+            case '6':
+            case '9': mapped = 'g'; return true;
             case '7': mapped = 't'; return true;
             case '8': mapped = 'b'; return true;
             case (char)0x0430: mapped = 'a'; return true;
