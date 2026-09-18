@@ -112,7 +112,7 @@ public sealed partial class Checker
         out int? matchLength)
     {
         bool changed;
-        var skeleton = NormalizeUnicodeConfusables(value, out changed);
+        var skeleton = ConfusableNormalizer.CreateSkeleton(value, includeAsciiObfuscation: false, out changed);
         if (!changed)
         {
             match = null;
@@ -211,7 +211,7 @@ public sealed partial class Checker
             var character = value[index];
             string[]? substitutions;
 
-            if (TryGetObfuscationSubstitutions(character, out substitutions))
+            if (ConfusableNormalizer.TryGetObfuscationSubstitutions(character, out substitutions))
             {
                 usedSubstitution = true;
                 candidates = ExpandCandidates(candidates, substitutions!);
