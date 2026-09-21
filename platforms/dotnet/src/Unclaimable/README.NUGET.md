@@ -53,6 +53,33 @@ var checker = new Checker(options);
 
 Passing or disabling one deny rule never positively clears an identifier through the rest of the pipeline.
 
+## Upgrading to 0.8.0
+
+0.8.0 intentionally uses stricter defaults than 0.7.8. Applications should regression-test real identifiers before upgrading.
+
+The main changes are:
+
+- protected country, city, celebrity, nationality, currency, religion, landmark, event, award, fictional-character, franchise, profession, and military rules are enabled by default;
+- selected high-trust roots such as `support`, `help`, `admin`, `staff`, `root`, and `owner` participate in curated partial matching;
+- direct runs of three identical Unicode text elements are rejected;
+- cyclic repeated patterns use a default repeated-span threshold of six.
+
+The stricter policy is paired with narrow exceptions so an application does not need to turn off a protection globally.
+
+### Which exception should I use?
+
+| Requirement | Use |
+| --- | --- |
+| Allow one complete identifier through built-in reserved-name matching | `AllowedIdentifiers.Add(...)` |
+| Skip one `Rule` for one identifier | `AllowIdentifierForRule(...)` |
+| Skip one `Pattern` for one identifier | `AllowIdentifierForPattern(...)` |
+| Permit a character while keeping the character rule enabled | `AllowCharacters(...)` |
+| Permit direct runs of a selected character | `AllowRepeatedCharacters(...)` |
+| Add an application-owned deny | `Reserve(...)` / `AdditionalReserved` |
+| Disable a protection for every identifier | `DisableRule(...)` / `DisablePattern(...)` |
+
+A scoped exception is never a positive clear. After that one check is skipped, every other deny check still runs.
+
 ## Repeated-pattern detection
 
 `Pattern.Repeated` handles direct runs and cyclic repetition separately. Three or more identical consecutive Unicode text elements are rejected, while repeated multi-element cycles use the configurable repeated-span threshold, which defaults to six text elements.
@@ -156,7 +183,18 @@ var checker = new Checker(options);
 // AAA_orchid7 still fails Pattern.Repeated.
 ```
 
-Use `AllowedIdentifiers` when a complete built-in reserved identifier itself should be allowed. Use `Reserve(...)` or `AdditionalReserved` to add application-specific denies.
+Use `AllowedIdentifiers` when a complete identifier should bypass built-in reserved-name matching. Use `Reserve(...)` or `AdditionalReserved` to add application-specific denies.
+
+For example, exempting one pattern does not exempt a later reserved-name match:
+
+```csharp
+var options = new Options();
+options.EnablePattern(Pattern.UppercaseOnly);
+options.AllowIdentifierForPattern("ADMIN", Pattern.UppercaseOnly);
+
+var result = new Checker(options).Check("ADMIN");
+// Still rejected because "admin" is reserved.
+```
 
 ## Application-specific reservations
 
