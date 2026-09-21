@@ -121,6 +121,43 @@ options.AllowedIdentifiers.Add("supportive");
 
 Structural validation, pattern checks, protected-identity rules, and explicit application reservations still apply.
 
+## Narrow allow exceptions
+
+Keep the strict defaults and relax only the exact check an application needs.
+
+```csharp
+var options = new Options();
+
+// Skip only the city-name rule for this complete identifier.
+options.AllowIdentifierForRule("Charlotte", Rule.PopularCityNames);
+
+// Skip only repeated-pattern detection for this complete identifier.
+options.AllowIdentifierForPattern("ababab", Pattern.Repeated);
+
+// Permit a startup character without disabling BlockedCharacters globally.
+options.AllowCharacters("_");
+
+// Permit direct runs of T while keeping other repeated characters protected.
+options.AllowRepeatedCharacters("T");
+```
+
+Scoped exceptions are deny-first safe: skipping one rule or pattern does not clear the identifier. Every other structural rule, pattern, protected identity list, built-in reserved-name check, and explicit application reservation still runs.
+
+For a team-style prefix, this keeps both protections enabled while permitting the intended syntax:
+
+```csharp
+var options = new Options()
+    .AllowCharacters("_")
+    .AllowRepeatedCharacters("T");
+
+var checker = new Checker(options);
+
+// TTT_orchid7 can pass the underscore and direct-repeat checks.
+// AAA_orchid7 still fails Pattern.Repeated.
+```
+
+Use `AllowedIdentifiers` when a complete built-in reserved identifier itself should be allowed. Use `Reserve(...)` or `AdditionalReserved` to add application-specific denies.
+
 ## Application-specific reservations
 
 ```csharp
