@@ -28,15 +28,18 @@ if (result.IsClaimable)
 
 ## Strict defaults in 0.8.0
 
-0.8.0 makes every built-in Core `Rule` and every built-in `Pattern` check enabled by default. This includes number rejection, geography and protected-identity lists, and uppercase-only detection.
+0.8.0 enables every built-in Core identity/protection `Rule` by default except `Rule.Numbers`, and enables every built-in `Pattern` check by default. Mixed alphanumeric identifiers such as `user7` remain allowed unless number rejection is explicitly enabled.
 
 Relax only the checks your application intentionally permits:
 
 ```csharp
 var options = new Options();
 
-options.DisableRule(Rule.Numbers | Rule.CountryNames);
+options.DisableRule(Rule.CountryNames);
 options.DisablePattern(Pattern.UppercaseOnly);
+
+// Number rejection remains opt-in:
+options.EnableRule(Rule.Numbers);
 
 var checker = new Checker(options);
 ```
@@ -69,7 +72,7 @@ The default policy combines:
 - obfuscation/leetspeak matching;
 - selected Unicode-confusable matching;
 - profanity checks;
-- length, whitespace, separator, blocked-character, and number rules;
+- length, whitespace, separator, and blocked-character rules; number rejection remains opt-in;
 - country, city, celebrity, nationality, currency, religion, landmark, event, award, fictional-character, franchise, profession, and military identity rules;
 - numeric-only, repeated-pattern, symbol-only, ASCII-art, and uppercase-only pattern checks.
 
@@ -86,14 +89,15 @@ A disabled category can be enabled again with `EnableCategory(...)`.
 
 ## Configure rules and patterns
 
-All built-in rules and patterns start enabled in 0.8.0.
+All built-in patterns start enabled in 0.8.0. All built-in rules start enabled except `Rule.Numbers`.
 
 ```csharp
 options.DisableRule(
-    Rule.Numbers |
     Rule.CountryNames |
     Rule.PopularCityNames |
     Rule.CelebrityNames);
+
+options.EnableRule(Rule.Numbers); // opt in to rejecting digits
 
 options.DisablePattern(Pattern.UppercaseOnly);
 ```
