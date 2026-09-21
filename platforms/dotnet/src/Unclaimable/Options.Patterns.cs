@@ -25,9 +25,10 @@ public sealed partial class Options
     public Pattern EnabledPatterns => _enabledPatterns;
 
     /// <summary>
-    /// Minimum number of Unicode text elements that a repeated span must contain before
-    /// <see cref="Pattern.Repeated"/> rejects it. The repeated span may occur anywhere
-    /// inside the identifier. Defaults to 6.
+    /// Minimum number of Unicode text elements that a repeated multi-element cycle must contain before
+    /// <see cref="Pattern.Repeated"/> rejects it. The repeated span may occur anywhere inside the identifier.
+    /// Direct runs of the same text element are rejected from three consecutive elements independently
+    /// of this setting. Defaults to 6.
     /// </summary>
     public int RepeatedPatternMinimumLength { get; set; } = 6;
 
