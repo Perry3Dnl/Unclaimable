@@ -301,7 +301,7 @@ Generic words remain exact rather than broad substring roots: `vote` does not bl
 - Per-category enable/disable controls
 - Exact built-in exceptions, scoped rule/pattern allowances, and application-specific reservations
 - Configurable numeric-only, repeated, symbol-only, ASCII-art, and uppercase-only pattern checks
-- Optional country, city, celebrity, nationality, currency, religion, landmark, event, award, fictional-character, franchise, profession, and military identity protection
+- Configurable country, city, celebrity, nationality, currency, religion, landmark, event, award, fictional-character, franchise, profession, and military identity protection
 - Length, whitespace, separator, blocked-character, Unicode-safety, and optional no-number rules
 - Dependency-free `netstandard2.0` core
 - ASP.NET Core DI and DataAnnotations integration
@@ -417,29 +417,24 @@ options.EnableRule(Rule.Numbers);
 options.DisableRule(Rule.Whitespace);
 ```
 
-Multiple optional identity lists can be enabled together:
+In 0.8.0 the protected identity rules start enabled. Disable only the scopes your application intentionally permits:
 
 ```csharp
-options.EnableRule(
-    Rule.Nationalities |
+options.DisableRule(
     Rule.Currencies |
-    Rule.Religions |
-    Rule.Landmarks |
-    Rule.Events |
     Rule.Awards |
-    Rule.FictionalCharacters |
-    Rule.Franchises |
-    Rule.Professions |
-    Rule.Military);
+    Rule.FictionalCharacters);
 ```
 
-`Options.EnabledOptionalRules` exposes the currently active opt-in rule set.
+Use `EnableRule(...)` to turn a disabled rule back on.
+
+`Options.EnabledOptionalRules` retains its existing API name for compatibility and exposes the currently active protected-identity rule set.
 
 `DisabledRules` is retained for compatibility as a full mask. Assigning it replaces the mask, so `EnableRule(...)` and `DisableRule(...)` are preferred for incremental configuration.
 
 ## Protected identity matching
 
-Country/city, celebrity, and 0.7.4 identity-list rules are independent opt-in deny rules.
+Country/city, celebrity, and the additional identity-list rules are independent deny rules. They are enabled by default in 0.8.0 and can be disabled individually.
 
 The celebrity and 0.7.4 identity lists participate in:
 
@@ -451,7 +446,15 @@ The celebrity and 0.7.4 identity lists participate in:
 
 They do **not** become generic partial-match roots.
 
-`AllowedIdentifiers` does not bypass an explicitly enabled protected-identity rule. This preserves deny-first behavior.
+`AllowedIdentifiers` does not bypass a protected-identity rule. Use `AllowIdentifierForRule(...)` when one complete identifier should skip one of those rules without disabling it globally.
+
+```csharp
+options.AllowIdentifierForRule(
+    "Charlotte",
+    Rule.PopularCityNames);
+```
+
+This preserves deny-first behavior: every unrelated rule, pattern, dataset match, and application reservation still runs.
 
 ## Identifier pattern checks
 
