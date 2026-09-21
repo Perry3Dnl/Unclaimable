@@ -251,7 +251,7 @@ Generic words remain exact rather than broad substring roots: `vote` does not bl
 - Dependency-free `netstandard2.0` core
 - ASP.NET Core DI and DataAnnotations integration
 - Structured fail-fast and multi-diagnostic results
-- Known-safe and reserved conformance corpora in CI
+- Behavioral conformance corpus in CI
 - **98% minimum production line-coverage gate**, with a 100% engineering target
 
 ## Packages
