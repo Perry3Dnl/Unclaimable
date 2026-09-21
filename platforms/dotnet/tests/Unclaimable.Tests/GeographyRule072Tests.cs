@@ -5,15 +5,16 @@ namespace Unclaimable.Tests;
 public sealed class GeographyRule072Tests
 {
     [Fact]
-    public void NewOptInRulesAreDisabledByDefaultAndNumbersAreAllowed()
+    public void GeographyRulesAreEnabledByDefaultWhileMixedNumbersRemainAllowed()
     {
         var options = new Options();
         var checker = new Checker(options);
 
-        Assert.Equal(Rule.None, options.EnabledOptionalRules);
+        Assert.True((options.EnabledOptionalRules & Rule.CountryNames) != 0);
+        Assert.True((options.EnabledOptionalRules & Rule.PopularCityNames) != 0);
         Assert.True((options.DisabledRules & Rule.Numbers) != 0);
-        Assert.True(checker.IsClaimable("france"));
-        Assert.True(checker.IsClaimable("amsterdam"));
+        Assert.Equal(MatchKind.CountryName, checker.Check("france").MatchKind);
+        Assert.Equal(MatchKind.PopularCityName, checker.Check("amsterdam").MatchKind);
         Assert.True(checker.IsClaimable("user7"));
         Assert.Equal(MatchKind.NumericOnly, checker.Check("123456789").MatchKind);
     }
@@ -52,7 +53,9 @@ public sealed class GeographyRule072Tests
     [InlineData("mumbai")]
     public void PopularCityRuleRejectsRepresentativeCityNames(string value)
     {
-        var options = new Options().EnableRule(Rule.PopularCityNames);
+        var options = new Options()
+            .DisableRule(Rule.CountryNames)
+            .EnableRule(Rule.PopularCityNames);
         var result = new Checker(options).Check(value);
 
         Assert.True(result.IsReserved);
@@ -63,8 +66,8 @@ public sealed class GeographyRule072Tests
     [Fact]
     public void GeographyRulesCanBeEnabledIndependently()
     {
-        var countries = new Checker(new Options().EnableRule(Rule.CountryNames));
-        var cities = new Checker(new Options().EnableRule(Rule.PopularCityNames));
+        var countries = new Checker(new Options().DisableRule(Rule.PopularCityNames));
+        var cities = new Checker(new Options().DisableRule(Rule.CountryNames));
 
         Assert.Equal(MatchKind.CountryName, countries.Check("france").MatchKind);
         Assert.True(countries.IsClaimable("amsterdam"));

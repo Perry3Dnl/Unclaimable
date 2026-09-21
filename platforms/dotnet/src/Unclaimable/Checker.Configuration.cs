@@ -189,59 +189,74 @@ public sealed partial class Checker
 
     private Result? CheckOptionalRuleReservation(string? value, string exact)
     {
-        if (_countryRuleExact.TryGetValue(exact, out var country))
+        if (!IsRuleException(Rule.CountryNames, value)
+            && _countryRuleExact.TryGetValue(exact, out var country))
         {
             return new Result(true, value, country, null, MatchKind.CountryName);
         }
 
-        if (_cityRuleExact.TryGetValue(exact, out var city))
+        if (!IsRuleException(Rule.PopularCityNames, value)
+            && _cityRuleExact.TryGetValue(exact, out var city))
         {
             return new Result(true, value, city, null, MatchKind.PopularCityName);
         }
 
         if (_identityRuleExact.TryGetValue(exact, out var identityExact))
         {
-            var mapping = value is null ? null : TryCreateInputMapping(value, exact);
+            var identityRule = GetRuleForIdentityCategory(identityExact.Category);
+            if (!identityRule.HasValue || !IsRuleException(identityRule.Value, value))
+            {
+                var mapping = value is null ? null : TryCreateInputMapping(value, exact);
             TryMapOriginalSpan(mapping?.ExactToOriginal, 0, exact.Length, out var originalStart, out var originalLength);
-            return CreateReservedResult(
-                value,
-                identityExact,
-                MatchKind.Exact,
-                0,
-                exact.Length,
-                originalStart,
-                originalLength);
+                return CreateReservedResult(
+                    value,
+                    identityExact,
+                    MatchKind.Exact,
+                    0,
+                    exact.Length,
+                    originalStart,
+                    originalLength);
+            }
         }
 
         var compact = NormalizeCompact(exact);
-        if (_compactMatching && compact.Length > 0)
+        if (_compactMatching
+            && !IsRuleException(Rule.CompactMatching, value)
+            && compact.Length > 0)
         {
-            if (_countryRuleCompact.TryGetValue(compact, out country))
+            if (!IsRuleException(Rule.CountryNames, value)
+                && _countryRuleCompact.TryGetValue(compact, out country))
             {
                 return new Result(true, value, country, null, MatchKind.CountryName);
             }
 
-            if (_cityRuleCompact.TryGetValue(compact, out city))
+            if (!IsRuleException(Rule.PopularCityNames, value)
+                && _cityRuleCompact.TryGetValue(compact, out city))
             {
                 return new Result(true, value, city, null, MatchKind.PopularCityName);
             }
 
             if (_identityRuleCompact.TryGetValue(compact, out var identityCompact))
             {
-                var mapping = value is null ? null : TryCreateInputMapping(value, exact);
+                var identityRule = GetRuleForIdentityCategory(identityCompact.Category);
+                if (!identityRule.HasValue || !IsRuleException(identityRule.Value, value))
+                {
+                    var mapping = value is null ? null : TryCreateInputMapping(value, exact);
                 TryMapOriginalSpan(mapping?.CompactToOriginal, 0, compact.Length, out var originalStart, out var originalLength);
-                return CreateReservedResult(
-                    value,
-                    identityCompact,
-                    MatchKind.Compact,
-                    0,
-                    compact.Length,
-                    originalStart,
-                    originalLength);
+                    return CreateReservedResult(
+                        value,
+                        identityCompact,
+                        MatchKind.Compact,
+                        0,
+                        compact.Length,
+                        originalStart,
+                        originalLength);
+                }
             }
         }
 
         if (_unicodeConfusableMatching
+            && !IsRuleException(Rule.UnicodeConfusableMatching, value)
             && TryMatchUnicodeConfusable(
                 exact,
                 _identityRuleExact,
@@ -252,15 +267,20 @@ public sealed partial class Checker
                 out var confusableStart,
                 out var confusableLength))
         {
-            return CreateReservedResult(
-                value,
-                confusableMatch!,
-                confusableKind,
-                confusableStart,
-                confusableLength);
+            var identityRule = GetRuleForIdentityCategory(confusableMatch!.Category);
+            if (!identityRule.HasValue || !IsRuleException(identityRule.Value, value))
+            {
+                return CreateReservedResult(
+                    value,
+                    confusableMatch,
+                    confusableKind,
+                    confusableStart,
+                    confusableLength);
+            }
         }
 
         if (_obfuscationMatching
+            && !IsRuleException(Rule.ObfuscationMatching, value)
             && TryMatchObfuscated(
                 exact,
                 _identityRuleExact,
@@ -271,12 +291,16 @@ public sealed partial class Checker
                 out var obfuscatedStart,
                 out var obfuscatedLength))
         {
-            return CreateReservedResult(
-                value,
-                obfuscatedMatch!,
-                obfuscatedKind,
-                obfuscatedStart,
-                obfuscatedLength);
+            var identityRule = GetRuleForIdentityCategory(obfuscatedMatch!.Category);
+            if (!identityRule.HasValue || !IsRuleException(identityRule.Value, value))
+            {
+                return CreateReservedResult(
+                    value,
+                    obfuscatedMatch,
+                    obfuscatedKind,
+                    obfuscatedStart,
+                    obfuscatedLength);
+            }
         }
 
         return null;

@@ -11,13 +11,13 @@
   },
   {
     "value": "supportive",
-    "reserved": false,
-    "category": null
+    "reserved": true,
+    "category": "support"
   },
   {
     "value": "helpful",
-    "reserved": false,
-    "category": null
+    "reserved": true,
+    "category": "support"
   },
   {
     "value": "apples",
@@ -108,5 +108,25 @@
     "value": "bluegarden",
     "reserved": false,
     "category": null
+  },
+  {
+    "value": "badminton",
+    "reserved": true,
+    "category": "roles"
+  },
+  {
+    "value": "stafford",
+    "reserved": true,
+    "category": "roles"
+  },
+  {
+    "value": "rooted",
+    "reserved": true,
+    "category": "roles"
+  },
+  {
+    "value": "ownership",
+    "reserved": true,
+    "category": "roles"
   }
 ]

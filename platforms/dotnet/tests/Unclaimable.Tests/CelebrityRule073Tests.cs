@@ -6,13 +6,14 @@ namespace Unclaimable.Tests;
 public sealed class CelebrityRule073Tests
 {
     [Fact]
-    public void CelebrityRuleIsDisabledByDefault()
+    public void CelebrityRuleIsEnabledByDefault()
     {
         var options = new Options();
-        var checker = new Checker(options);
+        var result = new Checker(options).Check("donaldtrump");
 
-        Assert.Equal(Rule.None, options.EnabledOptionalRules & Rule.CelebrityNames);
-        Assert.True(checker.IsClaimable("donaldtrump"));
+        Assert.True((options.EnabledOptionalRules & Rule.CelebrityNames) != 0);
+        Assert.True(result.IsReserved);
+        Assert.Equal("celebrity", result.Category);
     }
 
     [Theory]

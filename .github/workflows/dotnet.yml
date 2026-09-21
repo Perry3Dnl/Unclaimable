@@ -8,6 +8,7 @@ on:
       - "README.md"
       - "README.NUGET.md"
       - "CHANGELOG.md"
+      - "docs/**"
       - "assets/**"
       - "data/**"
       - "conformance/**"
@@ -20,6 +21,7 @@ on:
       - "README.md"
       - "README.NUGET.md"
       - "CHANGELOG.md"
+      - "docs/**"
       - "assets/**"
       - "data/**"
       - "conformance/**"
@@ -39,10 +41,22 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup .NET
+      - name: Setup .NET 8 runtime
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           dotnet-version: "8.0.x"
+
+      - name: Setup .NET 11 preview SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: "11.0.x"
+          dotnet-quality: preview
+
+      - name: Verify frozen 0.8.0 defaults
+        run: >-
+          dotnet test platforms/dotnet/tests/Unclaimable.Tests/Unclaimable.Tests.csproj
+          --configuration Release
+          --filter "FullyQualifiedName~Options080DefaultContractTests"
 
       - name: Dataset statistics
         shell: pwsh

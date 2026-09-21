@@ -2,13 +2,19 @@
 
 Email-address identity and protected-domain impersonation checks.
 
-**Package version: 0.7.8**
+**Package version: 0.8.0**
 
 ## Install
 
 ```bash
-dotnet add package Unclaimable.Email --version 0.7.8
+dotnet add package Unclaimable.Email --version 0.8.0
 ```
+
+## Cross-platform app compatibility
+
+`Unclaimable.Email` targets `netstandard2.0` and is compile-checked in .NET MAUI, Blazor WebAssembly, WPF, Windows Forms, Console, Worker Service, Avalonia, and Uno Platform consumers.
+
+It contains no UI-framework dependency, so the same email checker can be used from client, desktop, mobile, or server application code.
 
 ## Quick start
 
@@ -26,6 +32,33 @@ var created = checker.CheckNewAddress("bluegarden@lidl.nl");
 ```
 
 The email local part is checked with an email-adapted Unclaimable policy. Domain checks are handled separately.
+
+In 0.8.0, local-part identity protection starts from the same default protected identity rules as the main checker: country, city, celebrity, nationality, currency, religion, landmark, event, award, fictional-character, franchise, profession, and military rules are enabled by default, while `Rule.Numbers` remains disabled. Email-specific syntax concerns are adjusted separately, so username-oriented length, whitespace, separator, blocked-character, and shape checks are not applied as ordinary username restrictions.
+
+## Customize local-part identity checks
+
+Email syntax and Core identity checks are separate. `EmailOptions.LocalPartOptions` exposes the Core `Options` used for the local part.
+
+Use the same narrow exception APIs when an email naming convention needs them:
+
+```csharp
+var options = new EmailOptions();
+
+options.LocalPartOptions.AllowIdentifierForRule(
+    "Charlotte",
+    Rule.PopularCityNames);
+
+options.LocalPartOptions.AllowedIdentifiers.Add(
+    "supportive");
+
+options.LocalPartOptions.Reserve(
+    "billingdesk",
+    ReservedMatchMode.Exact);
+```
+
+Username-specific shape and separator rules are already relaxed by the Email package because valid email local parts have different syntax requirements. Protected identity data, reserved-name matching, and application reservations still apply.
+
+A Core exception changes only the local-part identity checker. It does not disable protected-domain typo, confusable, or label-reuse detection.
 
 ## Existing vs newly issued addresses
 

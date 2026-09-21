@@ -19,17 +19,18 @@ public sealed partial class Options
 
     /// <summary>
     /// Gets the pattern checks enabled for newly constructed checkers.
-    /// Numeric-only, repeated, symbol-only, and ASCII-art detection are enabled by default.
-    /// Uppercase-only detection is opt-in.
+    /// Numeric-only, repeated, symbol-only, and ASCII-art checks are enabled by default in 0.8.0 and later.
+    /// <see cref="Pattern.UppercaseOnly"/> remains opt-in so ordinary uppercase identifiers stay claimable.
     /// </summary>
     public Pattern EnabledPatterns => _enabledPatterns;
 
     /// <summary>
-    /// Minimum number of Unicode text elements that a repeated span must contain before
-    /// <see cref="Pattern.Repeated"/> rejects it. The repeated span may occur anywhere
-    /// inside the identifier. Defaults to 4.
+    /// Minimum number of Unicode text elements that a repeated multi-element cycle must contain before
+    /// <see cref="Pattern.Repeated"/> rejects it. The repeated span may occur anywhere inside the identifier.
+    /// Direct runs of the same text element are rejected from three consecutive elements independently
+    /// of this setting. Defaults to 6.
     /// </summary>
-    public int RepeatedPatternMinimumLength { get; set; } = 4;
+    public int RepeatedPatternMinimumLength { get; set; } = 6;
 
     /// <summary>Enables one or more pattern checks without changing the remaining pattern configuration.</summary>
     /// <param name="pattern">One pattern or a bitwise combination of supported patterns.</param>

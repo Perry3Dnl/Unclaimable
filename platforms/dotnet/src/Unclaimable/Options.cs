@@ -29,9 +29,9 @@ public sealed partial class Options
     public Strictness Strictness { get; set; } = Strictness.Strict;
 
     /// <summary>
-    /// Built-in rules to disable. <see cref="Rule.Numbers"/> is disabled by default in 0.7.2 and later,
-    /// so identifiers may contain Unicode decimal digits unless the rule is explicitly enabled.
-    /// Named identity-list rules remain separately opt-in through <see cref="EnableRule(Rule)"/>.
+    /// Built-in rules to disable. <see cref="Rule.Numbers"/> remains disabled by default in 0.8.0,
+    /// so mixed alphanumeric identifiers such as user7 remain allowed unless number rejection is enabled explicitly.
+    /// Use <see cref="DisableRule(Rule)"/> for incremental configuration or assign this full mask directly.
     /// </summary>
     public Rule DisabledRules { get; set; } = Rule.Numbers;
 
@@ -130,7 +130,7 @@ public sealed partial class Options
 
     /// <summary>
     /// Allows Unicode decimal digits independently of the default <see cref="Rule.Numbers"/> setting.
-    /// In 0.7.2 digits are already allowed by default because <see cref="Rule.Numbers"/> starts disabled.
+    /// In 0.8.0 the number rule remains disabled by default, so mixed alphanumeric identifiers are allowed.
     /// This property is retained for compatibility; prefer <see cref="EnableRule(Rule)"/> and
     /// <see cref="DisableRule(Rule)"/> for rule configuration.
     /// </summary>

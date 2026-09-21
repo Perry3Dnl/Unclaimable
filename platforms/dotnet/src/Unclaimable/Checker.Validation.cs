@@ -25,13 +25,13 @@ public sealed partial class Checker
             return true;
         }
 
-        if (_minimumLengthEnabled && value.Length < _minimumLength)
+        if (_minimumLengthEnabled && !IsRuleException(Rule.MinimumLength, value) && value.Length < _minimumLength)
         {
             violation = Result.TooShort(value, _minimumLength);
             return true;
         }
 
-        if (_maximumLengthEnabled && value.Length > _maximumLength)
+        if (_maximumLengthEnabled && !IsRuleException(Rule.MaximumLength, value) && value.Length > _maximumLength)
         {
             violation = Result.TooLong(value, _maximumLength);
             return true;
@@ -42,13 +42,13 @@ public sealed partial class Checker
             return false;
         }
 
-        if (_leadingSeparatorEnabled && IsSeparator(value[0]))
+        if (_leadingSeparatorEnabled && !IsRuleException(Rule.LeadingSeparator, value) && IsSeparator(value[0]))
         {
             violation = Result.LeadingSeparator(value, 0, value[0].ToString());
             return true;
         }
 
-        if (_trailingSeparatorEnabled && IsSeparator(value[value.Length - 1]))
+        if (_trailingSeparatorEnabled && !IsRuleException(Rule.TrailingSeparator, value) && IsSeparator(value[value.Length - 1]))
         {
             violation = Result.TrailingSeparator(value, value.Length - 1, value[value.Length - 1].ToString());
             return true;
@@ -67,7 +67,7 @@ public sealed partial class Checker
                 characterText = new string(new[] { character, value[index + 1] });
             }
 
-            if (!_allowNumbers && category == UnicodeCategory.DecimalDigitNumber)
+            if (!_allowNumbers && !IsRuleException(Rule.Numbers, value) && category == UnicodeCategory.DecimalDigitNumber)
             {
                 violation = Result.NumbersNotAllowed(value, index, characterText);
                 return true;
@@ -80,13 +80,13 @@ public sealed partial class Checker
             }
 
             var explicitlyAllowed = _policy.IsCharacterExplicitlyAllowed(characterText);
-            if (!explicitlyAllowed && _whitespaceEnabled && IsWhitespace(category, character))
+            if (!explicitlyAllowed && _whitespaceEnabled && !IsRuleException(Rule.Whitespace, value) && IsWhitespace(category, character))
             {
                 violation = Result.BlockedCharacter(value, index, characterText);
                 return true;
             }
 
-            if (!explicitlyAllowed && _blockedCharactersEnabled && _policy.IsCharacterBlocked(characterText))
+            if (!explicitlyAllowed && _blockedCharactersEnabled && !IsRuleException(Rule.BlockedCharacters, value) && _policy.IsCharacterBlocked(characterText))
             {
                 violation = Result.BlockedCharacter(value, index, characterText);
                 return true;
@@ -161,14 +161,14 @@ public sealed partial class Checker
             return;
         }
 
-        if (_minimumLengthEnabled && value.Length < _minimumLength)
+        if (_minimumLengthEnabled && !IsRuleException(Rule.MinimumLength, value) && value.Length < _minimumLength)
         {
             diagnostics.Add(new Diagnostic(
                 MatchKind.TooShort,
                 message: includeMessages ? $"Value must be at least {_minimumLength} characters long." : null));
         }
 
-        if (_maximumLengthEnabled && value.Length > _maximumLength)
+        if (_maximumLengthEnabled && !IsRuleException(Rule.MaximumLength, value) && value.Length > _maximumLength)
         {
             diagnostics.Add(new Diagnostic(
                 MatchKind.TooLong,
@@ -180,7 +180,7 @@ public sealed partial class Checker
             return;
         }
 
-        if (_leadingSeparatorEnabled && IsSeparator(value[0]))
+        if (_leadingSeparatorEnabled && !IsRuleException(Rule.LeadingSeparator, value) && IsSeparator(value[0]))
         {
             diagnostics.Add(new Diagnostic(
                 MatchKind.LeadingSeparator,
@@ -189,7 +189,7 @@ public sealed partial class Checker
                 message: includeMessages ? "Leading separators are not allowed." : null));
         }
 
-        if (_trailingSeparatorEnabled && IsSeparator(value[value.Length - 1]))
+        if (_trailingSeparatorEnabled && !IsRuleException(Rule.TrailingSeparator, value) && IsSeparator(value[value.Length - 1]))
         {
             diagnostics.Add(new Diagnostic(
                 MatchKind.TrailingSeparator,
@@ -240,7 +240,7 @@ public sealed partial class Checker
                         : null));
             }
 
-            if (!_allowNumbers && category == UnicodeCategory.DecimalDigitNumber)
+            if (!_allowNumbers && !IsRuleException(Rule.Numbers, value) && category == UnicodeCategory.DecimalDigitNumber)
             {
                 diagnostics.Add(new Diagnostic(
                     MatchKind.NumbersNotAllowed,
@@ -263,7 +263,7 @@ public sealed partial class Checker
             }
 
             var explicitlyAllowed = _policy.IsCharacterExplicitlyAllowed(characterText);
-            if (!explicitlyAllowed && _whitespaceEnabled && IsWhitespace(category, character))
+            if (!explicitlyAllowed && _whitespaceEnabled && !IsRuleException(Rule.Whitespace, value) && IsWhitespace(category, character))
             {
                 diagnostics.Add(new Diagnostic(
                     MatchKind.BlockedCharacter,
@@ -271,7 +271,7 @@ public sealed partial class Checker
                     offendingCharacter: characterText,
                     message: includeMessages ? $"Character '{characterText}' at index {index} is blocked." : null));
             }
-            else if (!explicitlyAllowed && _blockedCharactersEnabled && _policy.IsCharacterBlocked(characterText))
+            else if (!explicitlyAllowed && _blockedCharactersEnabled && !IsRuleException(Rule.BlockedCharacters, value) && _policy.IsCharacterBlocked(characterText))
             {
                 diagnostics.Add(new Diagnostic(
                     MatchKind.BlockedCharacter,

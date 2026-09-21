@@ -1,0 +1,249 @@
+name: .NET Ecosystem Compatibility
+
+on:
+  push:
+    paths:
+      - "Directory.Build.props"
+      - "platforms/dotnet/src/Unclaimable/**"
+      - "platforms/dotnet/src/Unclaimable.Email/**"
+      - "platforms/dotnet/src/Unclaimable.Extended/**"
+      - "platforms/dotnet/scripts/Validate-Packages.ps1"
+      - ".github/workflows/ecosystem-compatibility.yml"
+  pull_request:
+    paths:
+      - "Directory.Build.props"
+      - "platforms/dotnet/src/Unclaimable/**"
+      - "platforms/dotnet/src/Unclaimable.Email/**"
+      - "platforms/dotnet/src/Unclaimable.Extended/**"
+      - "platforms/dotnet/scripts/Validate-Packages.ps1"
+      - ".github/workflows/ecosystem-compatibility.yml"
+
+permissions:
+  contents: read
+
+env:
+  CORE_PROJECT: ${{ github.workspace }}/platforms/dotnet/src/Unclaimable/Unclaimable.csproj
+  EMAIL_PROJECT: ${{ github.workspace }}/platforms/dotnet/src/Unclaimable.Email/Unclaimable.Email.csproj
+  EXTENDED_PROJECT: ${{ github.workspace }}/platforms/dotnet/src/Unclaimable.Extended/Unclaimable.Extended.csproj
+
+jobs:
+  portable-consumers:
+    name: ${{ matrix.ecosystem }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ecosystem: Console
+            template: console
+            framework: net10.0
+          - ecosystem: Worker Service
+            template: worker
+            framework: net10.0
+          - ecosystem: Blazor WebAssembly
+            template: blazorwasm
+            framework: net10.0
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Create ${{ matrix.ecosystem }} consumer
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/ecosystem
+          dotnet new "${{ matrix.template }}" -f "${{ matrix.framework }}" -o artifacts/ecosystem/app
+          PROJECT="$(find artifacts/ecosystem/app -maxdepth 1 -name '*.csproj' -print -quit)"
+          dotnet add "$PROJECT" reference "$CORE_PROJECT" "$EMAIL_PROJECT" "$EXTENDED_PROJECT"
+          cat > artifacts/ecosystem/app/UnclaimableCompatibilityProbe.cs <<'EOF'
+          using Unclaimable;
+          using Unclaimable.Email;
+          using Unclaimable.Extended;
+
+          internal static class UnclaimableCompatibilityProbe
+          {
+              internal static bool Verify()
+              {
+                  var checker = new Checker();
+                  var emailChecker = new EmailChecker(new EmailOptions());
+                  var options = new Options();
+                  options.UseExtendedData();
+
+                  return checker.IsClaimable("ordinary2")
+                      && emailChecker is not null
+                      && ExtendedData.TotalEntries > 30000
+                      && new Checker(options).IsReserved("aalborguniversity");
+              }
+          }
+          EOF
+          dotnet build "$PROJECT" --configuration Release
+
+  desktop-consumers:
+    name: ${{ matrix.ecosystem }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ecosystem: WPF
+            template: wpf
+          - ecosystem: Windows Forms
+            template: winforms
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Create ${{ matrix.ecosystem }} consumer
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts/ecosystem | Out-Null
+          dotnet new "${{ matrix.template }}" -f net10.0 -o artifacts/ecosystem/app
+          $project = Get-ChildItem artifacts/ecosystem/app -Filter *.csproj | Select-Object -First 1
+          dotnet add $project.FullName reference $env:CORE_PROJECT $env:EMAIL_PROJECT $env:EXTENDED_PROJECT
+          @'
+          using Unclaimable;
+          using Unclaimable.Email;
+          using Unclaimable.Extended;
+
+          internal static class UnclaimableCompatibilityProbe
+          {
+              internal static bool Verify()
+              {
+                  var checker = new Checker();
+                  var emailChecker = new EmailChecker(new EmailOptions());
+                  return checker.IsClaimable("ordinary2")
+                      && emailChecker is not null
+                      && ExtendedData.TotalEntries > 30000;
+              }
+          }
+          '@ | Set-Content (Join-Path $project.Directory.FullName "UnclaimableCompatibilityProbe.cs")
+          dotnet build $project.FullName --configuration Release
+
+  maui:
+    name: .NET MAUI Android
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Install MAUI Android workload
+        run: dotnet workload install maui-android
+
+      - name: Build MAUI consumer
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/ecosystem
+          dotnet new maui -o artifacts/ecosystem/maui
+          PROJECT="$(find artifacts/ecosystem/maui -maxdepth 1 -name '*.csproj' -print -quit)"
+          dotnet add "$PROJECT" reference "$CORE_PROJECT" "$EMAIL_PROJECT" "$EXTENDED_PROJECT"
+          cat > artifacts/ecosystem/maui/UnclaimableCompatibilityProbe.cs <<'EOF'
+          using Unclaimable;
+          using Unclaimable.Email;
+          using Unclaimable.Extended;
+
+          internal static class UnclaimableCompatibilityProbe
+          {
+              internal static bool Verify()
+              {
+                  var checker = new Checker();
+                  var emailChecker = new EmailChecker(new EmailOptions());
+                  return checker.IsClaimable("ordinary2")
+                      && emailChecker is not null
+                      && ExtendedData.TotalEntries > 30000;
+              }
+          }
+          EOF
+          dotnet build "$PROJECT" --configuration Release --framework net10.0-android
+
+  avalonia:
+    name: Avalonia
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Build Avalonia consumer
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet new install Avalonia.Templates@12.1.2
+          mkdir -p artifacts/ecosystem
+          dotnet new avalonia.app -n AvaloniaSmoke -o artifacts/ecosystem/avalonia
+          PROJECT="$(find artifacts/ecosystem/avalonia -maxdepth 1 -name '*.csproj' -print -quit)"
+          dotnet add "$PROJECT" reference "$CORE_PROJECT" "$EMAIL_PROJECT" "$EXTENDED_PROJECT"
+          cat > artifacts/ecosystem/avalonia/UnclaimableCompatibilityProbe.cs <<'EOF'
+          using Unclaimable;
+          using Unclaimable.Email;
+          using Unclaimable.Extended;
+
+          internal static class UnclaimableCompatibilityProbe
+          {
+              internal static bool Verify() =>
+                  new Checker().IsClaimable("ordinary2")
+                  && new EmailChecker(new EmailOptions()) is not null
+                  && ExtendedData.TotalEntries > 30000;
+          }
+          EOF
+          dotnet build "$PROJECT" --configuration Release
+
+  uno:
+    name: Uno Platform
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Build Uno desktop consumer
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet new install Uno.Templates@6.6.29
+          mkdir -p artifacts/ecosystem
+          dotnet new unoapp -preset blank -platforms desktop -tfm net10.0 -o artifacts/ecosystem/uno
+          PROJECT="$(find artifacts/ecosystem/uno -name '*.csproj' -print -quit)"
+          dotnet add "$PROJECT" reference "$CORE_PROJECT" "$EMAIL_PROJECT" "$EXTENDED_PROJECT"
+          cat > artifacts/ecosystem/uno/UnclaimableCompatibilityProbe.cs <<'EOF'
+          using Unclaimable;
+          using Unclaimable.Email;
+          using Unclaimable.Extended;
+
+          internal static class UnclaimableCompatibilityProbe
+          {
+              internal static bool Verify() =>
+                  new Checker().IsClaimable("ordinary2")
+                  && new EmailChecker(new EmailOptions()) is not null
+                  && ExtendedData.TotalEntries > 30000;
+          }
+          EOF
+          dotnet build "$PROJECT" --configuration Release --framework net10.0-desktop

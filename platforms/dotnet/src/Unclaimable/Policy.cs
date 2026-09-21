@@ -19,16 +19,39 @@ public sealed class Policy : IPolicy
 
     /// <summary>Creates a policy and adds application-specific blocked Unicode scalar values.</summary>
     public Policy(IEnumerable<string> additionalBlockedCharacters)
+        : this(additionalBlockedCharacters, Array.Empty<string>())
+    {
+    }
+
+    /// <summary>
+    /// Creates a policy with application-specific blocked and explicitly allowed Unicode scalar values.
+    /// Explicit allowances win over built-in and startup blocks until changed at runtime.
+    /// </summary>
+    public Policy(
+        IEnumerable<string> additionalBlockedCharacters,
+        IEnumerable<string> allowedCharacters)
     {
         if (additionalBlockedCharacters is null)
         {
             throw new ArgumentNullException(nameof(additionalBlockedCharacters));
         }
 
+        if (allowedCharacters is null)
+        {
+            throw new ArgumentNullException(nameof(allowedCharacters));
+        }
+
         foreach (var value in additionalBlockedCharacters)
         {
             ValidateCharacter(value, nameof(additionalBlockedCharacters));
             _blocked.Add(value);
+        }
+
+        foreach (var value in allowedCharacters)
+        {
+            ValidateCharacter(value, nameof(allowedCharacters));
+            _blocked.Remove(value);
+            _allowed.Add(value);
         }
     }
 

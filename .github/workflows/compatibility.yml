@@ -1,4 +1,4 @@
-name: .NET 0.7.8 Compatibility
+name: .NET 0.8.0 Compatibility
 
 on:
   push:
@@ -29,23 +29,80 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup .NET
+      - name: Setup .NET 8 runtime
         uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           dotnet-version: "8.0.x"
+
+      - name: Setup .NET 11 preview SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: "11.0.x"
+          dotnet-quality: preview
+
+      - name: Verify frozen 0.8.0 defaults
+        run: >-
+          dotnet test platforms/dotnet/tests/Unclaimable.Tests/Unclaimable.Tests.csproj
+          --configuration Release
+          --filter "FullyQualifiedName~Options080DefaultContractTests"
 
       - name: Run behavioral compatibility corpus
         run: dotnet test platforms/dotnet/tests/Unclaimable.Tests/Unclaimable.Tests.csproj --configuration Release
 
       # Keep package validation pinned to the immediately previous published release.
-      - name: Validate core public API against latest published NuGet baseline (v0.7.7)
+      - name: Validate core public API against latest published NuGet baseline (v0.7.8)
         run: dotnet pack platforms/dotnet/src/Unclaimable/Unclaimable.csproj --configuration Release --output artifacts/compat
 
-      - name: Validate ASP.NET Core public API against latest published NuGet baseline (v0.7.7)
+      - name: Validate ASP.NET Core public API against latest published NuGet baseline (v0.7.8)
         run: dotnet pack platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj --configuration Release --output artifacts/compat
 
-      - name: Validate new email package can be packed
+      - name: Validate Email public API against latest published NuGet baseline (v0.7.8)
         run: dotnet pack platforms/dotnet/src/Unclaimable.Email/Unclaimable.Email.csproj --configuration Release --output artifacts/compat
 
-      - name: Validate new extended package can be packed
+      - name: Validate Extended public API against latest published NuGet baseline (v0.7.8)
         run: dotnet pack platforms/dotnet/src/Unclaimable.Extended/Unclaimable.Extended.csproj --configuration Release --output artifacts/compat
+
+
+  aspnetcore-framework-compatibility:
+    name: ASP.NET Core ${{ matrix.framework }} compatibility
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - framework: net6.0
+            runtime-sdk: "6.0.x"
+          - framework: net7.0
+            runtime-sdk: "7.0.x"
+          - framework: net8.0
+            runtime-sdk: "8.0.x"
+          - framework: net9.0
+            runtime-sdk: "9.0.x"
+          - framework: net10.0
+            runtime-sdk: "10.0.x"
+          - framework: net11.0
+            runtime-sdk: "11.0.x"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup stable runtime for ${{ matrix.framework }}
+        if: matrix.framework != 'net11.0'
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: ${{ matrix.runtime-sdk }}
+          dotnet-quality: ga
+
+      - name: Setup .NET 11 preview SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: "11.0.x"
+          dotnet-quality: preview
+
+      - name: Run ASP.NET Core compatibility smoke test
+        run: >-
+          dotnet run
+          --project platforms/dotnet/smoke/Unclaimable.AspNetCoreCompatibilitySmoke/Unclaimable.AspNetCoreCompatibilitySmoke.csproj
+          --configuration Release
+          -p:CompatibilityTargetFramework=${{ matrix.framework }}

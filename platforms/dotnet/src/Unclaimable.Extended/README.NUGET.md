@@ -2,15 +2,21 @@
 
 Large optional reserved-identity datasets for Unclaimable.
 
-**Package version: 0.7.8**
+**Package version: 0.8.0**
 
 ## Install
 
 ```bash
-dotnet add package Unclaimable.Extended --version 0.7.8
+dotnet add package Unclaimable.Extended --version 0.8.0
 ```
 
 Installing the package alone does not change validation behavior. Enable the data explicitly.
+
+## Cross-platform app compatibility
+
+`Unclaimable.Extended` targets `netstandard2.0` and is compile-checked in .NET MAUI, Blazor WebAssembly, WPF, Windows Forms, Console, Worker Service, Avalonia, and Uno Platform consumers.
+
+The datasets remain embedded and deterministic on those application models; enabling Extended data does not require a platform-specific integration package.
 
 ## Quick start
 
@@ -25,6 +31,8 @@ var checker = new Checker(options);
 ```
 
 All Extended groups are enabled after opt-in.
+
+The checker still uses the normal 0.8.0 Core defaults at the same time. Extended data is additive: opting in does not disable or replace country, city, celebrity, identity, structural, matching, or pattern rules that are already active in `Options`.
 
 ## Select categories
 
@@ -50,6 +58,23 @@ options.UseExtendedData(extended =>
 ```
 
 The exception applies to that complete Extended identifier without disabling the entire category.
+
+Configure this exception inside `UseExtendedData(...)` because Extended entries are registered into Core as explicit whole-identifier reservations. Core rule or pattern exceptions do not erase an Extended reservation after it has been registered.
+
+Use Core's scoped APIs separately for Core rules and patterns:
+
+```csharp
+var options = new Options()
+    .AllowRepeatedCharacters("T")
+    .AllowCharacters("_");
+
+options.UseExtendedData(extended =>
+{
+    extended.AllowedIdentifiers.Add("Aalborg University");
+});
+```
+
+This keeps Extended identity exceptions distinct from username-shape exceptions.
 
 ## Dataset snapshot
 

@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -9,13 +9,13 @@
 
     <PackageId>Unclaimable.AspNetCore</PackageId>
     <Version>$(UnclaimableVersion)</Version>
-    <Description>ASP.NET Core dependency injection and model validation integration for Unclaimable.</Description>
+    <Description>ASP.NET Core dependency injection and DataAnnotations integration for Unclaimable, with explicit .NET 6 through .NET 11 framework assets.</Description>
     <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
     <PackageIcon>unclaimable-icon.png</PackageIcon>
-    <PackageTags>username;validation;security;aspnetcore;reserved-names</PackageTags>
+    <PackageTags>username;validation;security;aspnetcore;reserved-names;identity;impersonation;dotnet;web;blazor;server;dependency-injection;dataannotations</PackageTags>
 
     <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>0.7.7</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>0.7.8</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <ItemGroup>

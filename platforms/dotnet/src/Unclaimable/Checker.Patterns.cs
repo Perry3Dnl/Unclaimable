@@ -6,6 +6,7 @@ namespace Unclaimable;
 public sealed partial class Checker
 {
     private const int MaximumRepeatedUnitElements = 4;
+    private const int MinimumDirectRepeatElements = 3;
 
     private readonly Pattern _enabledPatterns;
     private readonly int _repeatedPatternMinimumLength;
@@ -19,31 +20,31 @@ public sealed partial class Checker
             return false;
         }
 
-        if (IsPatternEnabled(Pattern.NumericOnly) && IsNumericOnlyPattern(patternText))
+        if (IsPatternEnabled(Pattern.NumericOnly) && !IsPatternException(Pattern.NumericOnly, value) && IsNumericOnlyPattern(patternText))
         {
             violation = CreatePatternResult(value!, MatchKind.NumericOnly);
             return true;
         }
 
-        if (IsPatternEnabled(Pattern.AsciiArt) && IsAsciiArtPattern(patternText))
+        if (IsPatternEnabled(Pattern.AsciiArt) && !IsPatternException(Pattern.AsciiArt, value) && IsAsciiArtPattern(patternText))
         {
             violation = CreatePatternResult(value!, MatchKind.AsciiArt);
             return true;
         }
 
-        if (IsPatternEnabled(Pattern.SymbolOnly) && IsSymbolOnlyPattern(patternText))
+        if (IsPatternEnabled(Pattern.SymbolOnly) && !IsPatternException(Pattern.SymbolOnly, value) && IsSymbolOnlyPattern(patternText))
         {
             violation = CreatePatternResult(value!, MatchKind.SymbolOnly);
             return true;
         }
 
-        if (IsPatternEnabled(Pattern.Repeated) && IsRepeatedPattern(patternText))
+        if (IsPatternEnabled(Pattern.Repeated) && !IsPatternException(Pattern.Repeated, value) && IsRepeatedPattern(patternText))
         {
             violation = CreatePatternResult(value!, MatchKind.RepeatedPattern);
             return true;
         }
 
-        if (IsPatternEnabled(Pattern.UppercaseOnly) && IsUppercaseOnlyPattern(patternText))
+        if (IsPatternEnabled(Pattern.UppercaseOnly) && !IsPatternException(Pattern.UppercaseOnly, value) && IsUppercaseOnlyPattern(patternText))
         {
             violation = CreatePatternResult(value!, MatchKind.UppercaseOnly);
             return true;
@@ -63,27 +64,27 @@ public sealed partial class Checker
             return;
         }
 
-        if (IsPatternEnabled(Pattern.NumericOnly) && IsNumericOnlyPattern(patternText))
+        if (IsPatternEnabled(Pattern.NumericOnly) && !IsPatternException(Pattern.NumericOnly, value) && IsNumericOnlyPattern(patternText))
         {
             AddPatternDiagnostic(MatchKind.NumericOnly, includeMessages, diagnostics);
         }
 
-        if (IsPatternEnabled(Pattern.AsciiArt) && IsAsciiArtPattern(patternText))
+        if (IsPatternEnabled(Pattern.AsciiArt) && !IsPatternException(Pattern.AsciiArt, value) && IsAsciiArtPattern(patternText))
         {
             AddPatternDiagnostic(MatchKind.AsciiArt, includeMessages, diagnostics);
         }
 
-        if (IsPatternEnabled(Pattern.SymbolOnly) && IsSymbolOnlyPattern(patternText))
+        if (IsPatternEnabled(Pattern.SymbolOnly) && !IsPatternException(Pattern.SymbolOnly, value) && IsSymbolOnlyPattern(patternText))
         {
             AddPatternDiagnostic(MatchKind.SymbolOnly, includeMessages, diagnostics);
         }
 
-        if (IsPatternEnabled(Pattern.Repeated) && IsRepeatedPattern(patternText))
+        if (IsPatternEnabled(Pattern.Repeated) && !IsPatternException(Pattern.Repeated, value) && IsRepeatedPattern(patternText))
         {
             AddPatternDiagnostic(MatchKind.RepeatedPattern, includeMessages, diagnostics);
         }
 
-        if (IsPatternEnabled(Pattern.UppercaseOnly) && IsUppercaseOnlyPattern(patternText))
+        if (IsPatternEnabled(Pattern.UppercaseOnly) && !IsPatternException(Pattern.UppercaseOnly, value) && IsUppercaseOnlyPattern(patternText))
         {
             AddPatternDiagnostic(MatchKind.UppercaseOnly, includeMessages, diagnostics);
         }
@@ -190,6 +191,11 @@ public sealed partial class Checker
             elements.Add(enumerator.GetTextElement());
         }
 
+        if (ContainsDirectRepeat(elements))
+        {
+            return true;
+        }
+
         if (elements.Count < _repeatedPatternMinimumLength)
         {
             return false;
@@ -200,21 +206,22 @@ public sealed partial class Checker
             var remaining = elements.Count - startIndex;
             var maximumUnitLength = Math.Min(MaximumRepeatedUnitElements, remaining / 2);
 
-            for (var unitLength = 1; unitLength <= maximumUnitLength; unitLength++)
+            for (var unitLength = 2; unitLength <= maximumUnitLength; unitLength++)
             {
-                var repetitions = 1;
+                if (RepeatedUnitIsUniform(elements, startIndex, unitLength))
+                {
+                    continue;
+                }
+
                 var matchedLength = unitLength;
                 var nextUnitStart = startIndex + unitLength;
 
                 while (nextUnitStart + unitLength <= elements.Count
                        && RepeatedUnitMatches(elements, startIndex, nextUnitStart, unitLength))
                 {
-                    repetitions++;
                     matchedLength += unitLength;
 
-                    var minimumRepetitions = unitLength == 1 ? 2 : 3;
-                    if (repetitions >= minimumRepetitions
-                        && matchedLength >= _repeatedPatternMinimumLength)
+                    if (matchedLength >= _repeatedPatternMinimumLength)
                     {
                         return true;
                     }
@@ -225,6 +232,49 @@ public sealed partial class Checker
         }
 
         return false;
+    }
+
+    private bool ContainsDirectRepeat(IReadOnlyList<string> elements)
+    {
+        var runLength = 1;
+
+        for (var index = 1; index < elements.Count; index++)
+        {
+            if (string.Equals(elements[index - 1], elements[index], StringComparison.Ordinal))
+            {
+                runLength++;
+                if (runLength >= MinimumDirectRepeatElements
+                    && !_allowedRepeatedCharacters.Contains(elements[index]))
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                runLength = 1;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool RepeatedUnitIsUniform(
+        IReadOnlyList<string> elements,
+        int startIndex,
+        int unitLength)
+    {
+        for (var offset = 1; offset < unitLength; offset++)
+        {
+            if (!string.Equals(
+                    elements[startIndex],
+                    elements[startIndex + offset],
+                    StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static bool RepeatedUnitMatches(
