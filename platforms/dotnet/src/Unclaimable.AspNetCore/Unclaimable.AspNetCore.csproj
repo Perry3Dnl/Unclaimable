@@ -15,7 +15,7 @@
     <PackageTags>username;validation;security;aspnetcore;reserved-names</PackageTags>
 
     <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>0.7.7</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>0.7.8</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <ItemGroup>
