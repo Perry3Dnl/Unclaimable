@@ -16,11 +16,66 @@ Latest measured production line coverage: **98.16%**. Engineering target: **100%
 
 Prevent reserved, protected, misleading, degenerate, and unsafe identifiers before they can be claimed. Unclaimable combines curated datasets, Unicode-aware matching, structural validation, configurable rules, identifier-shape checks, optional protected-identity lists, and ASP.NET Core integration with no runtime dependencies in the core package.
 
-[**NuGet**](https://www.nuget.org/packages/Unclaimable) · [**Changelog**](CHANGELOG.md)
+[**NuGet**](https://www.nuget.org/packages/Unclaimable) · [**Configuration guide**](docs/CONFIGURATION.md) · [**Changelog**](CHANGELOG.md)
 
 ## Current release: 0.7.8
 
 0.7.8 is a repeated-pattern hotfix. `Pattern.Repeated` now catches repeated spans inside larger identifiers, not only values made entirely from repetition. `Options.RepeatedPatternMinimumLength` controls the minimum repeated span and defaults to `4` Unicode text elements.
+
+## Upcoming 0.8.0: stricter defaults with narrow exceptions
+
+0.8.0 is being prepared and is **not released yet**. It establishes the default policy we intend to keep stable going forward.
+
+The important behavioral change is that Unclaimable now leans consistently into deny-first validation. Protected identity rules are enabled by default, selected high-trust roots such as `admin`, `staff`, `root`, `owner`, `support`, and `help` can reject containing identifiers, and repeated-pattern defaults are more explicit.
+
+That means applications upgrading from 0.7.8 should expect some identifiers that previously passed to be rejected in 0.8.0.
+
+The fix is **not** to weaken the whole checker. 0.8.0 adds narrow exception APIs:
+
+```csharp
+var options = new Options();
+
+// Skip only one rule for one complete identifier.
+options.AllowIdentifierForRule(
+    "Charlotte",
+    Rule.PopularCityNames);
+
+// Skip only one pattern for one complete identifier.
+options.AllowIdentifierForPattern(
+    "ababab",
+    Pattern.Repeated);
+
+// Permit one character without disabling BlockedCharacters globally.
+options.AllowCharacters("_");
+
+// Permit direct T runs without disabling Pattern.Repeated globally.
+options.AllowRepeatedCharacters("T");
+```
+
+A scoped exception only skips that check. Every other enabled rule, pattern, dataset match, protected identity list, and application reservation still runs.
+
+For example, a team convention can permit `TTT_user7` without making all repeated letters or separators legal:
+
+```csharp
+var options = new Options()
+    .AllowCharacters("_")
+    .AllowRepeatedCharacters("T");
+
+var checker = new Checker(options);
+```
+
+The 0.8.0 repeated-pattern defaults are:
+
+```text
+aaa      -> rejected: direct run of 3
+abab     -> below cyclic threshold
+ababab   -> rejected: repeated span reaches 6
+abcabc   -> rejected: repeated span reaches 6
+```
+
+All protected identity rules are enabled by default except `Rule.Numbers`. Mixed alphanumeric names remain possible, while `Pattern.NumericOnly` continues to reject all-numeric identifiers. `Pattern.UppercaseOnly` remains opt-in.
+
+For copy-paste recipes, precedence, migration guidance, ASP.NET Core setup, Email local-part customization, and Extended-data exceptions, see the **[0.8.0 configuration and exceptions guide](docs/CONFIGURATION.md)**.
 
 ## Unclaimable.Extended
 
@@ -244,7 +299,7 @@ Generic words remain exact rather than broad substring roots: `vote` does not bl
 - Exact, compact, curated partial, obfuscation, and selected Unicode-confusable matching
 - **15 localized language datasets** with English enabled by default
 - Per-category enable/disable controls
-- Exact built-in exceptions and application-specific reservations
+- Exact built-in exceptions, scoped rule/pattern allowances, and application-specific reservations
 - Configurable numeric-only, repeated, symbol-only, ASCII-art, and uppercase-only pattern checks
 - Optional country, city, celebrity, nationality, currency, religion, landmark, event, award, fictional-character, franchise, profession, and military identity protection
 - Length, whitespace, separator, blocked-character, Unicode-safety, and optional no-number rules
