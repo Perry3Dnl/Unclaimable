@@ -57,7 +57,7 @@ public sealed class Options080DefaultContractTests
         Assert.True(options.RejectFormatCharacters);
 
         Assert.Equal(V080EnabledPatterns, options.EnabledPatterns);
-        Assert.Equal(4, options.RepeatedPatternMinimumLength);
+        Assert.Equal(6, options.RepeatedPatternMinimumLength);
         Assert.Equal(V080EnabledOptionalRules, options.EnabledOptionalRules);
 
         Assert.Empty(options.DisabledCategories);
