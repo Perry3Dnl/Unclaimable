@@ -13,6 +13,7 @@
     <PackageIcon>unclaimable-icon.png</PackageIcon>
     <PackageTags>username;validation;security;reserved-names;identity;brands;companies;datasets;moderation;dotnet;cross-platform;maui;blazor;webassembly;wpf;winforms;console;worker-service;avalonia;uno</PackageTags>
     <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageValidationBaselineVersion>0.7.8</PackageValidationBaselineVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Unclaimable/Unclaimable.csproj" />
