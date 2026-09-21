@@ -86,6 +86,20 @@ public string UserName { get; set; } = string.Empty;
 
 Application-wide and reason-specific validation messages can also be configured through the registered `Options`.
 
+## Startup allowances
+
+Startup configuration can explicitly permit selected characters while keeping the character rule enabled:
+
+```csharp
+builder.Services.AddUnclaimable(options =>
+{
+    options.AllowCharacters("_");
+    options.AllowRepeatedCharacters("T");
+});
+```
+
+Rule- and pattern-specific complete-identifier exceptions are also available through `AllowIdentifierForRule(...)` and `AllowIdentifierForPattern(...)`.
+
 ## Runtime character policy
 
 The registered `IPolicy` remains live after startup:
