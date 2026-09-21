@@ -12,6 +12,12 @@ dotnet add package Unclaimable.AspNetCore --version 0.8.0
 
 The required `Unclaimable` core dependency is installed transitively.
 
+## Framework support
+
+`Unclaimable.AspNetCore` 0.8.0 ships framework-specific assets for `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0`, and `net11.0`. NuGet selects the matching asset for the consuming application automatically.
+
+The compatibility suite compiles and runs the DI and DataAnnotations integration on every advertised target. `net11.0` support is tested against the current .NET 11 prerelease SDK until .NET 11 reaches general availability.
+
 ## Register services
 
 ```csharp
