@@ -93,8 +93,8 @@ public sealed class Pattern070Tests
     }
 
     [Theory]
-    [InlineData("aa")]
-    [InlineData("dd")]
+    [InlineData("aab")]
+    [InlineData("ddb")]
     [InlineData("abab")]
     [InlineData("useraa12")]
     [InlineData("rememberme")]
@@ -228,7 +228,7 @@ public sealed class Pattern070Tests
     }
 
     [Fact]
-    public void DisablingAsciiArtLetsTheShapeContinueThroughOtherEnabledChecks()
+    public void DisablingAsciiArtDoesNotBypassRepeatedPattern()
     {
         var options = new Options
         {
@@ -236,7 +236,10 @@ public sealed class Pattern070Tests
         };
         options.DisablePattern(Pattern.AsciiArt);
 
-        Assert.True(new Checker(options).Check("8===3").IsClaimable);
+        var result = new Checker(options).Check("8===3");
+
+        Assert.True(result.IsReserved);
+        Assert.Equal(MatchKind.RepeatedPattern, result.MatchKind);
     }
 
     [Fact]
