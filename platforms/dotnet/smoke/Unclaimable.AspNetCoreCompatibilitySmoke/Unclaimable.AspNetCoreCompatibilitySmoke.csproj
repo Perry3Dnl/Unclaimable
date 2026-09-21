@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <CompatibilityTargetFramework Condition="'$(CompatibilityTargetFramework)' == ''">net8.0</CompatibilityTargetFramework>
+    <TargetFramework>$(CompatibilityTargetFramework)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <ProjectReference Include="../../src/Unclaimable/Unclaimable.csproj" />
+    <ProjectReference Include="../../src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj" />
+  </ItemGroup>
+
+</Project>
