@@ -8,10 +8,10 @@
     <WarningsAsErrors>$(WarningsAsErrors);1591</WarningsAsErrors>
     <PackageId>Unclaimable.Extended</PackageId>
     <Version>$(UnclaimableVersion)</Version>
-    <Description>Large optional reserved-identity datasets for Unclaimable.</Description>
+    <Description>Cross-platform optional reserved-identity datasets for Unclaimable, including brands, companies, education, sports, public figures, transport, and organizations.</Description>
     <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
     <PackageIcon>unclaimable-icon.png</PackageIcon>
-    <PackageTags>username;validation;security;reserved-names;brands;companies;datasets</PackageTags>
+    <PackageTags>username;validation;security;reserved-names;identity;brands;companies;datasets;moderation;dotnet;cross-platform;maui;blazor;webassembly;wpf;winforms;console;worker-service;avalonia;uno</PackageTags>
     <EnablePackageValidation>true</EnablePackageValidation>
   </PropertyGroup>
   <ItemGroup>
