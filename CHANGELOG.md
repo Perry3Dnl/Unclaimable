@@ -2,18 +2,84 @@
 
 ## 0.8.0 - Unreleased
 
+> **Default-behavior warning:** 0.8.0 intentionally establishes a stricter default policy than 0.7.8. Applications upgrading from an older release should run their real identifier regression corpus before deployment. The new exception APIs are designed to make narrow compatibility exceptions without disabling an entire protection.
+
+### Why the defaults changed
+
+Earlier releases accumulated two competing goals: block trusted/reserved identities aggressively, while also preserving a broad "known safe" corpus intended to avoid substring false positives. That older safe-corpus policy no longer matched the direction of the package. In particular, security-sensitive roots such as `admin`, `staff`, `root`, `owner`, `support`, and `help` were complete reserved identifiers but could still appear inside a larger identifier.
+
+0.8.0 makes the deny-first policy explicit: if an enabled rule, pattern, protected-identity list, curated partial root, or application reservation rejects an identifier, validation stops and returns that deny reason. Passing one earlier check never clears the identifier.
+
+The stricter defaults are paired with scoped exception APIs so an application can keep the protection globally and relax only the exact rule, pattern, character, repeated character, or identifier that its naming convention requires.
+
+### Default behavior changes
+
+- All built-in protected identity rules are enabled by default in Core except `Rule.Numbers`. This includes countries, popular cities, celebrities, nationalities, currencies, religions, landmarks, events, awards, fictional characters, franchises, professions, and military identities.
+- `Rule.Numbers` remains disabled by default, so ordinary mixed alphanumeric identifiers can still be claimable. `Pattern.NumericOnly` remains enabled, so all-numeric identifiers are still rejected.
+- `Pattern.UppercaseOnly` remains opt-in. Reserved identifiers are still case-normalized, so disabling or not enabling the uppercase-only pattern does not make values such as `ADMIN` claimable.
+- `Pattern.Repeated` now treats direct runs and cyclic repetition separately:
+  - three or more identical consecutive Unicode text elements are rejected by default;
+  - multi-element cycles use `RepeatedPatternMinimumLength`, now defaulting to `6`;
+  - `abab` is below the default cyclic threshold, while `ababab`, `abcabc`, and `hahaha` are rejected.
+- English `support` and `help`, plus privileged role roots `admin`, `staff`, `root`, and `owner`, are explicitly eligible for curated partial matching. Compounds such as `supportive`, `helpful`, `badminton`, `stafford`, `rooted`, and `ownership` are therefore rejected by default.
+- The old `conformance/safe-usernames.json` policy corpus has been removed. The behavioral conformance corpus now records the intended 0.8.0 outcomes instead of preserving the superseded 0.6 false-positive policy.
+
 ### Added
 
-- Scoped complete-identifier exceptions through `Options.AllowIdentifierForRule(...)` and `Options.AllowIdentifierForPattern(...)`; an exception skips only the selected check and does not bypass the rest of the deny pipeline.
-- Startup character allowances through `Options.AllowCharacters(...)`, backed by the existing live `IPolicy`.
-- Direct-repeat character allowances through `Options.AllowRepeatedCharacters(...)`, allowing conventions such as repeated team-prefix letters without disabling `Pattern.Repeated` globally.
+- `Options.AllowIdentifierForRule(value, rules)` for complete-identifier exceptions to one or more selected `Rule` checks.
+- `Options.AllowIdentifierForPattern(value, patterns)` for complete-identifier exceptions to one or more selected `Pattern` checks.
+- `Options.AllowCharacters(...)` for startup character-policy allowances without disabling `Rule.BlockedCharacters`.
+- `Options.AllowRepeatedCharacters(...)` for permitting direct runs of selected Unicode characters without disabling `Pattern.Repeated` globally.
+- Startup character allowances are seeded into the existing live `IPolicy`, so runtime policy changes can still re-block or re-allow those characters.
+- A comprehensive configuration and exceptions guide at `docs/CONFIGURATION.md` with copy-paste recipes, precedence rules, migration guidance, ASP.NET Core examples, Email local-part examples, and Extended-data exception examples.
+- Cross-ecosystem compatibility smoke coverage and discoverability metadata for .NET MAUI, Blazor WebAssembly, WPF, Windows Forms, Console, Worker Service, Avalonia, and Uno Platform for the portable packages.
+- Explicit `Unclaimable.AspNetCore` target assets for `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0`, and `net11.0`.
 
-### Changed
+### Scoped exception examples
 
-- Replaced the old safe-username regression policy with stricter deny-first defaults for selected security-sensitive roots.
-- English `support` and `help`, plus privileged role roots `admin`, `staff`, `root`, and `owner`, are now explicitly eligible for partial matching. Compounds such as `supportive`, `helpful`, `badminton`, `stafford`, `rooted`, and `ownership` are rejected by default.
-- Removed `conformance/safe-usernames.json`; the general behavioral conformance corpus now records intended 0.8.0 outcomes instead of preserving the superseded 0.6 false-positive policy.
-- Repeated-pattern defaults now use a six-element minimum for cyclic repetition while direct runs of three identical Unicode text elements remain blocked.
+Allow one city-name collision without disabling city protection globally:
+
+```csharp
+var options = new Options();
+
+options.AllowIdentifierForRule(
+    "Charlotte",
+    Rule.PopularCityNames);
+```
+
+Allow one exact cyclic identifier through repetition detection while leaving other repeated identifiers protected:
+
+```csharp
+options.AllowIdentifierForPattern(
+    "ababab",
+    Pattern.Repeated);
+```
+
+Support a team naming convention such as `TTT_user7` without disabling either protection:
+
+```csharp
+var options = new Options()
+    .AllowCharacters("_")
+    .AllowRepeatedCharacters("T");
+
+var checker = new Checker(options);
+```
+
+The exceptions are not positive clears. Every unrelated deny check still runs after the exception. For example, allowing `ADMIN` through `Pattern.UppercaseOnly` does not bypass the reserved `admin` entry.
+
+### Migration guidance
+
+When upgrading from 0.7.8:
+
+1. Run existing production identifiers and signup fixtures against 0.8.0.
+2. Review new rejections from the now-default protected identity rules.
+3. Review identifiers containing `support`, `help`, `admin`, `staff`, `root`, or `owner`.
+4. Review direct runs of three characters and cyclic repeated spans of six or more text elements.
+5. Prefer `AllowIdentifierForRule(...)`, `AllowIdentifierForPattern(...)`, `AllowCharacters(...)`, or `AllowRepeatedCharacters(...)` over globally disabling a protection.
+6. Keep application-owned denies in `Reserve(...)` / `AdditionalReserved`; scoped exceptions to unrelated checks do not remove explicit application reservations.
+7. For `Unclaimable.Extended`, configure one-off Extended exceptions through `ExtendedOptions.AllowedIdentifiers` during `UseExtendedData(...)`.
+
+See `docs/CONFIGURATION.md` for the full configuration model and examples.
 
 ## 0.7.8 - 2026-09-18
 
