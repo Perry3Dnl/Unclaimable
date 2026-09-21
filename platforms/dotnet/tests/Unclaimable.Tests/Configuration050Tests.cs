@@ -256,7 +256,7 @@ public sealed class Configuration050Tests
     [Theory]
     [InlineData("admin", true, "roles")]
     [InlineData("superadmin", true, "roles")]
-    [InlineData("supportive", false, null)]
+    [InlineData("supportive", true, "support")]
     [InlineData("Apple", true, "technology")]
     [InlineData("nike", true, "brands")]
     [InlineData("ordinaryname", false, null)]
