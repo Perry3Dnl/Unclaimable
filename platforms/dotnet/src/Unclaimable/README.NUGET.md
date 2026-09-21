@@ -2,12 +2,12 @@
 
 Fast, dependency-free reserved username and identifier validation for .NET.
 
-**Package version: 0.7.8**
+**Package version: 0.8.0**
 
 ## Install
 
 ```bash
-dotnet add package Unclaimable --version 0.7.8
+dotnet add package Unclaimable --version 0.8.0
 ```
 
 ## Quick start
@@ -17,7 +17,7 @@ using Unclaimable;
 
 var checker = new Checker();
 
-var result = checker.Check("candidate7");
+var result = checker.Check("bluegarden");
 if (result.IsClaimable)
 {
     // Continue with your application's availability/uniqueness check.
@@ -25,6 +25,38 @@ if (result.IsClaimable)
 ```
 
 `null` is accepted so required-field validation can remain a separate concern.
+
+## Strict defaults in 0.8.0
+
+0.8.0 makes every built-in Core `Rule` and every built-in `Pattern` check enabled by default. This includes number rejection, geography and protected-identity lists, and uppercase-only detection.
+
+Relax only the checks your application intentionally permits:
+
+```csharp
+var options = new Options();
+
+options.DisableRule(Rule.Numbers | Rule.CountryNames);
+options.DisablePattern(Pattern.UppercaseOnly);
+
+var checker = new Checker(options);
+```
+
+Passing or disabling one deny rule never positively clears an identifier through the rest of the pipeline.
+
+## Repeated-pattern detection
+
+`Pattern.Repeated` scans from every Unicode text-element offset instead of relying on one chunk alignment. The default minimum repeated span is four text elements.
+
+With the default threshold, examples such as `dddd`, `asas`, `sasasasasasasasas`, `sasasasasasasasasa`, and embedded runs such as `useraaaa12` are rejected.
+
+```csharp
+var options = new Options
+{
+    RepeatedPatternMinimumLength = 4
+};
+```
+
+Raise the value when an application intentionally permits shorter repeated spans. The minimum supported setting is `2`.
 
 ## What this package protects
 
@@ -37,50 +69,46 @@ The default policy combines:
 - obfuscation/leetspeak matching;
 - selected Unicode-confusable matching;
 - profanity checks;
-- structural username rules;
-- numeric-only, repeated-pattern, symbol-only, and ASCII-art checks.
-
-Passing or disabling one rule never positively clears an identifier through the rest of the pipeline.
-
-## Repeated-pattern threshold
-
-`Pattern.Repeated` detects repeated spans anywhere inside an identifier. The minimum repeated span defaults to four Unicode text elements:
-
-```csharp
-var options = new Options
-{
-    RepeatedPatternMinimumLength = 4
-};
-
-var checker = new Checker(options);
-```
-
-Raise the value when an application intentionally permits shorter repetition. The minimum supported setting is `2`.
+- length, whitespace, separator, blocked-character, and number rules;
+- country, city, celebrity, nationality, currency, religion, landmark, event, award, fictional-character, franchise, profession, and military identity rules;
+- numeric-only, repeated-pattern, symbol-only, ASCII-art, and uppercase-only pattern checks.
 
 ## Configure categories
 
 All built-in categories are enabled by default.
 
 ```csharp
-var options = new Options();
-
 options.DisableCategory(Category.Brands);
 options.DisableCategory(Category.Technology);
-
-var checker = new Checker(options);
 ```
 
 A disabled category can be enabled again with `EnableCategory(...)`.
 
+## Configure rules and patterns
+
+All built-in rules and patterns start enabled in 0.8.0.
+
+```csharp
+options.DisableRule(
+    Rule.Numbers |
+    Rule.CountryNames |
+    Rule.PopularCityNames |
+    Rule.CelebrityNames);
+
+options.DisablePattern(Pattern.UppercaseOnly);
+```
+
+Use `EnableRule(...)` or `EnablePattern(...)` to turn a disabled check back on.
+
 ## Exact exceptions
 
-Allow a legitimate complete identifier without disabling an entire category:
+Allow a legitimate complete built-in reserved identifier without disabling an entire category:
 
 ```csharp
 options.AllowedIdentifiers.Add("supportive");
 ```
 
-Structural validation and explicit application reservations still apply.
+Structural validation, pattern checks, protected-identity rules, and explicit application reservations still apply.
 
 ## Application-specific reservations
 
@@ -91,27 +119,6 @@ options.Reserve("Example Identity", "partner", ReservedMatchMode.WholeIdentifier
 ```
 
 `WholeIdentifier` participates in exact, compact, obfuscation, and selected Unicode-confusable matching without becoming a generic substring root.
-
-## Optional rules
-
-Optional identity and geography rules are disabled by default. Enable only what your application needs:
-
-```csharp
-options.EnableRule(
-    Rule.CountryNames |
-    Rule.PopularCityNames |
-    Rule.CelebrityNames |
-    Rule.Nationalities |
-    Rule.Currencies |
-    Rule.Religions |
-    Rule.Landmarks |
-    Rule.Events |
-    Rule.Awards |
-    Rule.FictionalCharacters |
-    Rule.Franchises |
-    Rule.Professions |
-    Rule.Military);
-```
 
 ## Languages
 
