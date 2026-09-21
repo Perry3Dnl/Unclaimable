@@ -9,10 +9,10 @@
 
     <PackageId>Unclaimable.AspNetCore</PackageId>
     <Version>$(UnclaimableVersion)</Version>
-    <Description>ASP.NET Core dependency injection and model validation integration for Unclaimable.</Description>
+    <Description>ASP.NET Core dependency injection and DataAnnotations integration for Unclaimable, with explicit .NET 6 through .NET 11 framework assets.</Description>
     <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
     <PackageIcon>unclaimable-icon.png</PackageIcon>
-    <PackageTags>username;validation;security;aspnetcore;reserved-names</PackageTags>
+    <PackageTags>username;validation;security;aspnetcore;reserved-names;identity;impersonation;dotnet;web;blazor;server;dependency-injection;dataannotations</PackageTags>
 
     <EnablePackageValidation>true</EnablePackageValidation>
     <PackageValidationBaselineVersion>0.7.8</PackageValidationBaselineVersion>
