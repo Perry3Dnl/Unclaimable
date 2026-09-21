@@ -496,6 +496,21 @@ options.AllowedIdentifiers.Add("superadmin");
 
 It does not bypass structural rules, pattern rules, protected-identity rules, or explicit application reservations.
 
+## Narrow rule and pattern allowances
+
+0.8.0 can relax a single check without disabling that check globally:
+
+```csharp
+var options = new Options();
+
+options.AllowIdentifierForRule("Charlotte", Rule.PopularCityNames);
+options.AllowIdentifierForPattern("ababab", Pattern.Repeated);
+options.AllowCharacters("_");
+options.AllowRepeatedCharacters("T");
+```
+
+An exception skips only the named rule or pattern. The rest of the deny pipeline continues, and explicit application reservations still take precedence. This supports conventions such as repeated team-prefix letters or selected separator characters without weakening unrelated usernames.
+
 ## Application reservations
 
 ```csharp
