@@ -53,31 +53,29 @@ public sealed class CheckerTests
     }
 
     [Fact]
-    public void NumbersAreRejectedByDefault()
+    public void NumbersAreAllowedByDefault()
     {
-        Assert.Equal(Rule.None, new Options().DisabledRules);
-        Assert.Equal(MatchKind.NumbersNotAllowed, Checker.Default.Check("ordinary2").MatchKind);
+        Assert.True((new Options().DisabledRules & Rule.Numbers) != 0);
+        Assert.True(Checker.Default.IsClaimable("ordinary2"));
     }
 
     [Fact]
-    public void UnicodeDecimalDigitsAreRejectedByDefaultInsideIdentifiers()
+    public void UnicodeDecimalDigitsAreAllowedByDefaultInsideIdentifiers()
     {
-        Assert.Equal(MatchKind.NumbersNotAllowed, Checker.Default.Check("user\u0661").MatchKind);
+        Assert.True(Checker.Default.IsClaimable("user\u0661"));
     }
 
     [Theory]
     [InlineData("ordinary2", "2")]
     [InlineData("user\u0661", "\u0661")]
-    public void NumberRuleCanBeExplicitlyDisabled(string value, string expectedCharacter)
+    public void NumberRuleCanBeExplicitlyEnabled(string value, string expectedCharacter)
     {
-        var defaultResult = new Checker().Check(value);
+        var options = new Options().EnableRule(Rule.Numbers);
+        var result = new Checker(options).Check(value);
 
-        Assert.True(defaultResult.IsReserved);
-        Assert.Equal(MatchKind.NumbersNotAllowed, defaultResult.MatchKind);
-        Assert.Equal(expectedCharacter, defaultResult.OffendingCharacter);
-
-        var options = new Options().DisableRule(Rule.Numbers);
-        Assert.True(new Checker(options).Check(value).IsClaimable);
+        Assert.True(result.IsReserved);
+        Assert.Equal(MatchKind.NumbersNotAllowed, result.MatchKind);
+        Assert.Equal(expectedCharacter, result.OffendingCharacter);
     }
 
     [Fact]
