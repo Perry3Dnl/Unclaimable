@@ -53,7 +53,9 @@ public sealed class GeographyRule072Tests
     [InlineData("mumbai")]
     public void PopularCityRuleRejectsRepresentativeCityNames(string value)
     {
-        var options = new Options().EnableRule(Rule.PopularCityNames);
+        var options = new Options()
+            .DisableRule(Rule.CountryNames)
+            .EnableRule(Rule.PopularCityNames);
         var result = new Checker(options).Check(value);
 
         Assert.True(result.IsReserved);
