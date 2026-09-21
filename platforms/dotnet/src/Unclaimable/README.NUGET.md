@@ -28,7 +28,7 @@ if (result.IsClaimable)
 
 ## Strict defaults in 0.8.0
 
-0.8.0 enables every built-in Core identity/protection `Rule` by default except `Rule.Numbers`, and enables every built-in `Pattern` check by default. Mixed alphanumeric identifiers such as `user7` remain allowed unless number rejection is explicitly enabled.
+0.8.0 enables every built-in Core identity/protection `Rule` by default except `Rule.Numbers`. The numeric-only, repeated, symbol-only, and ASCII-art patterns are enabled by default; `Pattern.UppercaseOnly` remains opt-in. Mixed alphanumeric and ordinary uppercase identifiers remain allowed unless those stricter checks are explicitly enabled.
 
 Relax only the checks your application intentionally permits:
 
@@ -36,7 +36,8 @@ Relax only the checks your application intentionally permits:
 var options = new Options();
 
 options.DisableRule(Rule.CountryNames);
-options.DisablePattern(Pattern.UppercaseOnly);
+// Uppercase-only rejection remains opt-in:
+options.EnablePattern(Pattern.UppercaseOnly);
 
 // Number rejection remains opt-in:
 options.EnableRule(Rule.Numbers);
@@ -74,7 +75,7 @@ The default policy combines:
 - profanity checks;
 - length, whitespace, separator, and blocked-character rules; number rejection remains opt-in;
 - country, city, celebrity, nationality, currency, religion, landmark, event, award, fictional-character, franchise, profession, and military identity rules;
-- numeric-only, repeated-pattern, symbol-only, ASCII-art, and uppercase-only pattern checks.
+- numeric-only, repeated-pattern, symbol-only, and ASCII-art pattern checks by default, with uppercase-only rejection available as an opt-in pattern.
 
 ## Configure categories
 
@@ -89,7 +90,7 @@ A disabled category can be enabled again with `EnableCategory(...)`.
 
 ## Configure rules and patterns
 
-All built-in patterns start enabled in 0.8.0. All built-in rules start enabled except `Rule.Numbers`.
+The numeric-only, repeated, symbol-only, and ASCII-art patterns start enabled in 0.8.0; `Pattern.UppercaseOnly` is opt-in. All built-in rules start enabled except `Rule.Numbers`.
 
 ```csharp
 options.DisableRule(
@@ -99,7 +100,7 @@ options.DisableRule(
 
 options.EnableRule(Rule.Numbers); // opt in to rejecting digits
 
-options.DisablePattern(Pattern.UppercaseOnly);
+options.EnablePattern(Pattern.UppercaseOnly);
 ```
 
 Use `EnableRule(...)` or `EnablePattern(...)` to turn a disabled check back on.
