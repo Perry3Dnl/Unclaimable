@@ -86,19 +86,39 @@ public string UserName { get; set; } = string.Empty;
 
 Application-wide and reason-specific validation messages can also be configured through the registered `Options`.
 
-## Startup allowances
+## Startup allowances and scoped exceptions
 
-Startup configuration can explicitly permit selected characters while keeping the character rule enabled:
+Keep the 0.8.0 defaults enabled and express application conventions narrowly:
 
 ```csharp
 builder.Services.AddUnclaimable(options =>
 {
+    // Team names may use underscores.
     options.AllowCharacters("_");
+
+    // Team prefixes may repeat T directly.
     options.AllowRepeatedCharacters("T");
+
+    // This complete identifier may skip only the city-name rule.
+    options.AllowIdentifierForRule(
+        "Charlotte",
+        Rule.PopularCityNames);
+
+    // This complete identifier may skip only repetition detection.
+    options.AllowIdentifierForPattern(
+        "ababab",
+        Pattern.Repeated);
+
+    // Application-owned names remain explicit denies.
+    options.Reserve(
+        "internalbot",
+        ReservedMatchMode.Exact);
 });
 ```
 
-Rule- and pattern-specific complete-identifier exceptions are also available through `AllowIdentifierForRule(...)` and `AllowIdentifierForPattern(...)`.
+A scoped exception skips only the selected check. It does not make the identifier globally allowed.
+
+For a convention such as `TTT_user7`, `AllowCharacters("_")` and `AllowRepeatedCharacters("T")` preserve the rest of the checker. `AAA_user7` can still fail repetition, `TTT-user7` can still fail the blocked-character policy, and an application reservation can still deny `TTT_user7` explicitly.
 
 ## Runtime character policy
 
