@@ -6,6 +6,7 @@ namespace Unclaimable;
 public sealed partial class Checker
 {
     private const int MaximumRepeatedUnitElements = 4;
+    private const int MinimumDirectRepeatElements = 3;
 
     private readonly Pattern _enabledPatterns;
     private readonly int _repeatedPatternMinimumLength;
@@ -190,6 +191,11 @@ public sealed partial class Checker
             elements.Add(enumerator.GetTextElement());
         }
 
+        if (ContainsDirectRepeat(elements))
+        {
+            return true;
+        }
+
         if (elements.Count < _repeatedPatternMinimumLength)
         {
             return false;
@@ -200,7 +206,7 @@ public sealed partial class Checker
             var remaining = elements.Count - startIndex;
             var maximumUnitLength = Math.Min(MaximumRepeatedUnitElements, remaining / 2);
 
-            for (var unitLength = 1; unitLength <= maximumUnitLength; unitLength++)
+            for (var unitLength = 2; unitLength <= maximumUnitLength; unitLength++)
             {
                 var matchedLength = unitLength;
                 var nextUnitStart = startIndex + unitLength;
@@ -217,6 +223,29 @@ public sealed partial class Checker
 
                     nextUnitStart += unitLength;
                 }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool ContainsDirectRepeat(IReadOnlyList<string> elements)
+    {
+        var runLength = 1;
+
+        for (var index = 1; index < elements.Count; index++)
+        {
+            if (string.Equals(elements[index - 1], elements[index], StringComparison.Ordinal))
+            {
+                runLength++;
+                if (runLength >= MinimumDirectRepeatElements)
+                {
+                    return true;
+                }
+            }
+            else
+            {
+                runLength = 1;
             }
         }
 
