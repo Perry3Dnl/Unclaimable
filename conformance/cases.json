@@ -81,7 +81,7 @@
   },
   {
     "value": "ordinary123",
-    "reserved": false,
+    "reserved": true,
     "category": null
   },
   {
