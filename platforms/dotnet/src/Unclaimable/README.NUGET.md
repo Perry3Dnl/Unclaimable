@@ -55,9 +55,9 @@ Passing or disabling one deny rule never positively clears an identifier through
 
 ## Repeated-pattern detection
 
-`Pattern.Repeated` scans from every Unicode text-element offset instead of relying on one chunk alignment. The default minimum repeated span is six text elements.
+`Pattern.Repeated` handles direct runs and cyclic repetition separately. Three or more identical consecutive Unicode text elements are rejected, while repeated multi-element cycles use the configurable repeated-span threshold, which defaults to six text elements.
 
-With the default threshold, examples such as `dddddd`, `asasas`, `hahaha`, `abcabc`, `sasasasasasasasas`, and embedded runs such as `useraaaaaa12` are rejected. Shorter incidental spans such as `dddd`, `asas`, or the repeated fragments that naturally occur inside ordinary words do not trigger the default repeated-pattern rule.
+With the defaults, `aaa`, `dddd`, and `useraaa12` are rejected as direct runs. `abab` is allowed, while `ababab`, `hahaha`, `abcabc`, longer alternating runs, and sufficiently long embedded cycles are rejected. Four-element lexical coincidences such as the repeated fragments that naturally occur inside ordinary words stay below the cyclic threshold.
 
 ```csharp
 var options = new Options
