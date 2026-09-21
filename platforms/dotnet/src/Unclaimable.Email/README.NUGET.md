@@ -33,6 +33,8 @@ var created = checker.CheckNewAddress("bluegarden@lidl.nl");
 
 The email local part is checked with an email-adapted Unclaimable policy. Domain checks are handled separately.
 
+In 0.8.0, local-part identity protection starts from the same default protected identity rules as the main checker: country, city, celebrity, nationality, currency, religion, landmark, event, award, fictional-character, franchise, profession, and military rules are enabled by default, while `Rule.Numbers` remains disabled. Email-specific syntax concerns are adjusted separately, so username-oriented length, whitespace, separator, blocked-character, and shape checks are not applied as ordinary username restrictions.
+
 ## Customize local-part identity checks
 
 Email syntax and Core identity checks are separate. `EmailOptions.LocalPartOptions` exposes the Core `Options` used for the local part.
