@@ -14,7 +14,7 @@ public sealed class Pattern070Tests
         Assert.True((options.EnabledPatterns & Pattern.SymbolOnly) != 0);
         Assert.True((options.EnabledPatterns & Pattern.AsciiArt) != 0);
         Assert.False((options.EnabledPatterns & Pattern.UppercaseOnly) != 0);
-        Assert.Equal(4, options.RepeatedPatternMinimumLength);
+        Assert.Equal(6, options.RepeatedPatternMinimumLength);
     }
 
     [Theory]
@@ -63,9 +63,8 @@ public sealed class Pattern070Tests
     }
 
     [Theory]
-    [InlineData("dddd")]
+    [InlineData("dddddd")]
     [InlineData("aaaaaaaaaaaaaaaa")]
-    [InlineData("asas")]
     [InlineData("asasas")]
     [InlineData("asasasasasa")]
     [InlineData("asasasasasas")]
@@ -77,7 +76,7 @@ public sealed class Pattern070Tests
     [InlineData("AaAaAaAaAaAa")]
     [InlineData("hahaha")]
     [InlineData("sssssssss2234423")]
-    [InlineData("useraaaa12")]
+    [InlineData("useraaaaaa12")]
     [InlineData("testabababab99")]
     public void RepeatedRejectsRepeatedSpansAtOrAboveTheConfiguredMinimum(string value)
     {
@@ -92,6 +91,10 @@ public sealed class Pattern070Tests
 
     [Theory]
     [InlineData("aaa")]
+    [InlineData("aaaaa")]
+    [InlineData("dddd")]
+    [InlineData("asas")]
+    [InlineData("useraaaa12")]
     [InlineData("rememberme")]
     [InlineData("bookkeeper")]
     [InlineData("Hannah")]
