@@ -26,6 +26,12 @@ if (result.IsClaimable)
 
 `null` is accepted so required-field validation can remain a separate concern.
 
+## Cross-platform app compatibility
+
+The Core package targets `netstandard2.0` and is intended for portable application code. The 0.8.0 compatibility workflow compile-checks it in .NET MAUI, Blazor WebAssembly, WPF, Windows Forms, Console, Worker Service, Avalonia, and Uno Platform consumers.
+
+No MAUI-, Blazor-, Avalonia-, or Uno-specific adapter package is required for the Core checker; NuGet resolves the portable asset automatically.
+
 ## Strict defaults in 0.8.0
 
 0.8.0 enables every built-in Core identity/protection `Rule` by default except `Rule.Numbers`. The numeric-only, repeated, symbol-only, and ASCII-art patterns are enabled by default; `Pattern.UppercaseOnly` remains opt-in. Mixed alphanumeric and ordinary uppercase identifiers remain allowed unless those stricter checks are explicitly enabled.
