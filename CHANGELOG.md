@@ -2,6 +2,12 @@
 
 ## 0.8.0 - Unreleased
 
+### Added
+
+- Scoped complete-identifier exceptions through `Options.AllowIdentifierForRule(...)` and `Options.AllowIdentifierForPattern(...)`; an exception skips only the selected check and does not bypass the rest of the deny pipeline.
+- Startup character allowances through `Options.AllowCharacters(...)`, backed by the existing live `IPolicy`.
+- Direct-repeat character allowances through `Options.AllowRepeatedCharacters(...)`, allowing conventions such as repeated team-prefix letters without disabling `Pattern.Repeated` globally.
+
 ### Changed
 
 - Replaced the old safe-username regression policy with stricter deny-first defaults for selected security-sensitive roots.
