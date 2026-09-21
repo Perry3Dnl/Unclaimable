@@ -133,7 +133,11 @@ public sealed partial class Checker : IChecker
     /// The created runtime character policy remains mutable and live.
     /// </summary>
     public Checker(Options options)
-        : this(options, new Policy(options?.ConfiguredBlockedCharacters ?? Array.Empty<string>()))
+        : this(
+            options,
+            new Policy(
+                options?.ConfiguredBlockedCharacters ?? Array.Empty<string>(),
+                options?.ConfiguredAllowedCharacters ?? Array.Empty<string>()))
     {
     }
 
@@ -191,6 +195,7 @@ public sealed partial class Checker : IChecker
         }
 
         _policy = policy;
+        CaptureExceptions(options);
         _enabledPatterns = options.EnabledPatterns;
         _repeatedPatternMinimumLength = options.RepeatedPatternMinimumLength;
         _minimumLengthEnabled = options.IsRuleEnabled(Rule.MinimumLength);
