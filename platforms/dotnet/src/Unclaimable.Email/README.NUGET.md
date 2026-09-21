@@ -10,6 +10,12 @@ Email-address identity and protected-domain impersonation checks.
 dotnet add package Unclaimable.Email --version 0.8.0
 ```
 
+## Cross-platform app compatibility
+
+`Unclaimable.Email` targets `netstandard2.0` and is compile-checked in .NET MAUI, Blazor WebAssembly, WPF, Windows Forms, Console, Worker Service, Avalonia, and Uno Platform consumers.
+
+It contains no UI-framework dependency, so the same email checker can be used from client, desktop, mobile, or server application code.
+
 ## Quick start
 
 ```csharp
