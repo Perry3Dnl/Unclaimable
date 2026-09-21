@@ -1,4 +1,4 @@
-name: .NET 0.7.8 Compatibility
+name: .NET 0.8.0 Compatibility
 
 on:
   push:
@@ -38,10 +38,10 @@ jobs:
         run: dotnet test platforms/dotnet/tests/Unclaimable.Tests/Unclaimable.Tests.csproj --configuration Release
 
       # Keep package validation pinned to the immediately previous published release.
-      - name: Validate core public API against latest published NuGet baseline (v0.7.7)
+      - name: Validate core public API against latest published NuGet baseline (v0.7.8)
         run: dotnet pack platforms/dotnet/src/Unclaimable/Unclaimable.csproj --configuration Release --output artifacts/compat
 
-      - name: Validate ASP.NET Core public API against latest published NuGet baseline (v0.7.7)
+      - name: Validate ASP.NET Core public API against latest published NuGet baseline (v0.7.8)
         run: dotnet pack platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj --configuration Release --output artifacts/compat
 
       - name: Validate new email package can be packed
