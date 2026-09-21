@@ -55,7 +55,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $packages = @(
     @{
         Id = "Unclaimable"
-        Framework = "netstandard2.0"
+        Frameworks = @("netstandard2.0")
         Assembly = "Unclaimable"
         RequiresCoreDependency = $false
         ReadmeHeading = "# Unclaimable"
@@ -63,7 +63,7 @@ $packages = @(
     },
     @{
         Id = "Unclaimable.AspNetCore"
-        Framework = "net8.0"
+        Frameworks = @("net6.0", "net7.0", "net8.0", "net9.0", "net10.0", "net11.0")
         Assembly = "Unclaimable.AspNetCore"
         RequiresCoreDependency = $true
         ReadmeHeading = "# Unclaimable.AspNetCore"
@@ -71,7 +71,7 @@ $packages = @(
     },
     @{
         Id = "Unclaimable.Email"
-        Framework = "netstandard2.0"
+        Frameworks = @("netstandard2.0")
         Assembly = "Unclaimable.Email"
         RequiresCoreDependency = $true
         ReadmeHeading = "# Unclaimable.Email"
@@ -79,7 +79,7 @@ $packages = @(
     },
     @{
         Id = "Unclaimable.Extended"
-        Framework = "netstandard2.0"
+        Frameworks = @("netstandard2.0")
         Assembly = "Unclaimable.Extended"
         RequiresCoreDependency = $true
         ReadmeHeading = "# Unclaimable.Extended"
@@ -91,7 +91,7 @@ $validatedReadmes = @{}
 
 foreach ($package in $packages) {
     $id = $package.Id
-    $framework = $package.Framework
+    $frameworks = @($package.Frameworks)
     $assembly = $package.Assembly
     $nupkg = Join-Path $ArtifactsPath "$id.$version.nupkg"
     $snupkg = Join-Path $ArtifactsPath "$id.$version.snupkg"
@@ -104,10 +104,13 @@ foreach ($package in $packages) {
         $entryNames = @($archive.Entries | ForEach-Object { $_.FullName })
         $expectedEntries = @(
             "README.NUGET.md",
-            "unclaimable-icon.png",
-            "lib/$framework/$assembly.dll",
-            "lib/$framework/$assembly.xml"
+            "unclaimable-icon.png"
         )
+
+        foreach ($framework in $frameworks) {
+            $expectedEntries += "lib/$framework/$assembly.dll"
+            $expectedEntries += "lib/$framework/$assembly.xml"
+        }
 
         foreach ($expectedEntry in $expectedEntries) {
             Assert-True ($entryNames -contains $expectedEntry) "$id package is missing '$expectedEntry'."
@@ -177,7 +180,9 @@ foreach ($package in $packages) {
     $symbolArchive = [System.IO.Compression.ZipFile]::OpenRead($snupkg)
     try {
         $symbolEntries = @($symbolArchive.Entries | ForEach-Object { $_.FullName })
-        Assert-True ($symbolEntries -contains "lib/$framework/$assembly.pdb") "$id symbol package is missing its portable PDB."
+        foreach ($framework in $frameworks) {
+            Assert-True ($symbolEntries -contains "lib/$framework/$assembly.pdb") "$id symbol package is missing its portable PDB for $framework."
+        }
     }
     finally {
         $symbolArchive.Dispose()
