@@ -18,13 +18,11 @@ Prevent reserved, protected, misleading, degenerate, and unsafe identifiers befo
 
 [**NuGet**](https://www.nuget.org/packages/Unclaimable) · [**Configuration guide**](docs/CONFIGURATION.md) · [**Changelog**](CHANGELOG.md)
 
-## Current release: 0.7.8
+## Current release: 0.8.0
 
-0.7.8 is a repeated-pattern hotfix. `Pattern.Repeated` now catches repeated spans inside larger identifiers, not only values made entirely from repetition. `Options.RepeatedPatternMinimumLength` controls the minimum repeated span and defaults to `4` Unicode text elements.
+0.8.0 establishes the default policy we intend to keep stable going forward: deny-first validation, default-on protected identity rules, clearer repeated-pattern behavior, and narrow exceptions that let applications relax one check without disabling an entire protection.
 
-## Upcoming 0.8.0: stricter defaults with narrow exceptions
-
-0.8.0 is being prepared and is **not released yet**. It establishes the default policy we intend to keep stable going forward.
+## 0.8.0: stricter defaults with narrow exceptions
 
 The important behavioral change is that Unclaimable now leans consistently into deny-first validation. Protected identity rules are enabled by default, selected high-trust roots such as `admin`, `staff`, `root`, `owner`, `support`, and `help` can reject containing identifiers, and repeated-pattern defaults are more explicit.
 
@@ -101,7 +99,7 @@ See [the Extended package README](platforms/dotnet/src/Unclaimable.Extended/READ
 
 ### Historical: 0.7.4 opt-in identity lists
 
-0.7.4 added ten whole-identifier protection lists. They remain opt-in in the currently published 0.7.8 package; the staged 0.8.0 policy enables them by default:
+0.7.4 added ten whole-identifier protection lists. They were opt-in in 0.7.8; the 0.8.0 policy enables them by default:
 
 ```csharp
 Rule.Nationalities
@@ -135,7 +133,7 @@ The lists use normalized exact matching, case-insensitive matching, compact sepa
 
 ### Historical: celebrity-name protection
 
-0.7.3 added `Rule.CelebrityNames` with 100 protected high-profile identity forms. It remains opt-in in the currently published 0.7.8 package; the staged 0.8.0 policy enables it by default.
+0.7.3 added `Rule.CelebrityNames` with 100 protected high-profile identity forms. It was opt-in in 0.7.8; the 0.8.0 policy enables it by default.
 
 ```csharp
 options.EnableRule(Rule.CelebrityNames);
@@ -222,10 +220,10 @@ Those application models use the same portable packages; there is no separate MA
 Install the current release:
 
 ```bash
-dotnet add package Unclaimable --version 0.7.8
-dotnet add package Unclaimable.AspNetCore --version 0.7.8
-dotnet add package Unclaimable.Email --version 0.7.8
-dotnet add package Unclaimable.Extended --version 0.7.8
+dotnet add package Unclaimable --version 0.8.0
+dotnet add package Unclaimable.AspNetCore --version 0.8.0
+dotnet add package Unclaimable.Email --version 0.8.0
+dotnet add package Unclaimable.Extended --version 0.8.0
 ```
 
 ## Quick start
@@ -250,9 +248,9 @@ builder.Services.AddUnclaimable();
 
 `null` is accepted by Unclaimable so required-field validation remains a separate concern.
 
-## Published 0.7.8 default policy
+## Previous 0.7.8 default policy
 
-This section documents the currently published 0.7.8 package for migration reference. The staged 0.8.0 defaults are intentionally stricter; see **Upcoming 0.8.0** above and the [configuration guide](docs/CONFIGURATION.md).
+This section documents the previous 0.7.8 package for migration reference. The 0.8.0 defaults are intentionally stricter; see **0.8.0: stricter defaults with narrow exceptions** above and the [configuration guide](docs/CONFIGURATION.md).
 
 `new Options()` in 0.7.8 keeps strong protection while allowing ordinary alphanumeric usernames.
 
@@ -552,6 +550,14 @@ Production coverage is measured across `Unclaimable`, `Unclaimable.AspNetCore`, 
 CI also validates source builds without localized language packs, NuGet package contents and metadata, packaged-consumer restore/execution, public API compatibility, deterministic builds, Source Link, portable PDBs, and `.snupkg` symbol packages.
 
 ## Release history
+
+### 0.8.0
+
+Establishes the new deny-first default baseline, enables protected identity rules by default, separates direct character runs from cyclic repetition, adds scoped rule/pattern/character exceptions, aligns all first-party packages at 0.8.0, and expands compatibility coverage across ASP.NET Core .NET 6–11 and portable .NET application models.
+
+### 0.7.8
+
+Adds configurable embedded repeated-pattern detection and the original repeated-span threshold control.
 
 ### 0.7.6
 
