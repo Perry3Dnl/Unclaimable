@@ -36,7 +36,8 @@ public sealed partial class Options
 
     /// <summary>
     /// Gets named identity-list rules currently enabled for newly constructed checkers.
-    /// All built-in rules are enabled by default in 0.8.0 and later unless explicitly disabled.
+    /// All built-in identity-list rules are enabled by default in 0.8.0 and later unless explicitly disabled.
+    /// <see cref="Rule.Numbers"/> remains disabled by default.
     /// </summary>
     public Rule EnabledOptionalRules => _enabledOptionalRules & ~DisabledRules;
 
