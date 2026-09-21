@@ -63,6 +63,9 @@ public sealed class Pattern070Tests
     }
 
     [Theory]
+    [InlineData("aaa")]
+    [InlineData("ddd")]
+    [InlineData("useraaa12")]
     [InlineData("dddddd")]
     [InlineData("aaaaaaaaaaaaaaaa")]
     [InlineData("asasas")]
@@ -90,11 +93,10 @@ public sealed class Pattern070Tests
     }
 
     [Theory]
-    [InlineData("aaa")]
-    [InlineData("aaaaa")]
-    [InlineData("dddd")]
-    [InlineData("asas")]
-    [InlineData("useraaaa12")]
+    [InlineData("aa")]
+    [InlineData("dd")]
+    [InlineData("abab")]
+    [InlineData("useraa12")]
     [InlineData("rememberme")]
     [InlineData("bookkeeper")]
     [InlineData("Hannah")]
@@ -113,9 +115,9 @@ public sealed class Pattern070Tests
         };
         var checker = new Checker(options);
 
-        Assert.True(checker.Check("sssssss2234423").IsClaimable);
+        Assert.True(checker.Check("ababab7").IsClaimable);
 
-        var result = checker.Check("ssssssss2234423");
+        var result = checker.Check("abababab7");
         Assert.True(result.IsReserved);
         Assert.Equal(MatchKind.RepeatedPattern, result.MatchKind);
     }
@@ -132,10 +134,10 @@ public sealed class Pattern070Tests
 
         options.RepeatedPatternMinimumLength = 4;
 
-        Assert.True(captured.Check("ssss2234423").IsClaimable);
+        Assert.True(captured.Check("abab9").IsClaimable);
         Assert.Equal(
             MatchKind.RepeatedPattern,
-            new Checker(options).Check("ssss2234423").MatchKind);
+            new Checker(options).Check("abab9").MatchKind);
     }
 
     [Fact]
@@ -146,7 +148,7 @@ public sealed class Pattern070Tests
             RepeatedPatternMinimumLength = 2
         };
 
-        var result = new Checker(options).Check("aabc");
+        var result = new Checker(options).Check("abab");
 
         Assert.True(result.IsReserved);
         Assert.Equal(MatchKind.RepeatedPattern, result.MatchKind);
