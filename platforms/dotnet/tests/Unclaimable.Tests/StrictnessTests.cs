@@ -44,7 +44,7 @@ public sealed class StrictnessTests
 
         Assert.Equal(Strictness.Strict, options.Strictness);
         Assert.Equal(MatchKind.Partial, checker.Check("mysuperadminx").MatchKind);
-        Assert.True(checker.IsClaimable("supportive"));
+        Assert.Equal(MatchKind.Partial, checker.Check("supportive").MatchKind);
         Assert.True(checker.IsClaimable("apples"));
         Assert.True(checker.IsClaimable("nikee"));
     }
