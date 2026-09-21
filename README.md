@@ -259,7 +259,7 @@ Generic words remain exact rather than broad substring roots: `vote` does not bl
 | Package | Target | Purpose |
 | --- | --- | --- |
 | [`Unclaimable`](https://www.nuget.org/packages/Unclaimable) | `netstandard2.0` | dependency-free runtime core and embedded datasets |
-| `Unclaimable.AspNetCore` | `net8.0` | ASP.NET Core DI and DataAnnotations integration |
+| `Unclaimable.AspNetCore` | `net6.0`–`net11.0` | ASP.NET Core DI and DataAnnotations integration; framework-specific assets are tested per target |
 | `Unclaimable.Email` | `netstandard2.0` | email local-part policy and protected-domain impersonation checks |
 | `Unclaimable.Extended` | `netstandard2.0` | optional large reserved-identity datasets powered by the Core matcher |
 
