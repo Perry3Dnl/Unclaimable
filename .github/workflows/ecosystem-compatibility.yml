@@ -231,7 +231,7 @@ jobs:
           dotnet new install Uno.Templates@6.6.29
           mkdir -p artifacts/ecosystem
           dotnet new unoapp -preset blank -platforms desktop -tfm net10.0 -o artifacts/ecosystem/uno
-          PROJECT="$(find artifacts/ecosystem/uno -maxdepth 1 -name '*.csproj' -print -quit)"
+          PROJECT="$(find artifacts/ecosystem/uno -name '*.csproj' -print -quit)"
           dotnet add "$PROJECT" reference "$CORE_PROJECT" "$EMAIL_PROJECT" "$EXTENDED_PROJECT"
           cat > artifacts/ecosystem/uno/UnclaimableCompatibilityProbe.cs <<'EOF'
           using Unclaimable;
