@@ -12,6 +12,12 @@ dotnet add package Unclaimable.Extended --version 0.8.0
 
 Installing the package alone does not change validation behavior. Enable the data explicitly.
 
+## Cross-platform app compatibility
+
+`Unclaimable.Extended` targets `netstandard2.0` and is compile-checked in .NET MAUI, Blazor WebAssembly, WPF, Windows Forms, Console, Worker Service, Avalonia, and Uno Platform consumers.
+
+The datasets remain embedded and deterministic on those application models; enabling Extended data does not require a platform-specific integration package.
+
 ## Quick start
 
 ```csharp
