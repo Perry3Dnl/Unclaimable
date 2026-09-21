@@ -5,7 +5,7 @@ namespace Unclaimable.Tests;
 public sealed class Pattern070Tests
 {
     [Fact]
-    public void DefaultPatternsEnableObjectiveShapeChecksButLeaveUppercaseOptIn()
+    public void DefaultPatternsEnableEveryBuiltInShapeCheck()
     {
         var options = new Options();
 
@@ -13,7 +13,7 @@ public sealed class Pattern070Tests
         Assert.True((options.EnabledPatterns & Pattern.Repeated) != 0);
         Assert.True((options.EnabledPatterns & Pattern.SymbolOnly) != 0);
         Assert.True((options.EnabledPatterns & Pattern.AsciiArt) != 0);
-        Assert.False((options.EnabledPatterns & Pattern.UppercaseOnly) != 0);
+        Assert.True((options.EnabledPatterns & Pattern.UppercaseOnly) != 0);
         Assert.Equal(4, options.RepeatedPatternMinimumLength);
     }
 
@@ -65,11 +65,15 @@ public sealed class Pattern070Tests
     [Theory]
     [InlineData("dddd")]
     [InlineData("aaaaaaaaaaaaaaaa")]
+    [InlineData("asas")]
     [InlineData("asasas")]
     [InlineData("asasasasasa")]
     [InlineData("asasasasasas")]
+    [InlineData("sasasasasasasasas")]
+    [InlineData("sasasasasasasasasa")]
     [InlineData("abababababababab")]
     [InlineData("abcabcabcabc")]
+    [InlineData("zabcabc9")]
     [InlineData("AaAaAaAaAaAa")]
     [InlineData("hahaha")]
     [InlineData("sssssssss2234423")]
@@ -77,7 +81,10 @@ public sealed class Pattern070Tests
     [InlineData("testabababab99")]
     public void RepeatedRejectsRepeatedSpansAtOrAboveTheConfiguredMinimum(string value)
     {
-        var result = new Checker().Check(value);
+        var result = new Checker(new Options
+        {
+            AllowNumbers = true
+        }).Check(value);
 
         Assert.True(result.IsReserved);
         Assert.Equal(MatchKind.RepeatedPattern, result.MatchKind);
@@ -85,8 +92,6 @@ public sealed class Pattern070Tests
 
     [Theory]
     [InlineData("aaa")]
-    [InlineData("asas")]
-    [InlineData("zabcabc9")]
     [InlineData("rememberme")]
     [InlineData("bookkeeper")]
     [InlineData("Hannah")]
@@ -100,6 +105,7 @@ public sealed class Pattern070Tests
     {
         var options = new Options
         {
+            AllowNumbers = true,
             RepeatedPatternMinimumLength = 8
         };
         var checker = new Checker(options);
@@ -116,6 +122,7 @@ public sealed class Pattern070Tests
     {
         var options = new Options
         {
+            AllowNumbers = true,
             RepeatedPatternMinimumLength = 8
         };
         var captured = new Checker(options);
@@ -214,18 +221,17 @@ public sealed class Pattern070Tests
     }
 
     [Fact]
-    public void UppercaseOnlyIsOptIn()
+    public void UppercaseOnlyIsEnabledByDefaultAndCanBeDisabled()
     {
-        var defaultChecker = new Checker();
-        Assert.True(defaultChecker.Check("QZXVORN").IsClaimable);
-
-        var options = new Options();
-        options.EnablePattern(Pattern.UppercaseOnly);
-
-        var result = new Checker(options).Check("QZXVORN");
+        var result = new Checker().Check("QZXVORN");
 
         Assert.True(result.IsReserved);
         Assert.Equal(MatchKind.UppercaseOnly, result.MatchKind);
+
+        var options = new Options();
+        options.DisablePattern(Pattern.UppercaseOnly);
+
+        Assert.True(new Checker(options).Check("QZXVORN").IsClaimable);
     }
 
     [Theory]
@@ -283,6 +289,7 @@ public sealed class Pattern070Tests
     public void PatternConfigurationIsCapturedWhenCheckerIsConstructed()
     {
         var options = new Options();
+        options.DisablePattern(Pattern.UppercaseOnly);
         var captured = new Checker(options);
 
         options.EnablePattern(Pattern.UppercaseOnly);
