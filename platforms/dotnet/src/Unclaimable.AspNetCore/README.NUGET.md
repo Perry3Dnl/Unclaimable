@@ -28,6 +28,8 @@ builder.Services.AddUnclaimable();
 
 This registers the configured `Options`, a live singleton `IPolicy`, and an `IChecker`.
 
+With no configuration callback, the registered checker uses the same 0.8.0 defaults as a normal `new Checker()`: all built-in protected identity rules are enabled except `Rule.Numbers`, the standard pattern defaults apply, and the same deny-first behavior is preserved.
+
 Configure the checker during registration:
 
 ```csharp
