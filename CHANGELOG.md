@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.8.0 - Unreleased
+## 0.8.0 - 2026-09-21
 
 > **Default-behavior warning:** 0.8.0 intentionally establishes a stricter default policy than 0.7.8. Applications upgrading from an older release should run their real identifier regression corpus before deployment. The new exception APIs are designed to make narrow compatibility exceptions without disabling an entire protection.
 
