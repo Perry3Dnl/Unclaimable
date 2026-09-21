@@ -202,19 +202,15 @@ public sealed partial class Checker
 
             for (var unitLength = 1; unitLength <= maximumUnitLength; unitLength++)
             {
-                var repetitions = 1;
                 var matchedLength = unitLength;
                 var nextUnitStart = startIndex + unitLength;
 
                 while (nextUnitStart + unitLength <= elements.Count
                        && RepeatedUnitMatches(elements, startIndex, nextUnitStart, unitLength))
                 {
-                    repetitions++;
                     matchedLength += unitLength;
 
-                    var minimumRepetitions = unitLength == 1 ? 2 : 3;
-                    if (repetitions >= minimumRepetitions
-                        && matchedLength >= _repeatedPatternMinimumLength)
+                    if (matchedLength >= _repeatedPatternMinimumLength)
                     {
                         return true;
                     }
