@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.8.0 - Unreleased
+
+### Changed
+
+- Replaced the old safe-username regression policy with stricter deny-first defaults for selected security-sensitive roots.
+- English `support` and `help`, plus privileged role roots `admin`, `staff`, `root`, and `owner`, are now explicitly eligible for partial matching. Compounds such as `supportive`, `helpful`, `badminton`, `stafford`, `rooted`, and `ownership` are rejected by default.
+- Removed `conformance/safe-usernames.json`; the general behavioral conformance corpus now records intended 0.8.0 outcomes instead of preserving the superseded 0.6 false-positive policy.
+- Repeated-pattern defaults now use a six-element minimum for cyclic repetition while direct runs of three identical Unicode text elements remain blocked.
+
 ## 0.7.8 - 2026-09-18
 
 Repeated-pattern hotfix.
