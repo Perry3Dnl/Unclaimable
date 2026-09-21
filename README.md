@@ -159,7 +159,7 @@ player123    -> can be claimable
 123456789    -> rejected as NumericOnly
 ```
 
-0.7.2 also introduced two whole-identifier geography rules. They remain opt-in in the currently published 0.7.8 package; the staged 0.8.0 policy enables both by default:
+0.7.2 also introduced two whole-identifier geography rules. They were opt-in in 0.7.8; the 0.8.0 policy enables both by default:
 
 ```csharp
 Rule.CountryNames
