@@ -224,13 +224,13 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
-      - name: Build Uno library consumer
+      - name: Build Uno desktop consumer
         shell: bash
         run: |
           set -euo pipefail
           dotnet new install Uno.Templates@6.6.29
           mkdir -p artifacts/ecosystem
-          dotnet new unolib -o artifacts/ecosystem/uno
+          dotnet new unoapp -preset blank -platforms desktop -tfm net10.0 -o artifacts/ecosystem/uno
           PROJECT="$(find artifacts/ecosystem/uno -maxdepth 1 -name '*.csproj' -print -quit)"
           dotnet add "$PROJECT" reference "$CORE_PROJECT" "$EMAIL_PROJECT" "$EXTENDED_PROJECT"
           cat > artifacts/ecosystem/uno/UnclaimableCompatibilityProbe.cs <<'EOF'
