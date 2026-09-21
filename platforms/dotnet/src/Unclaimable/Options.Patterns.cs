@@ -6,8 +6,7 @@ public sealed partial class Options
         Pattern.NumericOnly
         | Pattern.Repeated
         | Pattern.SymbolOnly
-        | Pattern.AsciiArt
-        | Pattern.UppercaseOnly;
+        | Pattern.AsciiArt;
 
     private const Pattern AllPatterns =
         Pattern.NumericOnly
@@ -20,7 +19,8 @@ public sealed partial class Options
 
     /// <summary>
     /// Gets the pattern checks enabled for newly constructed checkers.
-    /// All built-in pattern checks are enabled by default in 0.8.0 and later.
+    /// Numeric-only, repeated, symbol-only, and ASCII-art checks are enabled by default in 0.8.0 and later.
+    /// <see cref="Pattern.UppercaseOnly"/> remains opt-in so ordinary uppercase identifiers stay claimable.
     /// </summary>
     public Pattern EnabledPatterns => _enabledPatterns;
 
