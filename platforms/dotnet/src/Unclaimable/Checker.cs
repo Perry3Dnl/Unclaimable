@@ -353,38 +353,46 @@ public sealed partial class Checker : IChecker
         ReservedEntry? exactMatch;
         if (_exact.TryGetValue(exact, out exactMatch))
         {
-            var mapping = value is null ? null : TryCreateInputMapping(value, exact);
-            TryMapOriginalSpan(mapping?.ExactToOriginal, 0, exact.Length, out var originalStart, out var originalLength);
-            return CreateReservedResult(
-                value,
-                exactMatch,
-                MatchKind.Exact,
-                0,
-                exact.Length,
-                originalStart,
-                originalLength);
-        }
-
-        var compact = NormalizeCompact(exact);
-        if (_compactMatching)
-        {
-            ReservedEntry? compactMatch;
-            if (compact.Length > 0 && _compact.TryGetValue(compact, out compactMatch))
+            var sourceRule = GetRuleForReservedEntry(exactMatch);
+            if (!sourceRule.HasValue || !IsRuleException(sourceRule.Value, value))
             {
                 var mapping = value is null ? null : TryCreateInputMapping(value, exact);
-                TryMapOriginalSpan(mapping?.CompactToOriginal, 0, compact.Length, out var originalStart, out var originalLength);
+            TryMapOriginalSpan(mapping?.ExactToOriginal, 0, exact.Length, out var originalStart, out var originalLength);
                 return CreateReservedResult(
                     value,
-                    compactMatch,
-                    MatchKind.Compact,
+                    exactMatch,
+                    MatchKind.Exact,
                     0,
-                    compact.Length,
+                    exact.Length,
                     originalStart,
                     originalLength);
             }
         }
 
-        if (_partialMatching)
+        var compact = NormalizeCompact(exact);
+        if (_compactMatching && !IsRuleException(Rule.CompactMatching, value))
+        {
+            ReservedEntry? compactMatch;
+            if (compact.Length > 0 && _compact.TryGetValue(compact, out compactMatch))
+            {
+                var sourceRule = GetRuleForReservedEntry(compactMatch);
+                if (!sourceRule.HasValue || !IsRuleException(sourceRule.Value, value))
+                {
+                    var mapping = value is null ? null : TryCreateInputMapping(value, exact);
+                TryMapOriginalSpan(mapping?.CompactToOriginal, 0, compact.Length, out var originalStart, out var originalLength);
+                    return CreateReservedResult(
+                        value,
+                        compactMatch,
+                        MatchKind.Compact,
+                        0,
+                        compact.Length,
+                        originalStart,
+                        originalLength);
+                }
+            }
+        }
+
+        if (_partialMatching && !IsRuleException(Rule.PartialMatching, value))
         {
             ReservedEntry? partialMatch;
             int partialStart;
@@ -392,21 +400,25 @@ public sealed partial class Checker : IChecker
             bool usedCompact;
             if (TryMatchPartial(exact, compact, out partialMatch, out partialStart, out partialLength, out usedCompact))
             {
-                var mapping = value is null ? null : TryCreateInputMapping(value, exact);
+                var sourceRule = GetRuleForReservedEntry(partialMatch!);
+                if (!sourceRule.HasValue || !IsRuleException(sourceRule.Value, value))
+                {
+                    var mapping = value is null ? null : TryCreateInputMapping(value, exact);
                 var sourceMap = usedCompact ? mapping?.CompactToOriginal : mapping?.ExactToOriginal;
                 TryMapOriginalSpan(sourceMap, partialStart, partialLength, out var originalStart, out var originalLength);
-                return CreateReservedResult(
-                    value,
-                    partialMatch!,
-                    MatchKind.Partial,
-                    partialStart,
-                    partialLength,
-                    originalStart,
-                    originalLength);
+                    return CreateReservedResult(
+                        value,
+                        partialMatch!,
+                        MatchKind.Partial,
+                        partialStart,
+                        partialLength,
+                        originalStart,
+                        originalLength);
+                }
             }
         }
 
-        if (_unicodeConfusableMatching)
+        if (_unicodeConfusableMatching && !IsRuleException(Rule.UnicodeConfusableMatching, value))
         {
             ReservedEntry? confusableMatch;
             MatchKind confusableKind;
@@ -419,11 +431,15 @@ public sealed partial class Checker : IChecker
                     out confusableStart,
                     out confusableLength))
             {
-                return CreateReservedResult(value, confusableMatch!, confusableKind, confusableStart, confusableLength);
+                var sourceRule = GetRuleForReservedEntry(confusableMatch!);
+                if (!sourceRule.HasValue || !IsRuleException(sourceRule.Value, value))
+                {
+                    return CreateReservedResult(value, confusableMatch!, confusableKind, confusableStart, confusableLength);
+                }
             }
         }
 
-        if (_obfuscationMatching)
+        if (_obfuscationMatching && !IsRuleException(Rule.ObfuscationMatching, value))
         {
             ReservedEntry? obfuscatedMatch;
             MatchKind obfuscatedKind;
@@ -436,7 +452,11 @@ public sealed partial class Checker : IChecker
                     out obfuscatedStart,
                     out obfuscatedLength))
             {
-                return CreateReservedResult(value, obfuscatedMatch!, obfuscatedKind, obfuscatedStart, obfuscatedLength);
+                var sourceRule = GetRuleForReservedEntry(obfuscatedMatch!);
+                if (!sourceRule.HasValue || !IsRuleException(sourceRule.Value, value))
+                {
+                    return CreateReservedResult(value, obfuscatedMatch!, obfuscatedKind, obfuscatedStart, obfuscatedLength);
+                }
             }
         }
 
