@@ -24,7 +24,9 @@ public static class UnclaimableServiceCollectionExtensions
 
         services.AddSingleton(options);
         services.AddSingleton<IPolicy>(_ =>
-            new Policy(options.ConfiguredBlockedCharacters));
+            new Policy(
+                options.ConfiguredBlockedCharacters,
+                options.ConfiguredAllowedCharacters));
         services.AddSingleton<IChecker>(serviceProvider =>
             new Checker(
                 options,
