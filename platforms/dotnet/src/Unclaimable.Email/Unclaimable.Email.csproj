@@ -16,6 +16,7 @@
     <PackageTags>email;validation;security;identity;impersonation;phishing;lookalike;domain;dotnet;cross-platform;maui;blazor;webassembly;wpf;winforms;console;worker-service;avalonia;uno</PackageTags>
 
     <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageValidationBaselineVersion>0.7.8</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <ItemGroup>
