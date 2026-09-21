@@ -44,6 +44,12 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
+      - name: Verify frozen 0.8.0 defaults
+        run: >-
+          dotnet test platforms/dotnet/tests/Unclaimable.Tests/Unclaimable.Tests.csproj
+          --configuration Release
+          --filter "FullyQualifiedName~Options080DefaultContractTests"
+
       - name: Dataset statistics
         shell: pwsh
         run: ./platforms/dotnet/scripts/Get-DatasetStatistics.ps1
