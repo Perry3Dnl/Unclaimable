@@ -60,6 +60,7 @@ $packages = @(
         RequiresCoreDependency = $false
         ReadmeHeading = "# Unclaimable"
         ForbiddenReadmeText = @("Unclaimable.AspNetCore", "Unclaimable.Email", "Unclaimable.Extended")
+        RequiredTags = @("dotnet", "cross-platform", "maui", "blazor", "webassembly", "wpf", "winforms", "console", "worker-service", "avalonia", "uno")
     },
     @{
         Id = "Unclaimable.AspNetCore"
@@ -68,6 +69,7 @@ $packages = @(
         RequiresCoreDependency = $true
         ReadmeHeading = "# Unclaimable.AspNetCore"
         ForbiddenReadmeText = @("Unclaimable.Email", "Unclaimable.Extended")
+        RequiredTags = @("dotnet", "aspnetcore", "blazor", "web", "server", "dependency-injection", "dataannotations")
     },
     @{
         Id = "Unclaimable.Email"
@@ -76,6 +78,7 @@ $packages = @(
         RequiresCoreDependency = $true
         ReadmeHeading = "# Unclaimable.Email"
         ForbiddenReadmeText = @("Unclaimable.AspNetCore", "Unclaimable.Extended")
+        RequiredTags = @("dotnet", "cross-platform", "maui", "blazor", "webassembly", "wpf", "winforms", "console", "worker-service", "avalonia", "uno")
     },
     @{
         Id = "Unclaimable.Extended"
@@ -84,6 +87,7 @@ $packages = @(
         RequiresCoreDependency = $true
         ReadmeHeading = "# Unclaimable.Extended"
         ForbiddenReadmeText = @("Unclaimable.AspNetCore", "Unclaimable.Email")
+        RequiredTags = @("dotnet", "cross-platform", "maui", "blazor", "webassembly", "wpf", "winforms", "console", "worker-service", "avalonia", "uno")
     }
 )
 
@@ -151,6 +155,7 @@ foreach ($package in $packages) {
         $readmeNode = $metadata.SelectSingleNode("*[local-name()='readme']")
         $iconNode = $metadata.SelectSingleNode("*[local-name()='icon']")
         $repositoryNode = $metadata.SelectSingleNode("*[local-name()='repository']")
+        $tagsNode = $metadata.SelectSingleNode("*[local-name()='tags']")
 
         Assert-True ($idNode.InnerText -eq $id) "$id package metadata has the wrong package ID."
         Assert-True ($versionMetadataNode.InnerText -eq $version) "$id package metadata has version '$($versionMetadataNode.InnerText)' instead of '$version'."
@@ -163,6 +168,12 @@ foreach ($package in $packages) {
         Assert-True ($repositoryNode.GetAttribute("type") -eq "git") "$id package repository type is not git."
         Assert-True ($repositoryNode.GetAttribute("url") -eq "https://github.com/Perry3Dnl/Unclaimable") "$id package repository URL is incorrect."
         Assert-True (-not [string]::IsNullOrWhiteSpace($repositoryNode.GetAttribute("commit"))) "$id package repository commit metadata is missing."
+        Assert-True ($null -ne $tagsNode) "$id package tags metadata is missing."
+
+        $tagValues = @($tagsNode.InnerText -split '[; ,]+' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
+        foreach ($requiredTag in $package.RequiredTags) {
+            Assert-True ($tagValues -contains $requiredTag) "$id package is missing required discoverability tag '$requiredTag'."
+        }
 
         $sourceLinkDependency = $nuspec.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='dependencies']//*[local-name()='dependency'][@id='Microsoft.SourceLink.GitHub']")
         Assert-True ($null -eq $sourceLinkDependency) "$id leaked Microsoft.SourceLink.GitHub as a consumer dependency."
