@@ -15,6 +15,7 @@ The stricter defaults are paired with scoped exception APIs so an application ca
 ### Default behavior changes
 
 - All built-in protected identity rules are enabled by default in Core except `Rule.Numbers`. This includes countries, popular cities, celebrities, nationalities, currencies, religions, landmarks, events, awards, fictional characters, franchises, professions, and military identities.
+- All first-party packages remain version-aligned at `0.8.0`. ASP.NET Core uses the same Core defaults, Email local-part identity checks inherit the same protected-identity defaults while keeping email-specific syntax adjustments, and Extended remains additive on top of the same configured `Options`.
 - `Rule.Numbers` remains disabled by default, so ordinary mixed alphanumeric identifiers can still be claimable. `Pattern.NumericOnly` remains enabled, so all-numeric identifiers are still rejected.
 - `Pattern.UppercaseOnly` remains opt-in. Reserved identifiers are still case-normalized, so disabling or not enabling the uppercase-only pattern does not make values such as `ADMIN` claimable.
 - `Pattern.Repeated` now treats direct runs and cyclic repetition separately:
