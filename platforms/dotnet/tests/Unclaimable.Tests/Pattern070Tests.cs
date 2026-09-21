@@ -5,7 +5,7 @@ namespace Unclaimable.Tests;
 public sealed class Pattern070Tests
 {
     [Fact]
-    public void DefaultPatternsEnableEveryBuiltInShapeCheck()
+    public void DefaultPatternsPreserveThe080Baseline()
     {
         var options = new Options();
 
@@ -13,7 +13,7 @@ public sealed class Pattern070Tests
         Assert.True((options.EnabledPatterns & Pattern.Repeated) != 0);
         Assert.True((options.EnabledPatterns & Pattern.SymbolOnly) != 0);
         Assert.True((options.EnabledPatterns & Pattern.AsciiArt) != 0);
-        Assert.True((options.EnabledPatterns & Pattern.UppercaseOnly) != 0);
+        Assert.False((options.EnabledPatterns & Pattern.UppercaseOnly) != 0);
         Assert.Equal(4, options.RepeatedPatternMinimumLength);
     }
 
@@ -221,17 +221,16 @@ public sealed class Pattern070Tests
     }
 
     [Fact]
-    public void UppercaseOnlyIsEnabledByDefaultAndCanBeDisabled()
+    public void UppercaseOnlyIsOptIn()
     {
-        var result = new Checker().Check("QZXVORN");
-
-        Assert.True(result.IsReserved);
-        Assert.Equal(MatchKind.UppercaseOnly, result.MatchKind);
+        Assert.True(new Checker().Check("QZXVORN").IsClaimable);
 
         var options = new Options();
-        options.DisablePattern(Pattern.UppercaseOnly);
+        options.EnablePattern(Pattern.UppercaseOnly);
 
-        Assert.True(new Checker(options).Check("QZXVORN").IsClaimable);
+        var result = new Checker(options).Check("QZXVORN");
+        Assert.True(result.IsReserved);
+        Assert.Equal(MatchKind.UppercaseOnly, result.MatchKind);
     }
 
     [Theory]
