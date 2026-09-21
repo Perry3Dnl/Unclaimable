@@ -64,6 +64,8 @@ public sealed class Options080DefaultContractTests
         Assert.Empty(options.AllowedIdentifiers);
         Assert.Empty(options.AdditionalReserved);
         Assert.Empty(options.ConfiguredBlockedCharacters);
+        Assert.Empty(options.ConfiguredAllowedCharacters);
+        Assert.Empty(options.AllowedRepeatedCharacters);
 
         Assert.Null(options.ValidationMessage);
         Assert.All(
