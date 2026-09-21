@@ -17,7 +17,7 @@ var checker = Checker.Default;
 
 Require(checker.Check("customersupport").Category == "support", "English support names should be reserved by default.");
 Require(checker.Check("myloginverificationteamx").MatchKind == MatchKind.Partial, "Explicit high-risk partial entries should be protected in strict mode.");
-Require(checker.IsClaimable("supportive"), "Ordinary words that merely contain short reserved terms should remain claimable.");
+Require(checker.Check("supportive").MatchKind == MatchKind.Partial, "Sensitive support roots should protect containing identifiers in strict mode.");
 Require(checker.IsClaimable("ordinary2"), "Numbers should be allowed inside identifiers by default.");
 Require(checker.Check("123456789").MatchKind == MatchKind.NumericOnly, "Numeric-only identifiers should still be blocked by the default numeric-only pattern.");
 Require(checker.Check("ordinary-user").MatchKind == MatchKind.BlockedCharacter, "Hyphens should be blocked by default.");
