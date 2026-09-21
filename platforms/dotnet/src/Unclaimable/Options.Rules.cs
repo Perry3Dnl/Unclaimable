@@ -32,18 +32,18 @@ public sealed partial class Options
         | Rule.UnicodeConfusableMatching
         | OptionalRules;
 
-    private Rule _enabledOptionalRules = Rule.None;
+    private Rule _enabledOptionalRules = OptionalRules;
 
     /// <summary>
-    /// Gets opt-in rules currently enabled for newly constructed checkers.
-    /// Named identity lists are disabled by default and must be explicitly enabled.
+    /// Gets named identity-list rules currently enabled for newly constructed checkers.
+    /// All built-in rules are enabled by default in 0.8.0 and later unless explicitly disabled.
     /// </summary>
     public Rule EnabledOptionalRules => _enabledOptionalRules & ~DisabledRules;
 
     /// <summary>
     /// Enables one or more rules without changing unrelated rule configuration.
     /// Existing rules are enabled by clearing them from <see cref="DisabledRules"/>.
-    /// Named identity-list rules are activated explicitly by this method.
+    /// Named identity-list rules can be re-enabled by this method after being disabled.
     /// </summary>
     /// <param name="rule">One rule or a bitwise combination of supported rules.</param>
     /// <returns>This options instance.</returns>
