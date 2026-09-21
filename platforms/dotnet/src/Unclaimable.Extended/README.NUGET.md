@@ -57,6 +57,23 @@ options.UseExtendedData(extended =>
 
 The exception applies to that complete Extended identifier without disabling the entire category.
 
+Configure this exception inside `UseExtendedData(...)` because Extended entries are registered into Core as explicit whole-identifier reservations. Core rule or pattern exceptions do not erase an Extended reservation after it has been registered.
+
+Use Core's scoped APIs separately for Core rules and patterns:
+
+```csharp
+var options = new Options()
+    .AllowRepeatedCharacters("T")
+    .AllowCharacters("_");
+
+options.UseExtendedData(extended =>
+{
+    extended.AllowedIdentifiers.Add("Aalborg University");
+});
+```
+
+This keeps Extended identity exceptions distinct from username-shape exceptions.
+
 ## Dataset snapshot
 
 The initial Extended snapshot contains **36,313 additional identifiers**:
