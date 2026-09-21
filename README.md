@@ -213,9 +213,9 @@ The email-domain test suite is also data-driven. It loads the built-in core and 
 For every derived label, the suite verifies exact-domain and real-subdomain acceptance plus generated deletion, insertion, substitution, adjacent-transposition, alternate-TLD, hyphen-lure, and embedded-domain attacks. Where the label contains supported lookalike characters, the same generated suite also checks ASCII confusables, Unicode homographs, and their punycode representations. Current coverage includes ASCII-confusable generation for **901** labels, Unicode/punycode generation for **912** labels, and transposition generation for all **913** labels. Future compatible additions to those datasets automatically become new email-domain behavior tests.
 
 
-### 0.7.4 opt-in identity lists
+### Historical: 0.7.4 opt-in identity lists
 
-0.7.4 adds ten whole-identifier protection lists, all disabled by default:
+0.7.4 added ten whole-identifier protection lists. They remain opt-in in the currently published 0.7.8 package; the staged 0.8.0 policy enables them by default:
 
 ```csharp
 Rule.Nationalities
@@ -247,9 +247,9 @@ Representative identities include `dutch`, `euro`, `bitcoin`, `christianity`, `e
 
 The lists use normalized exact matching, case-insensitive matching, compact separator/punctuation matching, configured obfuscation/leetspeak matching, and selected Unicode-confusable matching. They deliberately do **not** become generic substring roots.
 
-### Celebrity-name protection
+### Historical: celebrity-name protection
 
-0.7.3 added `Rule.CelebrityNames`, also disabled by default, with 100 protected high-profile identity forms.
+0.7.3 added `Rule.CelebrityNames` with 100 protected high-profile identity forms. It remains opt-in in the currently published 0.7.8 package; the staged 0.8.0 policy enables it by default.
 
 ```csharp
 options.EnableRule(Rule.CelebrityNames);
@@ -275,7 +275,7 @@ player123    -> can be claimable
 123456789    -> rejected as NumericOnly
 ```
 
-0.7.2 also introduced two opt-in whole-identifier geography rules:
+0.7.2 also introduced two whole-identifier geography rules. They remain opt-in in the currently published 0.7.8 package; the staged 0.8.0 policy enables both by default:
 
 ```csharp
 Rule.CountryNames
@@ -364,9 +364,11 @@ builder.Services.AddUnclaimable();
 
 `null` is accepted by Unclaimable so required-field validation remains a separate concern.
 
-## Default core policy in 0.7.8
+## Published 0.7.8 default policy
 
-`new Options()` keeps strong protection while allowing ordinary alphanumeric usernames.
+This section documents the currently published 0.7.8 package for migration reference. The staged 0.8.0 defaults are intentionally stricter; see **Upcoming 0.8.0** above and the [configuration guide](docs/CONFIGURATION.md).
+
+`new Options()` in 0.7.8 keeps strong protection while allowing ordinary alphanumeric usernames.
 
 | Setting | Default |
 | --- | --- |
