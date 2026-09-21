@@ -123,6 +123,20 @@ public sealed class Pattern070Tests
     }
 
     [Fact]
+    public void RaisingRepeatedPatternMinimumLengthDoesNotAllowDirectRuns()
+    {
+        var options = new Options
+        {
+            RepeatedPatternMinimumLength = 12
+        };
+
+        var result = new Checker(options).Check("useraaa");
+
+        Assert.True(result.IsReserved);
+        Assert.Equal(MatchKind.RepeatedPattern, result.MatchKind);
+    }
+
+    [Fact]
     public void RepeatedPatternMinimumLengthIsCapturedWhenCheckerIsConstructed()
     {
         var options = new Options
