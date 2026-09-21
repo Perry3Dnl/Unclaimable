@@ -263,6 +263,21 @@ Generic words remain exact rather than broad substring roots: `vote` does not bl
 | `Unclaimable.Email` | `netstandard2.0` | email local-part policy and protected-domain impersonation checks |
 | `Unclaimable.Extended` | `netstandard2.0` | optional large reserved-identity datasets powered by the Core matcher |
 
+### Application ecosystem compatibility
+
+The portable `netstandard2.0` packages — `Unclaimable`, `Unclaimable.Email`, and `Unclaimable.Extended` — are intended for reuse across modern .NET application models. The 0.8.0 compatibility workflow compile-checks consumers for:
+
+- .NET MAUI (Android);
+- Blazor WebAssembly;
+- WPF;
+- Windows Forms;
+- Console applications;
+- Worker Services;
+- Avalonia;
+- Uno Platform.
+
+Those application models use the same portable packages; there is no separate MAUI, Blazor, Avalonia, or Uno package to install. `Unclaimable.AspNetCore` remains the dedicated ASP.NET Core integration package and ships explicit `net6.0` through `net11.0` assets.
+
 Install the current release:
 
 ```bash
