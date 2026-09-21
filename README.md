@@ -73,7 +73,7 @@ ababab   -> rejected: repeated span reaches 6
 abcabc   -> rejected: repeated span reaches 6
 ```
 
-All protected identity rules are enabled by default except `Rule.Numbers`. Mixed alphanumeric names remain possible, while `Pattern.NumericOnly` continues to reject all-numeric identifiers. `Pattern.UppercaseOnly` remains opt-in.
+All built-in rules are enabled by default except `Rule.Numbers`; this includes the protected country, city, celebrity, and other identity rules. Mixed alphanumeric names remain possible, while `Pattern.NumericOnly` continues to reject all-numeric identifiers. `Pattern.UppercaseOnly` remains opt-in.
 
 For copy-paste recipes, precedence, migration guidance, ASP.NET Core setup, Email local-part customization, and Extended-data exceptions, see the **[0.8.0 configuration and exceptions guide](docs/CONFIGURATION.md)**.
 
