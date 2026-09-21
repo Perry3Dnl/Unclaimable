@@ -1,8 +1,8 @@
 namespace Unclaimable;
 
 /// <summary>
-/// Built-in validation rules. All rules are enabled by default in 0.8.0 and later
-/// and can be disabled explicitly through <see cref="Options.DisableRule(Rule)"/>.
+/// Built-in validation rules. All rules except <see cref="Numbers"/> are enabled by default in 0.8.0.
+/// Rules can be disabled explicitly through <see cref="Options.DisableRule(Rule)"/>.
 /// </summary>
 [Flags]
 public enum Rule
