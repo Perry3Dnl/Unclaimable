@@ -32,6 +32,8 @@ var checker = new Checker(options);
 
 All Extended groups are enabled after opt-in.
 
+The checker still uses the normal 0.8.0 Core defaults at the same time. Extended data is additive: opting in does not disable or replace country, city, celebrity, identity, structural, matching, or pattern rules that are already active in `Options`.
+
 ## Select categories
 
 Disable only the groups your application does not need:
