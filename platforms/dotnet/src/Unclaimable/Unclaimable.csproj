@@ -10,10 +10,10 @@
 
     <PackageId>Unclaimable</PackageId>
     <Version>$(UnclaimableVersion)</Version>
-    <Description>Fast, dependency-free reserved username detection backed by the shared Unclaimable datasets.</Description>
+    <Description>Cross-platform .NET username, identifier, reserved-name, impersonation, and moderation validation for .NET MAUI, Blazor, desktop, server, and worker applications.</Description>
     <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
     <PackageIcon>unclaimable-icon.png</PackageIcon>
-    <PackageTags>username;validation;security;reserved-names</PackageTags>
+    <PackageTags>username;validation;security;reserved-names;identity;impersonation;moderation;dotnet;cross-platform;maui;blazor;webassembly;wpf;winforms;console;worker-service;avalonia;uno</PackageTags>
 
     <EnablePackageValidation>true</EnablePackageValidation>
     <PackageValidationBaselineVersion>0.7.8</PackageValidationBaselineVersion>
