@@ -4,6 +4,24 @@ namespace Unclaimable.Tests;
 
 public sealed class IdentityLists074Tests
 {
+    private const Rule V074Rules =
+        Rule.Nationalities
+        | Rule.Currencies
+        | Rule.Religions
+        | Rule.Landmarks
+        | Rule.Events
+        | Rule.Awards
+        | Rule.FictionalCharacters
+        | Rule.Franchises
+        | Rule.Professions
+        | Rule.Military;
+
+    private const Rule AllOptionalRules =
+        Rule.CountryNames
+        | Rule.PopularCityNames
+        | Rule.CelebrityNames
+        | V074Rules;
+
     public static IEnumerable<object[]> RepresentativeCases()
     {
         yield return new object[] { Rule.Nationalities, "dutch", "nationality" };
@@ -19,23 +37,11 @@ public sealed class IdentityLists074Tests
     }
 
     [Fact]
-    public void NewIdentityListsAreDisabledByDefault()
+    public void NewIdentityListsAreEnabledByDefault()
     {
-        const Rule v074Rules =
-            Rule.Nationalities
-            | Rule.Currencies
-            | Rule.Religions
-            | Rule.Landmarks
-            | Rule.Events
-            | Rule.Awards
-            | Rule.FictionalCharacters
-            | Rule.Franchises
-            | Rule.Professions
-            | Rule.Military;
-
         var options = new Options();
 
-        Assert.Equal(Rule.None, options.EnabledOptionalRules & v074Rules);
+        Assert.Equal(V074Rules, options.EnabledOptionalRules & V074Rules);
     }
 
     [Theory]
@@ -196,7 +202,8 @@ public sealed class IdentityLists074Tests
 
     private static Options CreateIdentityOnlyOptions(Rule enabledRules)
     {
-        var options = new Options().EnableRule(enabledRules);
+        var options = new Options();
+        options.DisableRule(AllOptionalRules & ~enabledRules);
 
         foreach (var category in Enum.GetValues<Category>())
         {
