@@ -5,17 +5,18 @@ namespace Unclaimable.Tests;
 public sealed class GeographyRule072Tests
 {
     [Fact]
-    public void NewOptInRulesAreDisabledByDefaultAndNumbersAreAllowed()
+    public void GeographyAndNumberRulesAreEnabledByDefault()
     {
         var options = new Options();
         var checker = new Checker(options);
 
-        Assert.Equal(Rule.None, options.EnabledOptionalRules);
-        Assert.True((options.DisabledRules & Rule.Numbers) != 0);
-        Assert.True(checker.IsClaimable("france"));
-        Assert.True(checker.IsClaimable("amsterdam"));
-        Assert.True(checker.IsClaimable("user7"));
-        Assert.Equal(MatchKind.NumericOnly, checker.Check("123456789").MatchKind);
+        Assert.True((options.EnabledOptionalRules & Rule.CountryNames) != 0);
+        Assert.True((options.EnabledOptionalRules & Rule.PopularCityNames) != 0);
+        Assert.Equal(Rule.None, options.DisabledRules);
+        Assert.Equal(MatchKind.CountryName, checker.Check("france").MatchKind);
+        Assert.Equal(MatchKind.PopularCityName, checker.Check("amsterdam").MatchKind);
+        Assert.Equal(MatchKind.NumbersNotAllowed, checker.Check("user7").MatchKind);
+        Assert.Equal(MatchKind.NumbersNotAllowed, checker.Check("123456789").MatchKind);
     }
 
     [Theory]
@@ -63,8 +64,8 @@ public sealed class GeographyRule072Tests
     [Fact]
     public void GeographyRulesCanBeEnabledIndependently()
     {
-        var countries = new Checker(new Options().EnableRule(Rule.CountryNames));
-        var cities = new Checker(new Options().EnableRule(Rule.PopularCityNames));
+        var countries = new Checker(new Options().DisableRule(Rule.PopularCityNames));
+        var cities = new Checker(new Options().DisableRule(Rule.CountryNames));
 
         Assert.Equal(MatchKind.CountryName, countries.Check("france").MatchKind);
         Assert.True(countries.IsClaimable("amsterdam"));
@@ -145,13 +146,13 @@ public sealed class GeographyRule072Tests
     public void EnableAndDisableRuleHelpersWorkForExistingRulesToo()
     {
         var options = new Options();
-        Assert.True(new Checker(options).IsClaimable("user7"));
-
-        options.EnableRule(Rule.Numbers);
         Assert.False(new Checker(options).IsClaimable("user7"));
 
         options.DisableRule(Rule.Numbers);
         Assert.True(new Checker(options).IsClaimable("user7"));
+
+        options.EnableRule(Rule.Numbers);
+        Assert.False(new Checker(options).IsClaimable("user7"));
     }
 
     [Fact]
