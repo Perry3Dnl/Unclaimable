@@ -10,6 +10,13 @@ public sealed class AdditionalLanguageTests
         | Rule.Numbers | Rule.Whitespace | Rule.BlockedCharacters
         | Rule.LeadingSeparator | Rule.TrailingSeparator;
 
+    private const Rule OptionalIdentityRules =
+        Rule.CountryNames | Rule.PopularCityNames | Rule.CelebrityNames
+        | Rule.Nationalities | Rule.Currencies | Rule.Religions
+        | Rule.Landmarks | Rule.Events | Rule.Awards
+        | Rule.FictionalCharacters | Rule.Franchises
+        | Rule.Professions | Rule.Military;
+
     /// <summary>Provides a distinct support and profanity example for each new language.</summary>
     public static IEnumerable<object[]> LanguageCases()
     {
@@ -151,7 +158,7 @@ public sealed class AdditionalLanguageTests
     private static Options CreateOptions() => new Options
     {
         Strictness = Strictness.Standard,
-        DisabledRules = StructuralRules
+        DisabledRules = StructuralRules | OptionalIdentityRules
     };
 
     private static IEnumerable<(string Category, string Value)> ReadEntries(string code)
