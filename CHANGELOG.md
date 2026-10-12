@@ -20,6 +20,9 @@
 - Add six separately enabled Extended groups for Netherlands and United States public-office titles and for crypto wallets, exchanges, protocols and tokens (30 curated identifiers). Existing `UseExtendedData()` behavior remains unchanged until an application enables a new group.
 - Keep whole-identifier matching and exact Extended exceptions for these groups; document the source references in the packaged data notes.
 
+### Matching correction
+- Protect prefixed identifiers ending in the explicit `dick` root (for example, `saddick`) with a curated suffix-only rule. The root remains an exact match on its own; ordinary identifiers that merely begin with it, such as `dickinson`, do not become arbitrary substring matches.
+
 ### Diagnostics and boolean path
 - Add a usage guide for `Check`, `CheckDetailed`, match kinds, categories and original-input spans.
 - Avoid constructing a `Result` for null boolean checks; benchmark accepted, rejected and null boolean calls against `Check` before making broader matcher changes.
