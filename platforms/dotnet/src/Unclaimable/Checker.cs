@@ -422,13 +422,21 @@ public sealed partial class Checker : IChecker
             int partialStart;
             int partialLength;
             bool usedCompact;
+            // Most validations have no scoped exceptions. Avoid allocating a closure
+            // and delegate on that hot path; null means all entries are eligible.
+            Func<ReservedEntry, bool>? eligibility = null;
+            if (ruleExceptions != Rule.None)
+            {
+                eligibility = entry =>
+                {
+                    var sourceRule = GetRuleForReservedEntry(entry);
+                    return !sourceRule.HasValue || !HasRuleException(ruleExceptions, sourceRule.Value);
+                };
+            }
+
             if (TryMatchPartial(
                     exact, compact, out partialMatch, out partialStart, out partialLength, out usedCompact,
-                    entry =>
-                    {
-                        var sourceRule = GetRuleForReservedEntry(entry);
-                        return !sourceRule.HasValue || !HasRuleException(ruleExceptions, sourceRule.Value);
-                    }))
+                    eligibility))
             {
                 var sourceRule = GetRuleForReservedEntry(partialMatch!);
                 if (!sourceRule.HasValue || !HasRuleException(ruleExceptions, sourceRule.Value))
