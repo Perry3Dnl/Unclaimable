@@ -61,4 +61,37 @@ public sealed class EmbeddedProfanity084Tests
         Assert.Equal("zorb", result.MatchedValue);
         Assert.Equal(MatchKind.Partial, result.MatchKind);
     }
+
+    [Theory]
+    [InlineData("dickzorb")]
+    [InlineData("zorbdick")]
+    public void Regression_ScopedExceptionMustContinueScanningOtherReservedTerms(string value)
+    {
+        var options = new Options();
+        options.AdditionalReserved.Add("zorb");
+        options.AllowIdentifierForRule(value, Rule.Profanity);
+
+        var checker = new Checker(options);
+        var result = checker.Check(value);
+        var detailed = checker.CheckDetailed(value);
+
+        Assert.True(result.IsReserved);
+        Assert.False(checker.IsClaimable(value));
+        Assert.Equal("custom", result.Category);
+        Assert.Equal("zorb", result.MatchedValue);
+        Assert.Equal(MatchKind.Partial, result.MatchKind);
+        Assert.True(detailed.IsReserved);
+    }
+
+    [Fact]
+    public void Regression_ScopedExceptionAllowsOnlyTheExemptedTerm()
+    {
+        const string value = "saddick";
+        var options = new Options().AllowIdentifierForRule(value, Rule.Profanity);
+        var checker = new Checker(options);
+
+        Assert.True(checker.IsClaimable(value));
+        Assert.False(checker.IsReserved(value));
+        Assert.True(new Checker().IsReserved(value));
+    }
 }
