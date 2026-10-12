@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "category": "slangprofanity",
+  "description": "Additional sv single-word vulgarity and slang entries for v0.8.5. Reviewed candidate set; further native-speaker review recommended.",
+  "language": "sv",
+  "values": [
+    "skit",
+    "skiten",
+    "skitig",
+    "skitigt",
+    "jävla",
+    "javla",
+    "jävel",
+    "javel",
+    "jävlar",
+    "javlar",
+    "helvete",
+    "bajsa",
+    "fittor",
+    "horor"
+  ]
+}
