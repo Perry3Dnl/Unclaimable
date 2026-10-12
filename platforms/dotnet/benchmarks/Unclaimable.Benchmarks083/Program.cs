@@ -96,7 +96,7 @@ public class PartialMatchingScale084Benchmarks
     {
         var options = new Options();
         options.DisableRule(Rule.ObfuscationMatching);
-        _lastEntry = "zzpartial" + (PartialEntryCount - 1).ToString("D5");
+        _lastEntry = "zzpartial" + Math.Max(0, PartialEntryCount - 1).ToString("D5");
         for (var index = 0; index < PartialEntryCount; index++)
         {
             options.AdditionalReserved.Add("zzpartial" + index.ToString("D5"));
