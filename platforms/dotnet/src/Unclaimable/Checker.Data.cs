@@ -180,21 +180,6 @@ public sealed partial class Checker
                         }
                     }
 
-                    foreach (var value in document.SuffixValues ?? Array.Empty<string>())
-                    {
-                        if (!string.IsNullOrWhiteSpace(value))
-                        {
-                            AddBuiltInEntry(
-                                entries,
-                                normalizedEntryIndexes,
-                                value,
-                                document.Category,
-                                language,
-                                safePartial: false,
-                                suffixOnly: true);
-                        }
-                    }
-
                     foreach (var combination in document.Combinations ?? Array.Empty<CombinationDocument>())
                     {
                         if (combination is null)
@@ -231,8 +216,7 @@ public sealed partial class Checker
         string value,
         string category,
         Language? language,
-        bool safePartial,
-        bool suffixOnly = false)
+        bool safePartial)
     {
         var normalized = NormalizeExact(value);
         if (normalized is null)
@@ -248,19 +232,18 @@ public sealed partial class Checker
         if (!normalizedEntryIndexes.TryGetValue(key, out var existingIndex))
         {
             normalizedEntryIndexes.Add(key, entries.Count);
-            entries.Add(new ReservedEntry(value, category, language, safePartial, suffixOnly));
+            entries.Add(new ReservedEntry(value, category, language, safePartial));
             return;
         }
 
         var existing = entries[existingIndex];
-        if ((safePartial && !existing.SafePartial) || (suffixOnly && !existing.SuffixOnly))
+        if (safePartial && !existing.SafePartial)
         {
             entries[existingIndex] = new ReservedEntry(
                 existing.Value,
                 existing.Category,
                 existing.Language,
-                safePartial: safePartial || existing.SafePartial,
-                suffixOnly: suffixOnly || existing.SuffixOnly);
+                safePartial: true);
         }
     }
 
