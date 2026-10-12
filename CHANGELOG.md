@@ -16,14 +16,19 @@
 - Add the optional `Unclaimable.FluentValidation` connector for .NET 8 and later, with `MustBeClaimable()` and `MustNotBeReserved()` rules using either the default or an application-supplied `IChecker`.
 - Preserve Core’s null-claimability contract, expose the match kind and category as message placeholders, and exercise the connector in unit and packaged-consumer tests. FluentValidation 12 is a transitive dependency only for consumers of this integration package.
 
+### Compatibility notes
+- **Extended default-on expansion:** Applications already calling `UseExtendedData()` will receive all new regional/crypto and hate-speech categories. Disable individual groups explicitly if their identifiers are not appropriate for a given application.
+- **Core matching change:** Embedded matches for an additional curated profanity root now reject some previously accepted identifiers. Scoped rule exceptions skip only the permitted match, not independent reserved terms.
+- All five packages are version-aligned at 0.8.4; NuGet publication remains gated on successful tests, packaging checks, and release approval.
+
 ### Optional Extended datasets
 - Add six Extended groups for Netherlands and United States public-office titles and for crypto wallets, exchanges, protocols and tokens (30 curated identifiers). All groups are included by default when an application calls `UseExtendedData()`; each can be disabled individually.
-- Keep whole-identifier matching and exact Extended exceptions for these groups; document the source references in the packaged data notes.
+- Add the curated `HateSpeech` Extended group, enabled with `UseExtendedData()` and individually disableable; matching remains whole-identifier, not blanket substring filtering.\n- Keep whole-identifier matching and exact Extended exceptions for these groups; document the source references in the packaged data notes.
 
 ### Matching correction
 - Add the explicit `dick` root to the curated default partial list so embedded forms such as `saddick` and `dickinson` are rejected as profanity. Existing partial and profanity rule controls still apply.
 
-### Diagnostics and boolean path
+- Ensure scoped profanity exceptions do not suppress unrelated custom partial matches; add regression coverage for both input orders and FluentValidation parity.\n\n### Diagnostics and boolean path
 - Add a usage guide for `Check`, `CheckDetailed`, match kinds, categories and original-input spans.
 - Avoid constructing a `Result` for null boolean checks; benchmark accepted, rejected and null boolean calls against `Check` before making broader matcher changes.
 
