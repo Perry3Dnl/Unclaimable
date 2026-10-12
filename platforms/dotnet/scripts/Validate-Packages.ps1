@@ -81,6 +81,15 @@ $packages = @(
         RequiredTags = @("dotnet", "cross-platform", "maui", "blazor", "webassembly", "wpf", "winforms", "console", "worker-service", "avalonia", "uno")
     },
     @{
+        Id = "Unclaimable.FluentValidation"
+        Frameworks = @("net8.0")
+        Assembly = "Unclaimable.FluentValidation"
+        RequiresCoreDependency = $true
+        ReadmeHeading = "# Unclaimable.FluentValidation"
+        ForbiddenReadmeText = @("Unclaimable.AspNetCore", "Unclaimable.Email", "Unclaimable.Extended")
+        RequiredTags = @("dotnet", "fluentvalidation")
+    },
+    @{
         Id = "Unclaimable.Extended"
         Frameworks = @("netstandard2.0")
         Assembly = "Unclaimable.Extended"
@@ -178,6 +187,12 @@ foreach ($package in $packages) {
 
         $sourceLinkDependency = $nuspec.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='dependencies']//*[local-name()='dependency'][@id='Microsoft.SourceLink.GitHub']")
         Assert-True ($null -eq $sourceLinkDependency) "$id leaked Microsoft.SourceLink.GitHub as a consumer dependency."
+
+        if ($id -eq "Unclaimable.FluentValidation") {
+            $fluentDependency = $nuspec.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='dependencies']//*[local-name()='dependency'][@id='FluentValidation']")
+            Assert-True ($null -ne $fluentDependency) "$id does not declare its FluentValidation dependency."
+            Assert-True ($fluentDependency.GetAttribute("version") -match '^12\\.') "$id has an unexpected FluentValidation dependency version."
+        }
 
         if ($package.RequiresCoreDependency) {
             $coreDependency = $nuspec.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='dependencies']//*[local-name()='dependency'][@id='Unclaimable']")
