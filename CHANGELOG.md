@@ -17,7 +17,7 @@
 - Preserve Core’s null-claimability contract, expose the match kind and category as message placeholders, and exercise the connector in unit and packaged-consumer tests. FluentValidation 12 is a transitive dependency only for consumers of this integration package.
 
 ### Optional Extended datasets
-- Add six separately enabled Extended groups for Netherlands and United States public-office titles and for crypto wallets, exchanges, protocols and tokens (30 curated identifiers). Existing `UseExtendedData()` behavior remains unchanged until an application enables a new group.
+- Add six Extended groups for Netherlands and United States public-office titles and for crypto wallets, exchanges, protocols and tokens (30 curated identifiers). All groups are included by default when an application calls `UseExtendedData()`; each can be disabled individually.
 - Keep whole-identifier matching and exact Extended exceptions for these groups; document the source references in the packaged data notes.
 
 ### Matching correction
