@@ -17,30 +17,27 @@ public sealed partial class Checker : IChecker
 
     private sealed class ReservedEntry
     {
-        public ReservedEntry(string value, string category, Language? language = null, bool safePartial = false, bool suffixOnly = false)
+        public ReservedEntry(string value, string category, Language? language = null, bool safePartial = false)
         {
             Value = value;
             Category = category;
             Language = language;
             SafePartial = safePartial;
-            SuffixOnly = suffixOnly && !safePartial;
         }
 
         public string Value { get; }
         public string Category { get; }
         public Language? Language { get; }
         public bool SafePartial { get; }
-        public bool SuffixOnly { get; }
     }
 
     private sealed class PartialEntry
     {
-        public PartialEntry(string exact, string compact, ReservedEntry entry, bool suffixOnly = false)
+        public PartialEntry(string exact, string compact, ReservedEntry entry)
         {
             Exact = exact;
             Compact = compact;
             Entry = entry;
-            SuffixOnly = suffixOnly;
         }
 
         public bool SuffixOnly { get; }
@@ -78,9 +75,6 @@ public sealed partial class Checker : IChecker
 
         [DataMember(Name = "partialValues")]
         public string[]? PartialValues { get; set; }
-
-        [DataMember(Name = "suffixValues")]
-        public string[]? SuffixValues { get; set; }
 
         [DataMember(Name = "combinations")]
         public CombinationDocument[]? Combinations { get; set; }
@@ -264,11 +258,7 @@ public sealed partial class Checker : IChecker
                 continue;
             }
 
-            var broadPartial = entry.SafePartial || (isProfanity && options.ProfanityPartialMatching);
-            Add(
-                entry,
-                includeInPartialMatching: broadPartial || entry.SuffixOnly,
-                suffixOnly: entry.SuffixOnly && !broadPartial);
+            Add(entry, includeInPartialMatching: entry.SafePartial || (isProfanity && options.ProfanityPartialMatching));
         }
 
         foreach (var value in options.AdditionalReserved)
