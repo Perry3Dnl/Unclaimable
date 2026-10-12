@@ -43,11 +43,6 @@ public sealed partial class Checker
                     continue;
                 }
 
-                if (partial.SuffixOnly && endIndex != value.Length)
-                {
-                    continue;
-                }
-
                 match = partial.Entry;
                 matchStartIndex = start;
                 matchLength = Math.Max(1, endIndex - start);
