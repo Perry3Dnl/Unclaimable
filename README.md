@@ -18,6 +18,20 @@ Prevent reserved, protected, misleading, degenerate, and unsafe identifiers befo
 
 [**NuGet**](https://www.nuget.org/packages/Unclaimable) · [**Configuration guide**](docs/CONFIGURATION.md) · [**Changelog**](CHANGELOG.md)
 
+## 0.8.4: email policies, Extended datasets and FluentValidation (release candidate)
+
+0.8.4 introduces the optional **Unclaimable.FluentValidation** connector for .NET 8+ (FluentValidation 12) with `MustBeClaimable()` and `MustNotBeReserved()`. The Core package remains free of that dependency.
+
+**Email:** new `ForUserRegistration()`, `ForOrganizationEmail(domain)` and `ForIssuedAddresses()` presets; strict/relaxed address-purpose policies; separate syntax, local-part, issuing-domain and domain-lookalike diagnostics; a pinned offline Public Suffix List; and more IDN/domain edge-case coverage. Existing defaults remain strict.
+
+**Extended:** six new regional public-office and crypto dataset categories, plus a curated hate-speech category. **Installing Extended alone changes nothing; calling `UseExtendedData()` enables all categories, including the new ones by default.** Applications upgrading from 0.8.3 should review newly blocked identifiers and selectively use `DisableCategory(...)` or exact exceptions.
+
+**Core:** a curated embedded-profanity matching correction, hardening of scoped exceptions so an exempted match cannot hide an independent reserved match, and additional adversarial tests.
+
+**Release state:** This is an unreleased development candidate. Do not interpret the version references in source documentation as packages already available on NuGet. Benchmark results and final CI validation must be reviewed before publishing.
+
+See the [0.8.4 changelog](CHANGELOG.md) for migration considerations and individual package READMEs for their APIs.
+
 ## 0.8.3: correctness, lower false positives, and lower allocations
 
 **Released: 2026-10-09**
