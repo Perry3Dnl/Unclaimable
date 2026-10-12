@@ -134,56 +134,13 @@ public sealed partial class Checker
         }
     }
 
-    private void AddExactCustom(ReservedEntry entry, bool isInternal)
+    private void AddExactCustom(ReservedEntry entry)
     {
-        if (isInternal && TryAddOptionalRuleReservation(entry.Value))
-        {
-            return;
-        }
-
         var exact = NormalizeExact(entry.Value);
         if (exact is not null && !_exactOnlyCustom.ContainsKey(exact))
         {
             _exactOnlyCustom.Add(exact, entry);
         }
-    }
-
-    private bool TryAddOptionalRuleReservation(string value)
-    {
-        if (value.StartsWith(GeographyData.CountryReservationPrefix, StringComparison.Ordinal))
-        {
-            AddGeographyRuleValue(
-                value.Substring(GeographyData.CountryReservationPrefix.Length),
-                _countryRuleExact,
-                _countryRuleCompact);
-            return true;
-        }
-
-        if (value.StartsWith(GeographyData.CityReservationPrefix, StringComparison.Ordinal))
-        {
-            AddGeographyRuleValue(
-                value.Substring(GeographyData.CityReservationPrefix.Length),
-                _cityRuleExact,
-                _cityRuleCompact);
-            return true;
-        }
-
-        if (TryAddIdentityRuleReservation(value, CelebrityData.ReservationPrefix, "celebrity")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.NationalityPrefix, "nationality")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.CurrencyPrefix, "currency")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.ReligionPrefix, "religion")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.LandmarkPrefix, "landmark")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.EventPrefix, "event")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.AwardPrefix, "award")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.FictionalCharacterPrefix, "fictionalcharacter")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.FranchisePrefix, "franchise")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.ProfessionPrefix, "profession")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.MilitaryPrefix, "military"))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     private static void AddGeographyRuleValue(
@@ -207,17 +164,6 @@ public sealed partial class Checker
         {
             compactValues.Add(compact, value);
         }
-    }
-
-    private bool TryAddIdentityRuleReservation(string reservation, string prefix, string category)
-    {
-        if (!reservation.StartsWith(prefix, StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        AddIdentityRuleValue(reservation.Substring(prefix.Length), category);
-        return true;
     }
 
     private void AddIdentityRuleValue(string value, string category)

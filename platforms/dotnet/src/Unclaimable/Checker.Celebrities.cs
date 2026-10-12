@@ -2,8 +2,6 @@ namespace Unclaimable;
 
 internal static class CelebrityData
 {
-    internal const string ReservationPrefix = "__unclaimable_internal_celebrity_rule__:";
-
     // Curated v0.7.3 starter set. These are protected identifier forms, not substring roots.
     // Matching may additionally use the configured compact, obfuscation, and Unicode-confusable pipelines.
     internal static readonly string[] Names =

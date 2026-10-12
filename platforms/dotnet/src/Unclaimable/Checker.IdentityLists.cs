@@ -62,17 +62,6 @@ internal static class OptionalIdentityData
         }
     }
 
-    internal const string NationalityPrefix = "__unclaimable_internal_nationality_rule__:";
-    internal const string CurrencyPrefix = "__unclaimable_internal_currency_rule__:";
-    internal const string ReligionPrefix = "__unclaimable_internal_religion_rule__:";
-    internal const string LandmarkPrefix = "__unclaimable_internal_landmark_rule__:";
-    internal const string EventPrefix = "__unclaimable_internal_event_rule__:";
-    internal const string AwardPrefix = "__unclaimable_internal_award_rule__:";
-    internal const string FictionalCharacterPrefix = "__unclaimable_internal_fictional_character_rule__:";
-    internal const string FranchisePrefix = "__unclaimable_internal_franchise_rule__:";
-    internal const string ProfessionPrefix = "__unclaimable_internal_profession_rule__:";
-    internal const string MilitaryPrefix = "__unclaimable_internal_military_rule__:";
-
     internal static readonly string[] Nationalities =
     {
         "american", "argentine", "argentinian", "australian", "austrian", "belgian", "brazilian", "british",

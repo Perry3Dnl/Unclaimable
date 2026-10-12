@@ -2,9 +2,6 @@ namespace Unclaimable;
 
 internal static class GeographyData
 {
-    internal const string CountryReservationPrefix = "__unclaimable_internal_country_rule__:";
-    internal const string CityReservationPrefix = "__unclaimable_internal_city_rule__:";
-
     internal static readonly string[] CountryNames =
     {
         "afghanistan", "albania", "algeria", "andorra", "angola", "antiguaandbarbuda", "argentina",

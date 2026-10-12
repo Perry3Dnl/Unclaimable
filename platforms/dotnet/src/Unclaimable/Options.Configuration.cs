@@ -75,8 +75,6 @@ public sealed partial class Options
         return this;
     }
 
-    internal IReadOnlyList<ReservationRegistration> Reservations => BuildEffectiveReservations();
-
     internal IReadOnlyList<ReservationRegistration> ConfiguredReservations => _reservations;
 
     internal bool IsCategoryEnabled(string category)
@@ -168,18 +166,15 @@ public sealed partial class Options
         internal ReservationRegistration(
             string value,
             string category,
-            ReservedMatchMode matching,
-            bool isInternal = false)
+            ReservedMatchMode matching)
         {
             Value = value;
             Category = category;
             Matching = matching;
-            IsInternal = isInternal;
         }
 
         internal string Value { get; }
         internal string Category { get; }
         internal ReservedMatchMode Matching { get; }
-        internal bool IsInternal { get; }
     }
 }
