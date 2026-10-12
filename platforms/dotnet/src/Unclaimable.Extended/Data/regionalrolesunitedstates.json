@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "category": "regionalrolesunitedstates",
+  "description": "United States state and local public-office titles. Opt in explicitly.",
+  "values": [
+    "county executive",
+    "state governor",
+    "state attorney general",
+    "county commissioner",
+    "city manager"
+  ]
+}
