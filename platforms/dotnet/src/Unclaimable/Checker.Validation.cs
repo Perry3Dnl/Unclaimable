@@ -6,7 +6,10 @@ namespace Unclaimable;
 public sealed partial class Checker
 {
     private static readonly string[] AsciiCharacterText = CreateAsciiCharacterText();
-    private bool TryFindFirstPolicyViolation(string? value, out Result? violation)
+    private bool TryFindFirstPolicyViolation(
+        string? value,
+        out Result? violation,
+        bool captureResult = true)
     {
         violation = null;
         if (value is null)
@@ -16,12 +19,15 @@ public sealed partial class Checker
 
         if (TryFindMalformedUtf16(value, out var invalidIndex, out var invalidCharacter))
         {
-            violation = Result.InvalidCharacters(value, invalidIndex, invalidCharacter);
+            if (captureResult)
+            {
+                violation = Result.InvalidCharacters(value, invalidIndex, invalidCharacter);
+            }
             return true;
         }
 
         if ((_rejectInvisibleOnlyIdentifiers || _rejectControlCharacters || _rejectFormatCharacters)
-            && TryFindFirstUnicodeStrictnessViolation(value, out violation))
+            && TryFindFirstUnicodeStrictnessViolation(value, out violation, captureResult))
         {
             return true;
         }
@@ -30,13 +36,19 @@ public sealed partial class Checker
 
         if (_minimumLengthEnabled && !HasRuleException(ruleExceptions, Rule.MinimumLength) && value.Length < _minimumLength)
         {
-            violation = Result.TooShort(value, _minimumLength);
+            if (captureResult)
+            {
+                violation = Result.TooShort(value, _minimumLength);
+            }
             return true;
         }
 
         if (_maximumLengthEnabled && !HasRuleException(ruleExceptions, Rule.MaximumLength) && value.Length > _maximumLength)
         {
-            violation = Result.TooLong(value, _maximumLength);
+            if (captureResult)
+            {
+                violation = Result.TooLong(value, _maximumLength);
+            }
             return true;
         }
 
@@ -47,13 +59,19 @@ public sealed partial class Checker
 
         if (_leadingSeparatorEnabled && !HasRuleException(ruleExceptions, Rule.LeadingSeparator) && IsSeparator(value[0]))
         {
-            violation = Result.LeadingSeparator(value, 0, value[0].ToString());
+            if (captureResult)
+            {
+                violation = Result.LeadingSeparator(value, 0, value[0].ToString());
+            }
             return true;
         }
 
         if (_trailingSeparatorEnabled && !HasRuleException(ruleExceptions, Rule.TrailingSeparator) && IsSeparator(value[value.Length - 1]))
         {
-            violation = Result.TrailingSeparator(value, value.Length - 1, value[value.Length - 1].ToString());
+            if (captureResult)
+            {
+                violation = Result.TrailingSeparator(value, value.Length - 1, value[value.Length - 1].ToString());
+            }
             return true;
         }
 
@@ -67,26 +85,38 @@ public sealed partial class Checker
                 && !HasRuleException(ruleExceptions, Rule.Numbers)
                 && IsDecimalDigitAfterCompatibilityNormalization(characterText, category))
             {
-                violation = Result.NumbersNotAllowed(value, index, characterText);
+                if (captureResult)
+                {
+                    violation = Result.NumbersNotAllowed(value, index, characterText);
+                }
                 return true;
             }
 
             if (_asciiOnly && (character < 0x20 || character > 0x7E))
             {
-                violation = Result.InvalidCharacters(value, index, characterText);
+                if (captureResult)
+                {
+                    violation = Result.InvalidCharacters(value, index, characterText);
+                }
                 return true;
             }
 
             var explicitlyAllowed = _policy.IsCharacterExplicitlyAllowed(characterText);
             if (!explicitlyAllowed && _whitespaceEnabled && !HasRuleException(ruleExceptions, Rule.Whitespace) && IsWhitespace(category, character))
             {
-                violation = Result.BlockedCharacter(value, index, characterText);
+                if (captureResult)
+                {
+                    violation = Result.BlockedCharacter(value, index, characterText);
+                }
                 return true;
             }
 
             if (!explicitlyAllowed && _blockedCharactersEnabled && !HasRuleException(ruleExceptions, Rule.BlockedCharacters) && _policy.IsCharacterBlocked(characterText))
             {
-                violation = Result.BlockedCharacter(value, index, characterText);
+                if (captureResult)
+                {
+                    violation = Result.BlockedCharacter(value, index, characterText);
+                }
                 return true;
             }
 
@@ -99,7 +129,10 @@ public sealed partial class Checker
         return false;
     }
 
-    private bool TryFindFirstUnicodeStrictnessViolation(string value, out Result? violation)
+    private bool TryFindFirstUnicodeStrictnessViolation(
+        string value,
+        out Result? violation,
+        bool captureResult = true)
     {
         violation = null;
         var hasVisibleContent = false;
@@ -112,13 +145,19 @@ public sealed partial class Checker
 
             if (_rejectControlCharacters && category == UnicodeCategory.Control)
             {
-                violation = Result.InvalidCharacters(value, index, characterText);
+                if (captureResult)
+                {
+                    violation = Result.InvalidCharacters(value, index, characterText);
+                }
                 return true;
             }
 
             if (_rejectFormatCharacters && category == UnicodeCategory.Format)
             {
-                violation = Result.InvalidCharacters(value, index, characterText);
+                if (captureResult)
+                {
+                    violation = Result.InvalidCharacters(value, index, characterText);
+                }
                 return true;
             }
 
@@ -135,7 +174,10 @@ public sealed partial class Checker
 
         if (_rejectInvisibleOnlyIdentifiers && value.Length > 0 && !hasVisibleContent)
         {
-            violation = Result.InvalidCharacters(value);
+            if (captureResult)
+            {
+                violation = Result.InvalidCharacters(value);
+            }
             return true;
         }
 

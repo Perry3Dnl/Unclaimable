@@ -4,12 +4,12 @@ public sealed partial class Checker
 {
     private bool IsReservedCore(string value)
     {
-        if (TryFindFirstPolicyViolation(value, out _))
+        if (TryFindFirstPolicyViolation(value, out _, captureResult: false))
         {
             return true;
         }
 
-        if (TryFindFirstPatternViolation(value, out _))
+        if (TryFindFirstPatternViolation(value, out _, captureResult: false))
         {
             return true;
         }
