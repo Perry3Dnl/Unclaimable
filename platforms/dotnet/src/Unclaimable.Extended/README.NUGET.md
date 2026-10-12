@@ -119,6 +119,17 @@ The original Extended snapshot contains **36,313 identifiers**. 0.8.4 embeds 30 
 | Regional slang / profanity | 69 |
 | International organizations | 61 |
 
+## Hate-speech dataset (0.8.4 development)
+
+`ExtendedCategory.HateSpeech` contributes an additional curated set of identity-targeting abusive identifiers and hateful slogans. It is included when `UseExtendedData()` is enabled, and may be disabled independently:
+
+```csharp
+options.UseExtendedData(extended =>
+    extended.DisableCategory(ExtendedCategory.HateSpeech));
+```
+
+As with all Extended groups, installation alone does not enable it. Entries are passed into Core using `ReservedMatchMode.WholeIdentifier`; no independent detection engine or blanket substring matching is introduced. Coverage is curated rather than exhaustive and should not be treated as a complete multilingual content-moderation system.
+
 ## Matching behavior
 
 Extended entries use `ReservedMatchMode.WholeIdentifier`.
