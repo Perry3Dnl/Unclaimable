@@ -45,4 +45,20 @@ public sealed class EmbeddedProfanity084Tests
         Assert.True(new Checker(noProfanity).IsClaimable("saddick"));
         Assert.True(new Checker(noProfanity).IsClaimable("dickinson"));
     }
+
+    [Fact]
+    public void ScopedProfanityExceptionDoesNotHideIndependentCustomPartialMatch()
+    {
+        const string value = "dickzorb";
+        var options = new Options();
+        options.AdditionalReserved.Add("zorb");
+        options.AllowIdentifierForRule(value, Rule.Profanity);
+
+        var result = new Checker(options).Check(value);
+
+        Assert.True(result.IsReserved);
+        Assert.Equal("custom", result.Category);
+        Assert.Equal("zorb", result.MatchedValue);
+        Assert.Equal(MatchKind.Partial, result.MatchKind);
+    }
 }
