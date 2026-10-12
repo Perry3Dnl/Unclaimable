@@ -8,7 +8,7 @@ namespace Unclaimable;
 
 public sealed partial class Checker
 {
-    private void Add(ReservedEntry entry, bool includeInPartialMatching = true, bool suffixOnly = false)
+    private void Add(ReservedEntry entry, bool includeInPartialMatching = true)
     {
         var exact = NormalizeExact(entry.Value);
         if (exact is null)
@@ -29,7 +29,7 @@ public sealed partial class Checker
 
         if (includeInPartialMatching && compact.Length >= _partialMatchMinimumLength)
         {
-            _partialEntries.Add(new PartialEntry(exact, compact, entry, suffixOnly));
+            _partialEntries.Add(new PartialEntry(exact, compact, entry));
         }
     }
 
@@ -53,9 +53,7 @@ public sealed partial class Checker
     {
         foreach (var partial in partialEntries)
         {
-            var exactIndex = partial.SuffixOnly
-                ? (exact.EndsWith(partial.Exact, StringComparison.Ordinal) ? exact.Length - partial.Exact.Length : -1)
-                : exact.IndexOf(partial.Exact, StringComparison.Ordinal);
+            var exactIndex = exact.IndexOf(partial.Exact, StringComparison.Ordinal);
             if (exactIndex >= 0 && exact.Length > partial.Exact.Length)
             {
                 match = partial.Entry;
@@ -68,9 +66,7 @@ public sealed partial class Checker
             var compactPartialEnabled = !_consistentCompactMatching || _compactMatching;
             if (compactPartialEnabled && compact.Length > partial.Compact.Length)
             {
-                var compactIndex = partial.Entry.SuffixOnly
-                    ? (compact.EndsWith(partial.Compact, StringComparison.Ordinal) ? compact.Length - partial.Compact.Length : -1)
-                    : compact.IndexOf(partial.Compact, StringComparison.Ordinal);
+                var compactIndex = compact.IndexOf(partial.Compact, StringComparison.Ordinal);
                 if (compactIndex >= 0)
                 {
                     match = partial.Entry;
