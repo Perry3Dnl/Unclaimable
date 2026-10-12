@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "category": "cryptoexchanges",
+  "description": "Crypto exchange identities. Opt in explicitly.",
+  "values": [
+    "Coinbase Exchange",
+    "Kraken",
+    "Bitstamp",
+    "Gemini Exchange",
+    "Binance"
+  ]
+}
