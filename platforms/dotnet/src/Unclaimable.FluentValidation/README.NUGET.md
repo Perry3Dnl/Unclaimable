@@ -47,4 +47,4 @@ public sealed class SignupValidator : AbstractValidator<Signup>
 }
 ```
 
-Register IChecker using Unclaimable.AspNetCore or supply your own instance. The rule follows that checker's captured options and live character policy. On failure, the default message includes MatchKind; the Category placeholder is also available in a custom message. Avoid exposing matched reserved values in public error messages.
+Register IChecker in your application's service container or supply your own instance. The rule follows that checker's captured options and live character policy. On failure, the default message includes MatchKind; the Category placeholder is also available in a custom message. Avoid exposing matched reserved values in public error messages.
