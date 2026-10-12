@@ -17,18 +17,20 @@ public sealed partial class Checker : IChecker
 
     private sealed class ReservedEntry
     {
-        public ReservedEntry(string value, string category, Language? language = null, bool safePartial = false)
+        public ReservedEntry(string value, string category, Language? language = null, bool safePartial = false, bool suffixOnly = false)
         {
             Value = value;
             Category = category;
             Language = language;
             SafePartial = safePartial;
+            SuffixOnly = suffixOnly && !safePartial;
         }
 
         public string Value { get; }
         public string Category { get; }
         public Language? Language { get; }
         public bool SafePartial { get; }
+        public bool SuffixOnly { get; }
     }
 
     private sealed class PartialEntry
@@ -74,6 +76,9 @@ public sealed partial class Checker : IChecker
 
         [DataMember(Name = "partialValues")]
         public string[]? PartialValues { get; set; }
+
+        [DataMember(Name = "suffixValues")]
+        public string[]? SuffixValues { get; set; }
 
         [DataMember(Name = "combinations")]
         public CombinationDocument[]? Combinations { get; set; }
@@ -259,7 +264,7 @@ public sealed partial class Checker : IChecker
 
             Add(
                 entry,
-                includeInPartialMatching: entry.SafePartial || (isProfanity && options.ProfanityPartialMatching));
+                includeInPartialMatching: entry.SafePartial || entry.SuffixOnly || (isProfanity && options.ProfanityPartialMatching));
         }
 
         foreach (var value in options.AdditionalReserved)
