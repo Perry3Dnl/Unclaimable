@@ -30,7 +30,7 @@ options.UseExtendedData();
 var checker = new Checker(options);
 ```
 
-All Extended groups are enabled after opt-in.
+The original 21 Extended groups are enabled after opt-in. The six new 0.8.4 modules below require separate selection, preserving existing behavior.
 
 The checker still uses the normal 0.8.3 Core defaults at the same time, including the lower-collision default treatment for generic Core identity vocabulary. Extended data remains explicitly opt-in and additive: enabling it does not disable or replace Core structural, matching, pattern, or identity rules already active in `Options`.
 
@@ -47,6 +47,21 @@ options.UseExtendedData(extended =>
 ```
 
 A disabled group can be enabled again with `EnableCategory(...)`.
+
+### New 0.8.4 opt-in modules
+
+Choose country-specific public-office titles and crypto identities separately:
+
+```csharp
+options.UseExtendedData(extended =>
+{
+    extended.EnableCategory(ExtendedCategory.RegionalRolesNetherlands);
+    extended.EnableCategory(ExtendedCategory.CryptoWallets);
+    extended.EnableCategory(ExtendedCategory.CryptoExchanges);
+});
+```
+
+Also available: `RegionalRolesUnitedStates`, `CryptoProtocols`, and `CryptoTokens`. Each starts disabled, including when `UseExtendedData()` is called without a callback. Entries use whole-identifier matching; these are deliberately small curated sets rather than a broad or continuously updated market list. Review the terms for your application and use `AllowedIdentifiers` for exact exceptions.
 
 ## Exact Extended exceptions
 
@@ -78,7 +93,7 @@ This keeps Extended identity exceptions distinct from username-shape exceptions.
 
 ## Dataset snapshot
 
-The initial Extended snapshot contains **36,313 additional identifiers**:
+The original Extended snapshot contains **36,313 identifiers**. 0.8.4 embeds 30 additional entries across six separately enabled modules; they are excluded from the default `UseExtendedData()` registration:
 
 | Extended group | Entries |
 | --- | ---: |
