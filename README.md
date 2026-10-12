@@ -28,11 +28,22 @@ Prevent reserved, protected, misleading, degenerate, and unsafe identifiers befo
 
 **Core:** a curated embedded-profanity matching correction, hardening of scoped exceptions so an exempted match cannot hide an independent reserved match, and additional adversarial tests.
 
-### 0.8.4 benchmark verification (pending measurements)
+### 0.8.4 performance benchmarks
 
-0.8.4 performance results must be published **with measured mean latency and allocated bytes per operation**, not estimates. The single-username BenchmarkDotNet suite covers ordinary accepted and reserved usernames, embedded-profanity matches, custom partial-match hits and full-scan misses, and High-sensitivity obfuscation near misses. Separate partial-list scaling scenarios cover 0, 100, 1,000, 5,000, and 10,000 entries.
+BenchmarkDotNet results for the 0.8.4 single-username benchmark suite. Times are **mean per operation**; allocations measure managed bytes per operation. Benchmarks measure a warmed-up checker, **not initialization or dataset loading**. Ratios are relative to `CheckOrdinaryUsername` in this run (1.00×); they are **not** speedups relative to 0.8.3.
 
-Benchmark results are **not yet finalized for this release candidate**. We will add the measured results and run environment here before release, including the slower paths rather than only favorable results. Benchmark measurements exclude checker construction/dataset loading; results depend on hardware, .NET runtime, configuration, and inputs. See [benchmark methodology](docs/SINGLE_USERNAME_BENCHMARKS.md) and the [benchmark workflow](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/username-benchmarks.yml).
+| Scenario | Boolean API mean | Boolean API allocated | Diagnostic `Check` mean | Diagnostic `Check` allocated |
+| --- | ---: | ---: | ---: | ---: |
+| Ordinary accepted username | 6.83 µs | 0 B reported | 6.95 µs | 104 B |
+| Exact reserved username | 0.44 µs | 0 B reported | 0.53 µs | 104 B |
+| Embedded profanity | 4.77 µs | 0 B reported | 4.86 µs | 104 B |
+| Full-scan miss | 177.80 µs | 0 B reported | 183.42 µs | 104 B |
+| Late partial match | 114.87 µs | 0 B reported | 110.91 µs | 104 B |
+| High-sensitivity near miss | 413.48 µs | 1,520 B | 418.25 µs | 1,624 B |
+
+The ordinary, exact-reserved, embedded-profanity, full-scan-miss and late-partial-match **boolean paths reported no managed allocation** at BenchmarkDotNet's measurement resolution. The diagnostic `Check` path allocated 104 B per call in the first five scenarios. The High-sensitivity near miss remains the most expensive measured scenario (approximately 0.41–0.42 ms, with 1.5–1.6 KB allocated).
+
+**Interpretation:** the result is strong on allocation minimization for ordinary boolean checks, but full-scan misses and High-sensitivity near misses have substantially higher latency. These figures are absolute 0.8.4 measurements, **not a controlled 0.8.3-versus-0.8.4 comparison**, so no version-over-version performance improvement is claimed. Results depend on the runner, CPU, .NET version and configuration; the full output should be retained as a workflow artifact alongside release evidence. See [benchmark methodology](docs/SINGLE_USERNAME_BENCHMARKS.md).
 
 **Release state:** This is an unreleased development candidate. Do not interpret the version references in source documentation as packages already available on NuGet. Benchmark results and final CI validation must be reviewed before publishing.
 
