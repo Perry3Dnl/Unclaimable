@@ -12,18 +12,18 @@ public sealed class ExtendedModules084Tests
     [InlineData(ExtendedCategory.CryptoExchanges, "coinbaseexchange", "cryptoexchanges")]
     [InlineData(ExtendedCategory.CryptoProtocols, "curvefinance", "cryptoprotocols")]
     [InlineData(ExtendedCategory.CryptoTokens, "eurc", "cryptotokens")]
-    public void NewModulesRequireExplicitSelection(
+    public void NewModulesAreEnabledByDefaultAndCanBeDisabled(
         ExtendedCategory category, string identifier, string categoryName)
     {
-        var existingGroups = new Options();
-        existingGroups.UseExtendedData();
-        Assert.NotEqual(categoryName, new Checker(existingGroups).Check(identifier).Category);
-
-        var selected = new Options();
-        selected.UseExtendedData(extended => extended.EnableCategory(category));
-        var result = new Checker(selected).Check(identifier);
+        var enabled = new Options();
+        enabled.UseExtendedData();
+        var result = new Checker(enabled).Check(identifier);
         Assert.True(result.IsReserved);
         Assert.Equal(categoryName, result.Category);
+
+        var disabled = new Options();
+        disabled.UseExtendedData(extended => extended.DisableCategory(category));
+        Assert.NotEqual(categoryName, new Checker(disabled).Check(identifier).Category);
         Assert.True(ExtendedData.GetCount(category) >= 5);
     }
 
@@ -33,8 +33,7 @@ public sealed class ExtendedModules084Tests
         var options = new Options();
         options.UseExtendedData(extended =>
         {
-            extended.EnableCategory(ExtendedCategory.CryptoWallets);
-            extended.EnableCategory(ExtendedCategory.RegionalRolesNetherlands);
+            extended.DisableCategory(ExtendedCategory.RegionalRolesUnitedStates);
             extended.AllowedIdentifiers.Add("Rabby Wallet");
         });
         var checker = new Checker(options);
