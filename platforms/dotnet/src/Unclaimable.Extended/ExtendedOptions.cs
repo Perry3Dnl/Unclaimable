@@ -5,9 +5,17 @@ namespace Unclaimable.Extended;
 /// <summary>Controls which Extended dataset groups are registered.</summary>
 public sealed class ExtendedOptions
 {
-    private readonly HashSet<ExtendedCategory> _disabledCategories = new HashSet<ExtendedCategory>();
+    private readonly HashSet<ExtendedCategory> _disabledCategories = new HashSet<ExtendedCategory>
+    {
+        ExtendedCategory.RegionalRolesNetherlands,
+        ExtendedCategory.RegionalRolesUnitedStates,
+        ExtendedCategory.CryptoWallets,
+        ExtendedCategory.CryptoExchanges,
+        ExtendedCategory.CryptoProtocols,
+        ExtendedCategory.CryptoTokens
+    };
 
-    /// <summary>Dataset groups disabled for this registration. All groups are enabled by default.</summary>
+    /// <summary>Dataset groups disabled for this registration. The 0.7.6 groups are enabled by default; new 0.8.4 groups require EnableCategory.</summary>
     public IReadOnlyCollection<ExtendedCategory> DisabledCategories => _disabledCategories;
 
     /// <summary>Complete Extended identifiers to omit from this registration.</summary>
