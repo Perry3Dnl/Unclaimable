@@ -6,12 +6,12 @@ namespace Unclaimable.Tests;
 public sealed class ReleaseGate084Tests
 {
     [Fact]
-    public void NewExtendedGroupsAreVisibleAsDisabledUntilEnabled()
+    public void NewExtendedGroupsAreEnabledUntilExplicitlyDisabled()
     {
         var options = new ExtendedOptions();
+        Assert.Empty(options.DisabledCategories);
+        options.DisableCategory(ExtendedCategory.CryptoWallets);
         Assert.Contains(ExtendedCategory.CryptoWallets, options.DisabledCategories);
-        Assert.Contains(ExtendedCategory.RegionalRolesNetherlands, options.DisabledCategories);
-
         options.EnableCategory(ExtendedCategory.CryptoWallets);
         Assert.DoesNotContain(ExtendedCategory.CryptoWallets, options.DisabledCategories);
     }
