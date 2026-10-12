@@ -23,6 +23,7 @@ public sealed class EmbeddedProfanity084Tests
     [InlineData("bigdick")]
     [InlineData("sad_dick")]
     [InlineData("dickinson")]
+    [InlineData("dickens")]
     [InlineData("mydickname")]
     public void ExplicitRootIsRejectedAtAnyPosition(string value)
     {
