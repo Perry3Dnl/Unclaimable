@@ -17,7 +17,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Unclaimable/Unclaimable.csproj" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Data/*.json" LogicalName="Unclaimable.Extended.Data.%(Filename)%(Extension)" />
