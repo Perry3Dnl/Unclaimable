@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "category": "cryptowallets",
+  "description": "Crypto wallet provider identities. Opt in explicitly.",
+  "values": [
+    "MetaMask",
+    "Rabby Wallet",
+    "Trezor",
+    "Coinbase Wallet",
+    "Braavos"
+  ]
+}
