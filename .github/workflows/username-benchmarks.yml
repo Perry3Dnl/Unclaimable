@@ -6,6 +6,7 @@ on:
       - feature/0.8.4-context-aware-email
     paths:
       - ".github/workflows/username-benchmarks.yml"
+      - "platforms/dotnet/src/Unclaimable/**"
       - "platforms/dotnet/benchmarks/Unclaimable.Benchmarks083/**"
   workflow_dispatch:
 
