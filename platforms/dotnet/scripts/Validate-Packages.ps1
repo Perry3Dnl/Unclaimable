@@ -191,7 +191,7 @@ foreach ($package in $packages) {
         if ($id -eq "Unclaimable.FluentValidation") {
             $fluentDependency = $nuspec.SelectSingleNode("/*[local-name()='package']/*[local-name()='metadata']/*[local-name()='dependencies']//*[local-name()='dependency'][@id='FluentValidation']")
             Assert-True ($null -ne $fluentDependency) "$id does not declare its FluentValidation dependency."
-            Assert-True ($fluentDependency.GetAttribute("version") -match '^12\\.') "$id has an unexpected FluentValidation dependency version."
+            Assert-True ($fluentDependency.GetAttribute("version") -match '12\.2\.0') "$id has an unexpected FluentValidation dependency version."
         }
 
         if ($package.RequiresCoreDependency) {
