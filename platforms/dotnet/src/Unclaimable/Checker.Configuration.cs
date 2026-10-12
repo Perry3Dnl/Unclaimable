@@ -189,8 +189,6 @@ public sealed partial class Checker
 
     private Result? CheckOptionalRuleReservation(string? value, string exact)
     {
-        var obfuscationInput = NormalizeCaseAwareObfuscationInput(value, exact);
-
         if (!IsRuleException(Rule.CountryNames, value)
             && _countryRuleExact.TryGetValue(exact, out var country))
         {
@@ -257,6 +255,8 @@ public sealed partial class Checker
             }
         }
 
+        var obfuscationInput = NormalizeCaseAwareObfuscationInput(value, exact);
+
         if (_unicodeConfusableMatching
             && !IsRuleException(Rule.UnicodeConfusableMatching, value)
             && TryMatchUnicodeConfusable(
@@ -310,8 +310,6 @@ public sealed partial class Checker
 
     private Result? CheckCustomDefaultReservations(string? value, string exact)
     {
-        var obfuscationInput = NormalizeCaseAwareObfuscationInput(value, exact);
-
         if (_customExact.TryGetValue(exact, out var exactMatch))
         {
             var mapping = value is null ? null : TryCreateInputMapping(value, exact);
@@ -363,6 +361,8 @@ public sealed partial class Checker
                 originalStart,
                 originalLength);
         }
+
+        var obfuscationInput = NormalizeCaseAwareObfuscationInput(value, exact);
 
         if (_unicodeConfusableMatching
             && TryMatchUnicodeConfusable(

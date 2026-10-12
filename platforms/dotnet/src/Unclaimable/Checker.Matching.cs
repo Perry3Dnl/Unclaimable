@@ -40,8 +40,8 @@ public sealed partial class Checker
         out int startIndex,
         out int matchLength,
         out bool usedCompact,
-        Func<ReservedEntry, bool>? isEligible = null) =>
-        TryMatchPartial(exact, compact, _partialEntries, out match, out startIndex, out matchLength, out usedCompact, isEligible);
+        Rule ruleExceptions = Rule.None) =>
+        TryMatchPartial(exact, compact, _partialEntries, out match, out startIndex, out matchLength, out usedCompact, ruleExceptions);
 
     private bool TryMatchPartial(
         string exact,
@@ -51,14 +51,18 @@ public sealed partial class Checker
         out int startIndex,
         out int matchLength,
         out bool usedCompact,
-        Func<ReservedEntry, bool>? isEligible = null)
+        Rule ruleExceptions = Rule.None)
     {
         var compactPartialEnabled = !_consistentCompactMatching || _compactMatching;
         foreach (var partial in partialEntries)
         {
-            if (isEligible is not null && !isEligible(partial.Entry))
+            if (ruleExceptions != Rule.None)
             {
-                continue;
+                var sourceRule = GetRuleForReservedEntry(partial.Entry);
+                if (sourceRule.HasValue && HasRuleException(ruleExceptions, sourceRule.Value))
+                {
+                    continue;
+                }
             }
 
             var exactIndex = exact.IndexOf(partial.Exact, StringComparison.Ordinal);
