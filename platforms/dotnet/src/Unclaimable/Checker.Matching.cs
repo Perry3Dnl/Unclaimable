@@ -53,6 +53,7 @@ public sealed partial class Checker
         out bool usedCompact,
         Func<ReservedEntry, bool>? isEligible = null)
     {
+        var compactPartialEnabled = !_consistentCompactMatching || _compactMatching;
         foreach (var partial in partialEntries)
         {
             if (isEligible is not null && !isEligible(partial.Entry))
@@ -70,7 +71,6 @@ public sealed partial class Checker
                 return true;
             }
 
-            var compactPartialEnabled = !_consistentCompactMatching || _compactMatching;
             if (compactPartialEnabled && compact.Length > partial.Compact.Length)
             {
                 var compactIndex = compact.IndexOf(partial.Compact, StringComparison.Ordinal);
