@@ -18,6 +18,10 @@ The required `Unclaimable` core dependency is installed transitively.
 
 The compatibility suite compiles and runs the DI and DataAnnotations integration on every advertised target. `net11.0` support is tested against the current .NET 11 prerelease SDK until .NET 11 reaches general availability.
 
+## 0.8.4 behavior
+
+This package continues to register the same Core checker and policy through DI and DataAnnotations. The Core 0.8.4 embedded-profanity and scoped-exception corrections apply automatically; the public ASP.NET Core integration API is unchanged. Existing required-field validation remains separate from `[ClaimableUsername]`.
+
 ## 0.8.3 Core behavior
 
 ASP.NET Core uses the Core `Options` object, so the 0.8.3 correctness, lower-collision identity defaults, Unicode fixes, and matching performance improvements apply automatically.
