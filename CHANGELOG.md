@@ -1,8 +1,8 @@
 # Changelog
 
-## 0.8.4 - 2026-10-12 (release candidate)
+## 0.8.4 - 2026-10-12
 
-> **Compatibility:** The default `EmailUsage.Auto` and `EmailProtectionLevel.Strict` preserve the established strict email-validation behavior. No existing `EmailAddressPurpose` or `EmailFailureKind` values are changed. This release candidate has not yet been published.
+> **Compatibility:** The default `EmailUsage.Auto` and `EmailProtectionLevel.Strict` preserve the established strict email-validation behavior. No existing `EmailAddressPurpose` or `EmailFailureKind` values are changed. This release is published following successful tests, package validation, and release approval.
 
 ### Email policy
 - Add opt-in `EmailOptions.ForUserRegistration()`, `ForOrganizationEmail(domain)`, and `ForIssuedAddresses()` presets, plus independent email syntax, local-part reservation, and issuing-domain allowlist diagnostics.
@@ -19,7 +19,7 @@
 ### Compatibility notes
 - **Extended default-on expansion:** Applications already calling `UseExtendedData()` will receive all new regional/crypto and hate-speech categories. Disable individual groups explicitly if their identifiers are not appropriate for a given application.
 - **Core matching change:** Embedded matches for an additional curated profanity root now reject some previously accepted identifiers. Scoped rule exceptions skip only the permitted match, not independent reserved terms.
-- All five packages are version-aligned at 0.8.4; NuGet publication remains gated on successful tests, packaging checks, and release approval.
+- All five packages are version-aligned at 0.8.4; NuGet publication follows successful tests, package validation, and release approval.
 
 ### Optional Extended datasets
 - Add six Extended groups for Netherlands and United States public-office titles and for crypto wallets, exchanges, protocols and tokens (30 curated identifiers). All groups are included by default when an application calls `UseExtendedData()`; each can be disabled individually.
