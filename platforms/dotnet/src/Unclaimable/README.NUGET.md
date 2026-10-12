@@ -32,6 +32,14 @@ The Core package targets `netstandard2.0` and is intended for portable applicati
 
 No MAUI-, Blazor-, Avalonia-, or Uno-specific adapter package is required for the Core checker; NuGet resolves the portable asset automatically.
 
+## What's new in 0.8.4
+
+- Curated default partial profanity detection now identifies additional embedded forms in larger identifiers. This intentionally rejects some identifiers that 0.8.3 allowed. Existing `Rule.Profanity` and `Rule.PartialMatching` controls still apply.
+- A scoped profanity exception no longer hides a different reserved partial match in the same identifier; regression tests cover both match orders.
+- Additional diagnostics, malformed-input and per-username benchmark fixtures support release verification.
+
+The Core package remains `netstandard2.0` and has no FluentValidation dependency. Null input is claimable by design; use required-field validation separately.
+
 ## What's new in 0.8.3
 
 0.8.3 is a correctness and performance hardening release. It fixes supplementary Unicode combining-mark handling, compatibility-normalized number detection, scoped exception normalization, repeated-run edit accounting, internal reservation-prefix collisions, and normalized duplicate loading.
