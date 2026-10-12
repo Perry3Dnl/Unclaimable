@@ -1,0 +1,23 @@
+{
+  "schema": 1,
+  "category": "slangprofanity",
+  "description": "Additional en single-word vulgarity and slang entries for v0.8.5. Reviewed candidate set; further native-speaker review recommended.",
+  "language": "en",
+  "values": [
+    "bollocks",
+    "buggery",
+    "crappy",
+    "shite",
+    "shitty",
+    "pissing",
+    "arsey",
+    "wankers",
+    "twats",
+    "sluts",
+    "douche",
+    "douches",
+    "jerks",
+    "cretins",
+    "imbeciles"
+  ]
+}
