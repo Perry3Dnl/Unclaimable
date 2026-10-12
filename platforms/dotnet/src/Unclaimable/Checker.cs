@@ -40,7 +40,6 @@ public sealed partial class Checker : IChecker
             Entry = entry;
         }
 
-        public bool SuffixOnly { get; }
         public string Exact { get; }
         public string Compact { get; }
         public ReservedEntry Entry { get; }
