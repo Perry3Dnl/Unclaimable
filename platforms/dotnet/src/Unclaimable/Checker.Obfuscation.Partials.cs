@@ -12,8 +12,9 @@ public sealed partial class Checker
         out int? matchStartIndex,
         out int? matchLength)
     {
-        foreach (var partial in partialEntries)
+        for (var entryIndex = 0; entryIndex < partialEntries.Count; entryIndex++)
         {
+            var partial = partialEntries[entryIndex];
             var target = preserveNonCompactCharacters ? partial.Exact : partial.Compact;
             var editBudget = GetObfuscationEditBudget(partial.Entry, target.Length);
 
