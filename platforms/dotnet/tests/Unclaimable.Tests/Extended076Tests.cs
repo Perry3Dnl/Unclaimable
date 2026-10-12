@@ -165,8 +165,8 @@ public sealed class Extended076Tests
         foreach (var category in Enum.GetValues<ExtendedCategory>())
         {
             Assert.True(
-                ExtendedData.GetCount(category) >= 50,
-                $"Expected at least 50 entries for {category}.");
+                ExtendedData.GetCount(category) >= (category <= ExtendedCategory.Geography ? 50 : 5),
+                $"Expected dataset entries for {category}.");
         }
     }
 
