@@ -2,12 +2,12 @@
 
 Email-address identity and protected-domain impersonation checks.
 
-**Package version: 0.8.3**
+**Package version: 0.8.4**
 
 ## Install
 
 ```bash
-dotnet add package Unclaimable.Email --version 0.8.3
+dotnet add package Unclaimable.Email --version 0.8.4
 ```
 
 ## Cross-platform app compatibility
