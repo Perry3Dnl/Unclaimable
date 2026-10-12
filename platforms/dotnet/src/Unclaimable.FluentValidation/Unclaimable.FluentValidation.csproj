@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);1591</WarningsAsErrors>
+    <PackageId>Unclaimable.FluentValidation</PackageId>
+    <Version>$(UnclaimableVersion)</Version>
+    <Description>FluentValidation rules for Unclaimable username and identifier checks.</Description>
+    <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
+    <PackageIcon>unclaimable-icon.png</PackageIcon>
+    <PackageTags>username;validation;security;reserved-names;dotnet;fluentvalidation</PackageTags>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Unclaimable/Unclaimable.csproj" />
+    <PackageReference Include="FluentValidation" Version="12.2.0" />
+    <None Include="README.NUGET.md" Pack="true" PackagePath="/" />
+    <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
+  </ItemGroup>
+</Project>

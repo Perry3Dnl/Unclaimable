@@ -18,6 +18,37 @@ Prevent reserved, protected, misleading, degenerate, and unsafe identifiers befo
 
 [**NuGet**](https://www.nuget.org/packages/Unclaimable) · [**Configuration guide**](docs/CONFIGURATION.md) · [**Changelog**](CHANGELOG.md)
 
+## 0.8.4: email policies, Extended datasets and FluentValidation (release candidate)
+
+0.8.4 introduces the optional **Unclaimable.FluentValidation** connector for .NET 8+ (FluentValidation 12) with `MustBeClaimable()` and `MustNotBeReserved()`. The Core package remains free of that dependency.
+
+**Email:** new `ForUserRegistration()`, `ForOrganizationEmail(domain)` and `ForIssuedAddresses()` presets; strict/relaxed address-purpose policies; separate syntax, local-part, issuing-domain and domain-lookalike diagnostics; a pinned offline Public Suffix List; and more IDN/domain edge-case coverage. Existing defaults remain strict.
+
+**Extended:** six new regional public-office and crypto dataset categories, plus a curated hate-speech category. **Installing Extended alone changes nothing; calling `UseExtendedData()` enables all categories, including the new ones by default.** Applications upgrading from 0.8.3 should review newly blocked identifiers and selectively use `DisableCategory(...)` or exact exceptions.
+
+**Core:** a curated embedded-profanity matching correction, hardening of scoped exceptions so an exempted match cannot hide an independent reserved match, and additional adversarial tests.
+
+### 0.8.4 performance benchmarks
+
+BenchmarkDotNet results for the 0.8.4 single-username benchmark suite. Times are **mean per operation**; allocations measure managed bytes per operation. Benchmarks measure a warmed-up checker, **not initialization or dataset loading**. Ratios are relative to `CheckOrdinaryUsername` in this run (1.00×); they are **not** speedups relative to 0.8.3.
+
+| Scenario | Boolean API mean | Boolean API allocated | Diagnostic `Check` mean | Diagnostic `Check` allocated |
+| --- | ---: | ---: | ---: | ---: |
+| Ordinary accepted username | 6.83 µs | 0 B reported | 6.95 µs | 104 B |
+| Exact reserved username | 0.44 µs | 0 B reported | 0.53 µs | 104 B |
+| Embedded profanity | 4.77 µs | 0 B reported | 4.86 µs | 104 B |
+| Full-scan miss | 177.80 µs | 0 B reported | 183.42 µs | 104 B |
+| Late partial match | 114.87 µs | 0 B reported | 110.91 µs | 104 B |
+| High-sensitivity near miss | 413.48 µs | 1,520 B | 418.25 µs | 1,624 B |
+
+The ordinary, exact-reserved, embedded-profanity, full-scan-miss and late-partial-match **boolean paths reported no managed allocation** at BenchmarkDotNet's measurement resolution. The diagnostic `Check` path allocated 104 B per call in the first five scenarios. The High-sensitivity near miss remains the most expensive measured scenario (approximately 0.41–0.42 ms, with 1.5–1.6 KB allocated).
+
+**Interpretation:** the result is strong on allocation minimization for ordinary boolean checks, but full-scan misses and High-sensitivity near misses have substantially higher latency. These figures are absolute 0.8.4 measurements, **not a controlled 0.8.3-versus-0.8.4 comparison**, so no version-over-version performance improvement is claimed. Results depend on the runner, CPU, .NET version and configuration; the full output should be retained as a workflow artifact alongside release evidence. See [benchmark methodology](docs/SINGLE_USERNAME_BENCHMARKS.md).
+
+**Release state:** This is an unreleased development candidate. Do not interpret the version references in source documentation as packages already available on NuGet. Benchmark results and final CI validation must be reviewed before publishing.
+
+See the [0.8.4 changelog](CHANGELOG.md) for migration considerations and individual package READMEs for their APIs.
+
 ## 0.8.3: correctness, lower false positives, and lower allocations
 
 **Released: 2026-10-09**

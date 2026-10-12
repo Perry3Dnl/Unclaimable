@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "category": "cryptoprotocols",
+  "description": "DeFi protocol identities. Opt in explicitly.",
+  "values": [
+    "Curve Finance",
+    "Lido Finance",
+    "Aave Protocol",
+    "Uniswap Protocol",
+    "Compound Protocol"
+  ]
+}

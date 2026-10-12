@@ -26,6 +26,7 @@
     <ProjectReference Include="../../src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj" />
     <ProjectReference Include="../../src/Unclaimable.Email/Unclaimable.Email.csproj" />
     <ProjectReference Include="../../src/Unclaimable.Extended/Unclaimable.Extended.csproj" />
+    <ProjectReference Include="../../src/Unclaimable.FluentValidation/Unclaimable.FluentValidation.csproj" />
   </ItemGroup>
 
   <ItemGroup>

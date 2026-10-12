@@ -1,0 +1,56 @@
+name: Username Latency Benchmarks
+
+on:
+  push:
+    branches:
+      - feature/0.8.4-context-aware-email
+    paths:
+      - ".github/workflows/username-benchmarks.yml"
+      - "platforms/dotnet/src/Unclaimable/**"
+      - "platforms/dotnet/benchmarks/Unclaimable.Benchmarks083/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  single-username-latency:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Host information
+        run: |
+          dotnet --info
+          uname -a
+          lscpu
+
+      - name: Run single-username BenchmarkDotNet suite
+        run: >-
+          dotnet run
+          --project platforms/dotnet/benchmarks/Unclaimable.Benchmarks083/Unclaimable.Benchmarks083.csproj
+          --configuration Release
+          --
+          --filter '*SingleUsername084Benchmarks*'
+          --exporters json csv markdown
+
+      - name: Publish benchmark summary in Actions
+        if: success()
+        run: |
+          cat BenchmarkDotNet.Artifacts/results/SingleUsername084Benchmarks-report-github.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload raw benchmark results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: username-latency-benchmarks
+          path: BenchmarkDotNet.Artifacts/**
+          if-no-files-found: warn
+          retention-days: 30

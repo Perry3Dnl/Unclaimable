@@ -93,6 +93,13 @@ internal static class ExtendedDataset
             case "crypto": category = ExtendedCategory.Crypto; return true;
             case "platforms": category = ExtendedCategory.Platforms; return true;
             case "geography": category = ExtendedCategory.Geography; return true;
+            case "regionalrolesnetherlands": category = ExtendedCategory.RegionalRolesNetherlands; return true;
+            case "regionalrolesunitedstates": category = ExtendedCategory.RegionalRolesUnitedStates; return true;
+            case "cryptowallets": category = ExtendedCategory.CryptoWallets; return true;
+            case "cryptoexchanges": category = ExtendedCategory.CryptoExchanges; return true;
+            case "cryptoprotocols": category = ExtendedCategory.CryptoProtocols; return true;
+            case "cryptotokens": category = ExtendedCategory.CryptoTokens; return true;
+            case "hatespeech": category = ExtendedCategory.HateSpeech; return true;
             default: category = default; return false;
         }
     }

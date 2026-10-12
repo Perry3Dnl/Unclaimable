@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - "release/0.7.2"
+      - "feature/0.8.4-context-aware-email"
     paths:
       - "platforms/dotnet/src/**"
       - "platforms/dotnet/benchmarks/**"
@@ -16,6 +17,7 @@ permissions:
 jobs:
   benchmark:
     runs-on: ubuntu-latest
+    timeout-minutes: 35
 
     steps:
       - name: Checkout
@@ -30,6 +32,9 @@ jobs:
 
       - name: Run benchmarks
         run: dotnet run --project platforms/dotnet/benchmarks/Unclaimable.Benchmarks/Unclaimable.Benchmarks.csproj --configuration Release
+
+      - name: Measure partial matching at 0 to 10k entries
+        run: dotnet run --project platforms/dotnet/benchmarks/Unclaimable.Benchmarks083/Unclaimable.Benchmarks083.csproj --configuration Release -- --filter "*PartialMatchingScale084Benchmarks*"
 
       - name: Upload benchmark results
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

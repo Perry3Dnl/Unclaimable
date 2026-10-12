@@ -257,9 +257,7 @@ public sealed partial class Checker : IChecker
                 continue;
             }
 
-            Add(
-                entry,
-                includeInPartialMatching: entry.SafePartial || (isProfanity && options.ProfanityPartialMatching));
+            Add(entry, includeInPartialMatching: entry.SafePartial || (isProfanity && options.ProfanityPartialMatching));
         }
 
         foreach (var value in options.AdditionalReserved)
@@ -267,12 +265,12 @@ public sealed partial class Checker : IChecker
             AddCustomDefault(new ReservedEntry(value, "custom"));
         }
 
-        foreach (var reservation in options.Reservations)
+        foreach (var reservation in options.ConfiguredReservations)
         {
             var entry = new ReservedEntry(reservation.Value, reservation.Category);
             if (reservation.Matching == ReservedMatchMode.Exact)
             {
-                AddExactCustom(entry, reservation.IsInternal);
+                AddExactCustom(entry);
             }
             else
             {
@@ -282,6 +280,7 @@ public sealed partial class Checker : IChecker
             }
         }
 
+        CaptureOptionalRuleReservations(options);
         CaptureAllowedIdentifiers(options);
 
         _partialEntries.Sort((left, right) => right.Compact.Length.CompareTo(left.Compact.Length));
@@ -296,12 +295,12 @@ public sealed partial class Checker : IChecker
     /// Returns whether the value is rejected. Structural validation failures are included.
     /// Null is accepted; use required-field validation separately when null is not allowed.
     /// </summary>
-    public bool IsReserved(string? value) => Check(value).IsReserved;
+    public bool IsReserved(string? value) => value is not null && IsReservedCore(value);
 
     /// <summary>
     /// Returns whether the value is claimable. Null is accepted; required-field validation remains separate.
     /// </summary>
-    public bool IsClaimable(string? value) => !Check(value).IsReserved;
+    public bool IsClaimable(string? value) => value is null || !IsReservedCore(value);
 
     /// <summary>Returns the first validation or reserved-name result.</summary>
     public Result Check(string? value)
@@ -363,7 +362,6 @@ public sealed partial class Checker : IChecker
         }
 
         var ruleExceptions = GetRuleExceptions(value);
-        var obfuscationInput = NormalizeCaseAwareObfuscationInput(value, exact);
 
         var exactCustomResult = CheckExactCustomReservation(value, exact);
         if (exactCustomResult is not null)
@@ -382,8 +380,14 @@ public sealed partial class Checker : IChecker
             var sourceRule = GetRuleForReservedEntry(exactMatch);
             if (!sourceRule.HasValue || !HasRuleException(ruleExceptions, sourceRule.Value))
             {
-                var mapping = value is null ? null : TryCreateInputMapping(value, exact);
-            TryMapOriginalSpan(mapping?.ExactToOriginal, 0, exact.Length, out var originalStart, out var originalLength);
+                MapOriginalSpanFromInput(
+                    value,
+                    exact,
+                    useCompactMapping: false,
+                    0,
+                    exact.Length,
+                    out var originalStart,
+                    out var originalLength);
                 return CreateReservedResult(
                     value,
                     exactMatch,
@@ -404,8 +408,14 @@ public sealed partial class Checker : IChecker
                 var sourceRule = GetRuleForReservedEntry(compactMatch);
                 if (!sourceRule.HasValue || !HasRuleException(ruleExceptions, sourceRule.Value))
                 {
-                    var mapping = value is null ? null : TryCreateInputMapping(value, exact);
-                TryMapOriginalSpan(mapping?.CompactToOriginal, 0, compact.Length, out var originalStart, out var originalLength);
+                    MapOriginalSpanFromInput(
+                        value,
+                        exact,
+                        useCompactMapping: true,
+                        0,
+                        compact.Length,
+                        out var originalStart,
+                        out var originalLength);
                     return CreateReservedResult(
                         value,
                         compactMatch,
@@ -424,14 +434,21 @@ public sealed partial class Checker : IChecker
             int partialStart;
             int partialLength;
             bool usedCompact;
-            if (TryMatchPartial(exact, compact, out partialMatch, out partialStart, out partialLength, out usedCompact))
+            if (TryMatchPartial(
+                    exact, compact, out partialMatch, out partialStart, out partialLength, out usedCompact,
+                    ruleExceptions))
             {
                 var sourceRule = GetRuleForReservedEntry(partialMatch!);
                 if (!sourceRule.HasValue || !HasRuleException(ruleExceptions, sourceRule.Value))
                 {
-                    var mapping = value is null ? null : TryCreateInputMapping(value, exact);
-                var sourceMap = usedCompact ? mapping?.CompactToOriginal : mapping?.ExactToOriginal;
-                TryMapOriginalSpan(sourceMap, partialStart, partialLength, out var originalStart, out var originalLength);
+                    MapOriginalSpanFromInput(
+                        value,
+                        exact,
+                        useCompactMapping: usedCompact,
+                        partialStart,
+                        partialLength,
+                        out var originalStart,
+                        out var originalLength);
                     return CreateReservedResult(
                         value,
                         partialMatch!,
@@ -443,6 +460,12 @@ public sealed partial class Checker : IChecker
                 }
             }
         }
+
+        // Only prepare case-sensitive obfuscation input after exact, compact and partial checks miss.
+        var obfuscationInput = (_unicodeConfusableMatching && !HasRuleException(ruleExceptions, Rule.UnicodeConfusableMatching))
+            || (_obfuscationMatching && !HasRuleException(ruleExceptions, Rule.ObfuscationMatching))
+            ? NormalizeCaseAwareObfuscationInput(value, exact)
+            : exact;
 
         if (_unicodeConfusableMatching && !HasRuleException(ruleExceptions, Rule.UnicodeConfusableMatching))
         {

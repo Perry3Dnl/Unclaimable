@@ -40,8 +40,9 @@ public sealed partial class Checker
 
         if (_partialMatching)
         {
-            foreach (var partial in index.PartialEntries)
+            for (var entryIndex = 0; entryIndex < index.PartialEntries.Count; entryIndex++)
             {
+                var partial = index.PartialEntries[entryIndex];
                 var target = preserveNonCompactCharacters ? partial.Exact : partial.Compact;
                 if (value.Length <= target.Length)
                 {

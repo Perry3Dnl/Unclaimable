@@ -11,7 +11,10 @@ public sealed partial class Checker
     private readonly Pattern _enabledPatterns;
     private readonly int _repeatedPatternMinimumLength;
 
-    private bool TryFindFirstPatternViolation(string? value, out Result? violation)
+    private bool TryFindFirstPatternViolation(
+        string? value,
+        out Result? violation,
+        bool captureResult = true)
     {
         violation = null;
         var patternText = NormalizePatternText(value);
@@ -24,31 +27,46 @@ public sealed partial class Checker
 
         if (IsPatternEnabled(Pattern.NumericOnly) && !HasPatternException(patternExceptions, Pattern.NumericOnly) && IsNumericOnlyPattern(patternText))
         {
-            violation = CreatePatternResult(value!, MatchKind.NumericOnly);
+            if (captureResult)
+            {
+                violation = CreatePatternResult(value!, MatchKind.NumericOnly);
+            }
             return true;
         }
 
         if (IsPatternEnabled(Pattern.AsciiArt) && !HasPatternException(patternExceptions, Pattern.AsciiArt) && IsAsciiArtPattern(patternText))
         {
-            violation = CreatePatternResult(value!, MatchKind.AsciiArt);
+            if (captureResult)
+            {
+                violation = CreatePatternResult(value!, MatchKind.AsciiArt);
+            }
             return true;
         }
 
         if (IsPatternEnabled(Pattern.SymbolOnly) && !HasPatternException(patternExceptions, Pattern.SymbolOnly) && IsSymbolOnlyPattern(patternText))
         {
-            violation = CreatePatternResult(value!, MatchKind.SymbolOnly);
+            if (captureResult)
+            {
+                violation = CreatePatternResult(value!, MatchKind.SymbolOnly);
+            }
             return true;
         }
 
         if (IsPatternEnabled(Pattern.Repeated) && !HasPatternException(patternExceptions, Pattern.Repeated) && IsRepeatedPattern(patternText))
         {
-            violation = CreatePatternResult(value!, MatchKind.RepeatedPattern);
+            if (captureResult)
+            {
+                violation = CreatePatternResult(value!, MatchKind.RepeatedPattern);
+            }
             return true;
         }
 
         if (IsPatternEnabled(Pattern.UppercaseOnly) && !HasPatternException(patternExceptions, Pattern.UppercaseOnly) && IsUppercaseOnlyPattern(patternText))
         {
-            violation = CreatePatternResult(value!, MatchKind.UppercaseOnly);
+            if (captureResult)
+            {
+                violation = CreatePatternResult(value!, MatchKind.UppercaseOnly);
+            }
             return true;
         }
 

@@ -57,10 +57,15 @@ public sealed class EmailChecker : IEmailChecker
     private readonly global::Unclaimable.IChecker _localPartChecker;
     private readonly ProtectedDomain[] _protectedDomains;
     private readonly string[] _issuingDomains;
+    private readonly bool _allowIssuingDomainSubdomains;
+    private readonly bool _enforceIssuingDomainsForExistingAddresses;
     private readonly bool _detectUnicodeLookalikes;
     private readonly bool _detectTypographicalLookalikes;
     private readonly bool _detectProtectedLabelReuse;
     private readonly int _maximumDomainEditDistance;
+    private readonly int _maximumInputLength;
+    private readonly EmailUsage _emailUsage;
+    private readonly EmailProtectionLevel _emailProtectionLevel;
 
     /// <summary>Creates an email checker with default email options.</summary>
     public EmailChecker()
@@ -98,6 +103,21 @@ public sealed class EmailChecker : IEmailChecker
                 "MaximumDomainEditDistance must be between 0 and 2.");
         }
 
+        if (!Enum.IsDefined(typeof(EmailUsage), options.EmailUsage))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.EmailUsage));
+        }
+        if (!Enum.IsDefined(typeof(EmailProtectionLevel), options.EmailProtectionLevel))
+        {
+            throw new ArgumentOutOfRangeException(nameof(options.EmailProtectionLevel));
+        }
+        if (options.MaximumInputLength < 1)
+            throw new ArgumentOutOfRangeException(nameof(options.MaximumInputLength));
+        _maximumInputLength = options.MaximumInputLength;
+        _emailUsage = options.EmailUsage;
+        _emailProtectionLevel = options.EmailProtectionLevel;
+        _allowIssuingDomainSubdomains = options.AllowIssuingDomainSubdomains;
+        _enforceIssuingDomainsForExistingAddresses = options.EnforceIssuingDomainsForExistingAddresses;
         _detectUnicodeLookalikes = options.DetectUnicodeLookalikes;
         _detectTypographicalLookalikes = options.DetectTypographicalLookalikes;
         _detectProtectedLabelReuse = options.DetectProtectedLabelReuse;
@@ -134,6 +154,19 @@ public sealed class EmailChecker : IEmailChecker
             throw new ArgumentOutOfRangeException(nameof(purpose));
         }
 
+        var effectivePurpose = _emailUsage == EmailUsage.Auto
+            ? purpose
+            : (_emailUsage == EmailUsage.IssuedAddress
+                ? EmailAddressPurpose.NewAddress
+                : EmailAddressPurpose.ExistingAddress);
+
+        if (address != null && address.Length > _maximumInputLength)
+        {
+            return new EmailResult(address, purpose, null, null,
+                EmailFailureKind.InvalidFormat, null, DomainLookalikeKind.None, null,
+                effectivePurpose: effectivePurpose);
+        }
+
         ParsedAddress? parsed;
         EmailFailureKind syntaxFailure;
         string? localPart;
@@ -147,22 +180,28 @@ public sealed class EmailChecker : IEmailChecker
                 syntaxFailure,
                 null,
                 DomainLookalikeKind.None,
-                null);
+                null,
+                effectivePurpose: effectivePurpose);
         }
 
+        var relaxedExisting = _emailProtectionLevel == EmailProtectionLevel.Relaxed
+            && effectivePurpose == EmailAddressPurpose.ExistingAddress;
         var localPartResult = _localPartChecker.Check(parsed!.LocalPart);
         var domainAssessment = AssessDomain(parsed.OriginalDomain, parsed.Domain);
+        var enforceIssuingDomains =
+            effectivePurpose == EmailAddressPurpose.NewAddress
+            || _enforceIssuingDomainsForExistingAddresses;
         var approvedIssuingDomain =
-            purpose != EmailAddressPurpose.NewAddress
+            !enforceIssuingDomains
             || _issuingDomains.Length == 0
-            || IsWithinConfiguredDomain(parsed.Domain, _issuingDomains);
+            || IsWithinConfiguredDomain(parsed.Domain, _issuingDomains, _allowIssuingDomainSubdomains);
 
         EmailFailureKind failureKind;
-        if (localPartResult.IsReserved)
+        if (localPartResult.IsReserved && !relaxedExisting)
         {
             failureKind = EmailFailureKind.ReservedLocalPart;
         }
-        else if (domainAssessment.Kind != DomainLookalikeKind.None)
+        else if (domainAssessment.Kind != DomainLookalikeKind.None && !relaxedExisting)
         {
             failureKind = EmailFailureKind.SuspiciousDomain;
         }
@@ -183,7 +222,9 @@ public sealed class EmailChecker : IEmailChecker
             failureKind,
             localPartResult,
             domainAssessment.Kind,
-            domainAssessment.MatchedProtectedDomain);
+            domainAssessment.MatchedProtectedDomain,
+            approvedIssuingDomain,
+            effectivePurpose);
     }
 
     private DomainAssessment AssessDomain(string originalDomain, string normalizedDomain)
@@ -193,14 +234,8 @@ public sealed class EmailChecker : IEmailChecker
             return DomainAssessment.Safe;
         }
 
-        foreach (var protectedDomain in _protectedDomains)
-        {
-            if (IsSameOrSubdomain(normalizedDomain, protectedDomain.Domain))
-            {
-                return DomainAssessment.Safe;
-            }
-        }
-
+        // Trust of one configured domain must not suppress impersonation of
+        // another configured domain elsewhere in the same hostname.
         foreach (var protectedDomain in _protectedDomains)
         {
             if (normalizedDomain.StartsWith(protectedDomain.Domain + ".", StringComparison.Ordinal))
@@ -208,6 +243,16 @@ public sealed class EmailChecker : IEmailChecker
                 return new DomainAssessment(
                     DomainLookalikeKind.EmbeddedProtectedDomain,
                     protectedDomain.Domain);
+            }
+        }
+
+        // A genuine subdomain of a configured protected domain remains trusted
+        // unless it embeds another protected domain's name (checked above).
+        foreach (var protectedDomain in _protectedDomains)
+        {
+            if (IsSameOrSubdomain(normalizedDomain, protectedDomain.Domain))
+            {
+                return DomainAssessment.Safe;
             }
         }
 
@@ -598,11 +643,15 @@ public sealed class EmailChecker : IEmailChecker
         return true;
     }
 
-    private static bool IsWithinConfiguredDomain(string candidate, string[] configuredDomains)
+    private static bool IsWithinConfiguredDomain(
+        string candidate,
+        string[] configuredDomains,
+        bool allowSubdomains)
     {
         for (var index = 0; index < configuredDomains.Length; index++)
         {
-            if (IsSameOrSubdomain(candidate, configuredDomains[index]))
+            if (string.Equals(candidate, configuredDomains[index], StringComparison.Ordinal)
+                || (allowSubdomains && IsSameOrSubdomain(candidate, configuredDomains[index])))
             {
                 return true;
             }
@@ -618,49 +667,25 @@ public sealed class EmailChecker : IEmailChecker
                 && candidate.EndsWith("." + configuredDomain, StringComparison.Ordinal));
     }
 
-    private static string GetRegistrantLabel(string domain)
-    {
-        var labels = domain.Split('.');
-        var labelIndex = labels.Length - 2;
-
-        if (labels.Length >= 3 && IsCommonSecondLevelPublicSuffix(labels[labels.Length - 2], labels[labels.Length - 1]))
-        {
-            labelIndex--;
-        }
-
-        return labels[labelIndex];
-    }
-
-    private static bool IsCommonSecondLevelPublicSuffix(string secondLevel, string topLevel)
-    {
-        var suffix = secondLevel + "." + topLevel;
-        switch (suffix)
-        {
-            case "co.uk":
-            case "org.uk":
-            case "gov.uk":
-            case "ac.uk":
-            case "com.au":
-            case "net.au":
-            case "org.au":
-            case "co.nz":
-            case "co.jp":
-            case "com.br":
-            case "com.mx":
-            case "com.sg":
-            case "com.tr":
-                return true;
-            default:
-                return false;
-        }
-    }
+    private static string GetRegistrantLabel(string domain) =>
+        PublicSuffixResolver.GetRegistrantLabel(domain);
 
     private static bool AreDomainLabelsVisuallyEquivalent(
         string candidateLabel,
         string protectedLabel,
         string protectedSkeleton)
     {
-        var candidateUnicode = new IdnMapping().GetUnicode(candidateLabel);
+        string candidateUnicode;
+        try
+        {
+            candidateUnicode = new IdnMapping().GetUnicode(candidateLabel);
+        }
+        catch (ArgumentException)
+        {
+            // A platform-specific IDNA decoding failure must not make a
+            // syntactically validated mailbox crash during lookalike checks.
+            return false;
+        }
         bool changed;
         var candidateSkeleton = global::Unclaimable.ConfusableNormalizer.CreateSkeleton(
             candidateUnicode,

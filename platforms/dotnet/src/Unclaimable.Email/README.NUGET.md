@@ -2,12 +2,12 @@
 
 Email-address identity and protected-domain impersonation checks.
 
-**Package version: 0.8.3**
+**Package version: 0.8.4**
 
 ## Install
 
 ```bash
-dotnet add package Unclaimable.Email --version 0.8.3
+dotnet add package Unclaimable.Email --version 0.8.4
 ```
 
 ## Cross-platform app compatibility
@@ -145,3 +145,90 @@ For example, `admin@lidi.nl` can report a reserved local part while also reporti
 The package validates practical unquoted mailbox local parts plus DNS/IDN domain shape.
 
 It does **not** perform DNS or MX lookups and does not prove that a domain or mailbox exists.
+
+### Issuing-domain allowlist scope (0.8.4)
+
+`IssuingDomains` normally restricts **newly issued** email addresses, not externally existing
+addresses. Two optional settings make its scope explicit while retaining the old defaults:
+
+```csharp
+var options = new EmailOptions
+{
+    AllowIssuingDomainSubdomains = false,
+    EnforceIssuingDomainsForExistingAddresses = true
+};
+options.IssuingDomains.Add("google.com");
+
+var checker = new EmailChecker(options);
+var allowed = checker.CheckExistingAddress("employee@google.com").IsAllowed;
+```
+
+With this configuration, the **domain-policy** result accepts `google.com` and rejects
+`gmail.com`, `microsoft.com`, and `sub.google.com`.
+Other enabled local-part, syntax, and domain-lookalike checks can still reject an address.
+
+- `AllowIssuingDomainSubdomains = true` (default): allow exact issuing domains and real subdomains.
+- `AllowIssuingDomainSubdomains = false`: only allow exact issuing domains.
+- `EnforceIssuingDomainsForExistingAddresses = false` (default): existing addresses are not subject to the issuing-domain allowlist.
+- `EnforceIssuingDomainsForExistingAddresses = true`: also apply the allowlist to `CheckExistingAddress`.
+
+`IssuingDomains` are still automatically included in protected-domain checks. This
+allowlist controls accepted issuing domains; it does not disable other protections.
+
+### Context-aware existing email validation (0.8.4)
+
+The defaults preserve 0.8.3's strict behavior. To accept externally owned
+email addresses without automatically denying reserved-looking mailbox names
+or lookalike domains:
+
+```csharp
+var options = new EmailOptions
+{
+    EmailUsage = EmailUsage.ExistingAddress,
+    EmailProtectionLevel = EmailProtectionLevel.Relaxed
+};
+var checker = new EmailChecker(options);
+var result = checker.CheckExistingAddress("admin@example.com");
+bool allowed = result.IsAllowed; // true, assuming valid syntax and no explicit domain allowlist
+bool suspicious = result.IsSuspiciousDomain; // remains available independently
+```
+
+`EmailUsage.Auto` (default) retains the purpose passed to `Check`,
+`CheckExistingAddress`, or `CheckNewAddress`. Selecting `ExistingAddress`
+or `IssuedAddress` overrides the caller-provided purpose when selecting policy.
+`EmailProtectionLevel.Strict` (default) preserves historical enforcement.
+`Relaxed` applies only to externally owned addresses: syntax validation,
+explicit issuing-domain restrictions, and all full issuing-address checks remain
+enforced. Reserved local-part and protected-domain findings are still included
+in `LocalPartResult` and `DomainLookalikeKind`.
+
+The suffix-aware protected-domain matcher uses a pinned full offline Public Suffix List
+snapshot (ICANN and private domains) with wildcard and exception support.
+The embedded upstream list is licensed under MPL-2.0, separately from the package.
+
+Unicode-confusable detection remains a selected mapping set rather than complete
+UTS #39 conformance. Combining marks may be removed while constructing matching
+skeletons; evaluate strict modes for false positives with internationalized inputs.
+
+### 0.8.4 policy presets and diagnostics
+
+```csharp
+var signup = EmailOptions.ForUserRegistration(); // ExistingAddress + Relaxed
+var company = EmailOptions.ForOrganizationEmail("example.com"); // exact domain
+var issued = EmailOptions.ForIssuedAddresses(); // strict issued identities
+
+var checker = new EmailChecker(signup);
+var result = checker.CheckExistingAddress("support@example.com");
+bool accepted = result.IsAllowed;
+bool syntaxValid = result.IsSyntaxValid;
+bool reservedLocalPart = result.IsLocalPartReserved;
+bool domainInAllowlist = result.IsIssuingDomainAllowed;
+bool domainResemblesProtected = result.IsSuspiciousDomain;
+```
+
+These are opt-in convenience presets. The default constructor remains strict.
+For an additional bound on work before email parsing, set
+`EmailOptions.MaximumInputLength` to a positive UTF-16 code-unit limit.
+Its default is `int.MaxValue` for compatibility; existing mailbox
+syntax limits still apply regardless of this option.
+The package does not establish DNS, MX, mailbox existence, or email ownership.

@@ -37,6 +37,115 @@ public sealed partial class Checker
         return false;
     }
 
+    private static void MapOriginalSpanFromInput(
+        string? input,
+        string exact,
+        bool useCompactMapping,
+        int transformedStart,
+        int transformedLength,
+        out int? originalStart,
+        out int? originalLength)
+    {
+        if (input is not null
+            && TryMapSimpleAsciiSpan(
+                input,
+                exact,
+                useCompactMapping,
+                transformedStart,
+                transformedLength,
+                out originalStart,
+                out originalLength))
+        {
+            return;
+        }
+
+        var mapping = input is null ? null : TryCreateInputMapping(input, exact);
+        var sourceMap = useCompactMapping ? mapping?.CompactToOriginal : mapping?.ExactToOriginal;
+        TryMapOriginalSpan(
+            sourceMap,
+            transformedStart,
+            transformedLength,
+            out originalStart,
+            out originalLength);
+    }
+
+    private static bool TryMapSimpleAsciiSpan(
+        string input,
+        string exact,
+        bool useCompactMapping,
+        int transformedStart,
+        int transformedLength,
+        out int? originalStart,
+        out int? originalLength)
+    {
+        originalStart = null;
+        originalLength = null;
+
+        if (input.Length != exact.Length
+            || transformedLength <= 0
+            || transformedStart < 0)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < input.Length; index++)
+        {
+            var character = input[index];
+            if (character > 0x7F || char.ToLowerInvariant(character) != exact[index])
+            {
+                return false;
+            }
+        }
+
+        if (!useCompactMapping)
+        {
+            if (transformedStart + transformedLength > exact.Length)
+            {
+                return false;
+            }
+
+            originalStart = transformedStart;
+            originalLength = transformedLength;
+            return true;
+        }
+
+        var compactStart = transformedStart;
+        var compactEnd = transformedStart + transformedLength - 1;
+        var compactIndex = 0;
+        var firstOriginalIndex = -1;
+        var lastOriginalIndex = -1;
+
+        for (var originalIndex = 0; originalIndex < input.Length; originalIndex++)
+        {
+            if (!char.IsLetterOrDigit(input[originalIndex]))
+            {
+                continue;
+            }
+
+            if (compactIndex == compactStart)
+            {
+                firstOriginalIndex = originalIndex;
+            }
+
+            if (compactIndex == compactEnd)
+            {
+                lastOriginalIndex = originalIndex;
+                break;
+            }
+
+            compactIndex++;
+        }
+
+        if (firstOriginalIndex < 0 || lastOriginalIndex < firstOriginalIndex)
+        {
+            return false;
+        }
+
+        originalStart = firstOriginalIndex;
+        originalLength = lastOriginalIndex - firstOriginalIndex + 1;
+        return true;
+    }
+
     private static InputMapping? TryCreateInputMapping(string input, string exact)
     {
         // The overwhelmingly common identifier path is ASCII with no trimming or

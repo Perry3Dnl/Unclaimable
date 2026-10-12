@@ -16,6 +16,85 @@ public sealed partial class Checker
     private readonly Dictionary<string, ReservedEntry> _identityRuleExact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
     private readonly Dictionary<string, ReservedEntry> _identityRuleCompact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
 
+    private void CaptureOptionalRuleReservations(Options options)
+    {
+        AddOptionalGeographyRuleValues(
+            options,
+            Rule.CountryNames,
+            GeographyData.CountryNames,
+            _countryRuleExact,
+            _countryRuleCompact);
+        AddOptionalGeographyRuleValues(
+            options,
+            Rule.PopularCityNames,
+            GeographyData.PopularCityNames,
+            _cityRuleExact,
+            _cityRuleCompact);
+
+        AddOptionalIdentityRuleValues(options, Rule.CelebrityNames, CelebrityData.Names, "celebrity");
+        AddOptionalIdentityRuleValues(options, Rule.Nationalities, OptionalIdentityData.Nationalities, "nationality");
+        AddOptionalIdentityRuleValues(options, Rule.Currencies, OptionalIdentityData.Currencies, "currency");
+        AddOptionalIdentityRuleValues(options, Rule.Religions, OptionalIdentityData.Religions, "religion");
+        AddOptionalIdentityRuleValues(options, Rule.Landmarks, OptionalIdentityData.Landmarks, "landmark");
+        AddOptionalIdentityRuleValues(options, Rule.Events, OptionalIdentityData.Events, "event");
+        AddOptionalIdentityRuleValues(options, Rule.Awards, OptionalIdentityData.Awards, "award");
+        AddOptionalIdentityRuleValues(
+            options,
+            Rule.FictionalCharacters,
+            OptionalIdentityData.FictionalCharacters,
+            "fictionalcharacter");
+        AddOptionalIdentityRuleValues(options, Rule.Franchises, OptionalIdentityData.Franchises, "franchise");
+        AddOptionalIdentityRuleValues(options, Rule.Professions, OptionalIdentityData.Professions, "profession");
+        AddOptionalIdentityRuleValues(options, Rule.Military, OptionalIdentityData.Military, "military");
+    }
+
+    private static void AddOptionalGeographyRuleValues(
+        Options options,
+        Rule rule,
+        string[] values,
+        Dictionary<string, string> exactValues,
+        Dictionary<string, string> compactValues)
+    {
+        if (!options.IsOptionalRuleEnabled(rule))
+        {
+            return;
+        }
+
+        foreach (var value in values)
+        {
+            if (!options.IncludeHighCollisionIdentityTerms
+                && OptionalIdentityData.IsHighCollisionValue(value, rule))
+            {
+                continue;
+            }
+
+            AddGeographyRuleValue(value, exactValues, compactValues);
+        }
+    }
+
+    private void AddOptionalIdentityRuleValues(
+        Options options,
+        Rule rule,
+        string[] values,
+        string category)
+    {
+        if (!options.IsOptionalRuleEnabled(rule))
+        {
+            return;
+        }
+
+        foreach (var value in values)
+        {
+            if (!options.IncludeHighCollisionIdentityTerms
+                && OptionalIdentityData.IsHighCollisionValue(value, rule))
+            {
+                continue;
+            }
+
+            AddIdentityRuleValue(value, category);
+        }
+    }
+
     private void CaptureAllowedIdentifiers(Options options)
     {
         foreach (var value in options.AllowedIdentifiers)
@@ -55,13 +134,8 @@ public sealed partial class Checker
         }
     }
 
-    private void AddExactCustom(ReservedEntry entry, bool isInternal)
+    private void AddExactCustom(ReservedEntry entry)
     {
-        if (isInternal && TryAddOptionalRuleReservation(entry.Value))
-        {
-            return;
-        }
-
         var exact = NormalizeExact(entry.Value);
         if (exact is not null && !_exactOnlyCustom.ContainsKey(exact))
         {
@@ -69,54 +143,12 @@ public sealed partial class Checker
         }
     }
 
-    private bool TryAddOptionalRuleReservation(string value)
-    {
-        if (value.StartsWith(GeographyData.CountryReservationPrefix, StringComparison.Ordinal))
-        {
-            AddGeographyRuleValue(
-                value.Substring(GeographyData.CountryReservationPrefix.Length),
-                _countryRuleExact,
-                _countryRuleCompact);
-            return true;
-        }
-
-        if (value.StartsWith(GeographyData.CityReservationPrefix, StringComparison.Ordinal))
-        {
-            AddGeographyRuleValue(
-                value.Substring(GeographyData.CityReservationPrefix.Length),
-                _cityRuleExact,
-                _cityRuleCompact);
-            return true;
-        }
-
-        if (TryAddIdentityRuleReservation(value, CelebrityData.ReservationPrefix, "celebrity")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.NationalityPrefix, "nationality")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.CurrencyPrefix, "currency")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.ReligionPrefix, "religion")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.LandmarkPrefix, "landmark")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.EventPrefix, "event")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.AwardPrefix, "award")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.FictionalCharacterPrefix, "fictionalcharacter")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.FranchisePrefix, "franchise")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.ProfessionPrefix, "profession")
-            || TryAddIdentityRuleReservation(value, OptionalIdentityData.MilitaryPrefix, "military"))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
     private static void AddGeographyRuleValue(
         string value,
         Dictionary<string, string> exactValues,
         Dictionary<string, string> compactValues)
     {
-        var exact = NormalizeExact(value);
-        if (exact is null)
-        {
-            return;
-        }
+        var exact = NormalizeExact(value)!;
 
         if (!exactValues.ContainsKey(exact))
         {
@@ -130,24 +162,9 @@ public sealed partial class Checker
         }
     }
 
-    private bool TryAddIdentityRuleReservation(string reservation, string prefix, string category)
-    {
-        if (!reservation.StartsWith(prefix, StringComparison.Ordinal))
-        {
-            return false;
-        }
-
-        AddIdentityRuleValue(reservation.Substring(prefix.Length), category);
-        return true;
-    }
-
     private void AddIdentityRuleValue(string value, string category)
     {
-        var exact = NormalizeExact(value);
-        if (exact is null)
-        {
-            return;
-        }
+        var exact = NormalizeExact(value)!;
 
         var entry = new ReservedEntry(value, category);
         if (!_identityRuleExact.ContainsKey(exact))
@@ -175,8 +192,21 @@ public sealed partial class Checker
             return null;
         }
 
-        var mapping = value is null ? null : TryCreateInputMapping(value, exact);
-        TryMapOriginalSpan(mapping?.ExactToOriginal, 0, exact.Length, out var originalStart, out var originalLength);
+        MapOriginalSpanFromInput(
+
+            value,
+
+            exact,
+
+            useCompactMapping: false,
+
+            0,
+
+            exact.Length,
+
+            out var originalStart,
+
+            out var originalLength);
         return CreateReservedResult(
             value,
             match,
@@ -189,8 +219,6 @@ public sealed partial class Checker
 
     private Result? CheckOptionalRuleReservation(string? value, string exact)
     {
-        var obfuscationInput = NormalizeCaseAwareObfuscationInput(value, exact);
-
         if (!IsRuleException(Rule.CountryNames, value)
             && _countryRuleExact.TryGetValue(exact, out var country))
         {
@@ -208,8 +236,14 @@ public sealed partial class Checker
             var identityRule = GetRuleForIdentityCategory(identityExact.Category);
             if (!identityRule.HasValue || !IsRuleException(identityRule.Value, value))
             {
-                var mapping = value is null ? null : TryCreateInputMapping(value, exact);
-            TryMapOriginalSpan(mapping?.ExactToOriginal, 0, exact.Length, out var originalStart, out var originalLength);
+                MapOriginalSpanFromInput(
+                    value,
+                    exact,
+                    useCompactMapping: false,
+                    0,
+                    exact.Length,
+                    out var originalStart,
+                    out var originalLength);
                 return CreateReservedResult(
                     value,
                     identityExact,
@@ -243,8 +277,14 @@ public sealed partial class Checker
                 var identityRule = GetRuleForIdentityCategory(identityCompact.Category);
                 if (!identityRule.HasValue || !IsRuleException(identityRule.Value, value))
                 {
-                    var mapping = value is null ? null : TryCreateInputMapping(value, exact);
-                TryMapOriginalSpan(mapping?.CompactToOriginal, 0, compact.Length, out var originalStart, out var originalLength);
+                    MapOriginalSpanFromInput(
+                        value,
+                        exact,
+                        useCompactMapping: true,
+                        0,
+                        compact.Length,
+                        out var originalStart,
+                        out var originalLength);
                     return CreateReservedResult(
                         value,
                         identityCompact,
@@ -256,6 +296,8 @@ public sealed partial class Checker
                 }
             }
         }
+
+        var obfuscationInput = NormalizeCaseAwareObfuscationInput(value, exact);
 
         if (_unicodeConfusableMatching
             && !IsRuleException(Rule.UnicodeConfusableMatching, value)
@@ -310,12 +352,16 @@ public sealed partial class Checker
 
     private Result? CheckCustomDefaultReservations(string? value, string exact)
     {
-        var obfuscationInput = NormalizeCaseAwareObfuscationInput(value, exact);
-
         if (_customExact.TryGetValue(exact, out var exactMatch))
         {
-            var mapping = value is null ? null : TryCreateInputMapping(value, exact);
-            TryMapOriginalSpan(mapping?.ExactToOriginal, 0, exact.Length, out var originalStart, out var originalLength);
+            MapOriginalSpanFromInput(
+                value,
+                exact,
+                useCompactMapping: false,
+                0,
+                exact.Length,
+                out var originalStart,
+                out var originalLength);
             return CreateReservedResult(
                 value,
                 exactMatch,
@@ -329,8 +375,14 @@ public sealed partial class Checker
         var compact = NormalizeCompact(exact);
         if (_compactMatching && compact.Length > 0 && _customCompact.TryGetValue(compact, out var compactMatch))
         {
-            var mapping = value is null ? null : TryCreateInputMapping(value, exact);
-            TryMapOriginalSpan(mapping?.CompactToOriginal, 0, compact.Length, out var originalStart, out var originalLength);
+            MapOriginalSpanFromInput(
+                value,
+                exact,
+                useCompactMapping: true,
+                0,
+                compact.Length,
+                out var originalStart,
+                out var originalLength);
             return CreateReservedResult(
                 value,
                 compactMatch,
@@ -351,9 +403,14 @@ public sealed partial class Checker
                 out var partialLength,
                 out var usedCompact))
         {
-            var mapping = value is null ? null : TryCreateInputMapping(value, exact);
-            var sourceMap = usedCompact ? mapping?.CompactToOriginal : mapping?.ExactToOriginal;
-            TryMapOriginalSpan(sourceMap, partialStart, partialLength, out var originalStart, out var originalLength);
+            MapOriginalSpanFromInput(
+                value,
+                exact,
+                useCompactMapping: usedCompact,
+                partialStart,
+                partialLength,
+                out var originalStart,
+                out var originalLength);
             return CreateReservedResult(
                 value,
                 partialMatch!,
@@ -363,6 +420,8 @@ public sealed partial class Checker
                 originalStart,
                 originalLength);
         }
+
+        var obfuscationInput = NormalizeCaseAwareObfuscationInput(value, exact);
 
         if (_unicodeConfusableMatching
             && TryMatchUnicodeConfusable(

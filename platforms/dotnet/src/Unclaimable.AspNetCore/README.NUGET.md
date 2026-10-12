@@ -2,21 +2,25 @@
 
 ASP.NET Core dependency-injection and DataAnnotations integration for Unclaimable.
 
-**Package version: 0.8.3**
+**Package version: 0.8.4**
 
 ## Install
 
 ```bash
-dotnet add package Unclaimable.AspNetCore --version 0.8.3
+dotnet add package Unclaimable.AspNetCore --version 0.8.4
 ```
 
 The required `Unclaimable` core dependency is installed transitively.
 
 ## Framework support
 
-`Unclaimable.AspNetCore` 0.8.3 ships framework-specific assets for `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0`, and `net11.0`. NuGet selects the matching asset for the consuming application automatically.
+`Unclaimable.AspNetCore` 0.8.4 ships framework-specific assets for `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0`, and `net11.0`. NuGet selects the matching asset for the consuming application automatically.
 
 The compatibility suite compiles and runs the DI and DataAnnotations integration on every advertised target. `net11.0` support is tested against the current .NET 11 prerelease SDK until .NET 11 reaches general availability.
+
+## 0.8.4 behavior
+
+This package continues to register the same Core checker and policy through DI and DataAnnotations. The Core 0.8.4 embedded-profanity and scoped-exception corrections apply automatically; the public ASP.NET Core integration API is unchanged. Existing required-field validation remains separate from `[ClaimableUsername]`.
 
 ## 0.8.3 Core behavior
 

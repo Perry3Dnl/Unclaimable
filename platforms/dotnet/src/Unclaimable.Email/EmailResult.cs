@@ -11,16 +11,20 @@ public sealed class EmailResult
         EmailFailureKind failureKind,
         global::Unclaimable.Result? localPartResult,
         DomainLookalikeKind domainLookalikeKind,
-        string? matchedProtectedDomain)
+        string? matchedProtectedDomain,
+        bool isIssuingDomainAllowed = true,
+        EmailAddressPurpose? effectivePurpose = null)
     {
         Address = address;
         Purpose = purpose;
+        EffectivePurpose = effectivePurpose ?? purpose;
         LocalPart = localPart;
         Domain = domain;
         FailureKind = failureKind;
         LocalPartResult = localPartResult;
         DomainLookalikeKind = domainLookalikeKind;
         MatchedProtectedDomain = matchedProtectedDomain;
+        IsIssuingDomainAllowed = isIssuingDomainAllowed;
     }
 
     /// <summary>Gets the original address supplied to the checker.</summary>
@@ -29,11 +33,23 @@ public sealed class EmailResult
     /// <summary>Gets the purpose used for this check.</summary>
     public EmailAddressPurpose Purpose { get; }
 
+    /// <summary>Gets the policy purpose actually enforced after any EmailUsage override.</summary>
+    public EmailAddressPurpose EffectivePurpose { get; }
+
     /// <summary>Gets the parsed local part when parsing reached that stage.</summary>
     public string? LocalPart { get; }
 
     /// <summary>Gets the normalized ASCII domain when domain parsing succeeded.</summary>
     public string? Domain { get; }
+
+    /// <summary>Whether the address passed email syntax validation.</summary>
+    public bool IsSyntaxValid => Domain != null;
+
+    /// <summary>Whether local-part identity rules raised a reserved result, even in relaxed mode.</summary>
+    public bool IsLocalPartReserved => LocalPartResult?.IsReserved == true;
+
+    /// <summary>Whether the configured issuing-domain allowlist permits this address.</summary>
+    public bool IsIssuingDomainAllowed { get; }
 
     /// <summary>Gets the primary rejection reason.</summary>
     public EmailFailureKind FailureKind { get; }

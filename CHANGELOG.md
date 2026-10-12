@@ -1,5 +1,51 @@
 # Changelog
 
+## 0.8.4 - 2026-10-12 (release candidate)
+
+> **Compatibility:** The default `EmailUsage.Auto` and `EmailProtectionLevel.Strict` preserve the established strict email-validation behavior. No existing `EmailAddressPurpose` or `EmailFailureKind` values are changed. This release candidate has not yet been published.
+
+### Email policy
+- Add opt-in `EmailOptions.ForUserRegistration()`, `ForOrganizationEmail(domain)`, and `ForIssuedAddresses()` presets, plus independent email syntax, local-part reservation, and issuing-domain allowlist diagnostics.
+- Add opt-in `MaximumInputLength` for early email input rejection without changing legacy defaults.
+- Add IDN/punycode, case-folding, trailing-dot, and cross-script normalization regression tests.
+- Add `EmailUsage` (`Auto`, `ExistingAddress`, `IssuedAddress`) and `EmailProtectionLevel` (`Strict`, `Relaxed`). Relaxed mode permits reserved-looking local parts and protected-domain resemblance on externally owned addresses while retaining these diagnostics in `EmailResult`. Syntax and explicit domain allowlists still apply, and issued addresses remain strictly protected.
+- Add `AllowIssuingDomainSubdomains` (default `true`) and `EnforceIssuingDomainsForExistingAddresses` (default `false`) for exact-domain allowlists and optional login/registration restrictions.
+- Replace the manually selected multi-label suffix list with a complete pinned offline Public Suffix List snapshot, including ICANN and private suffixes, wildcard rules and exceptions. The embedded upstream PSL has its own MPL-2.0 license.
+
+### FluentValidation integration
+- Add the optional `Unclaimable.FluentValidation` connector for .NET 8 and later, with `MustBeClaimable()` and `MustNotBeReserved()` rules using either the default or an application-supplied `IChecker`.
+- Preserve Core’s null-claimability contract, expose the match kind and category as message placeholders, and exercise the connector in unit and packaged-consumer tests. FluentValidation 12 is a transitive dependency only for consumers of this integration package.
+
+### Compatibility notes
+- **Extended default-on expansion:** Applications already calling `UseExtendedData()` will receive all new regional/crypto and hate-speech categories. Disable individual groups explicitly if their identifiers are not appropriate for a given application.
+- **Core matching change:** Embedded matches for an additional curated profanity root now reject some previously accepted identifiers. Scoped rule exceptions skip only the permitted match, not independent reserved terms.
+- All five packages are version-aligned at 0.8.4; NuGet publication remains gated on successful tests, packaging checks, and release approval.
+
+### Optional Extended datasets
+- Add six Extended groups for Netherlands and United States public-office titles and for crypto wallets, exchanges, protocols and tokens (30 curated identifiers). All groups are included by default when an application calls `UseExtendedData()`; each can be disabled individually.
+- Add the curated `HateSpeech` Extended group, enabled with `UseExtendedData()` and individually disableable; matching remains whole-identifier, not blanket substring filtering.
+- Keep whole-identifier matching and exact Extended exceptions for these groups; document the source references in the packaged data notes.
+
+### Matching correction
+- Add the explicit `dick` root to the curated default partial list so embedded forms such as `saddick` and `dickinson` are rejected as profanity. Existing partial and profanity rule controls still apply.
+
+- Ensure scoped profanity exceptions do not suppress unrelated custom partial matches; add regression coverage for both input orders and FluentValidation parity.
+
+### Diagnostics and boolean path
+- Add a usage guide for `Check`, `CheckDetailed`, match kinds, categories and original-input spans.
+- Avoid constructing a `Result` for null boolean checks; benchmark accepted, rejected and null boolean calls against `Check` before making broader matcher changes.
+
+### Tests and performance
+- Add regression cases for email usage, domain policy, multi-label suffix parsing, and a pinned subset of supported Unicode confusables.
+- Add parameterized BenchmarkDotNet scenarios for custom partial matching at 0, 100, 1,000, 5,000, and 10,000 participating reservations.
+- Add adversarial integration regression coverage for PSL wildcards and exceptions, private suffixes, long invalid mailbox rejection, large custom reservation collections, and internationalized identifiers.
+- Harden IDNA lookalike decoding against platform-specific invalid label exceptions, and extend defensive API tests across malformed mailbox input, randomized Unicode/control values, options capture, and ordinary success cases.
+- Ensure a trusted protected domain does not suppress detection of a different protected domain embedded earlier in the same hostname; extend constructor, invalid configuration, and overlapping-domain regression tests.
+- Report `EmailResult.EffectivePurpose` separately from the caller-supplied `Purpose`, including when malformed input is rejected before the policy checks; add override and normal-domain regression tests.
+- Clarify that the Core null-claimability behavior is not required-field validation and that email syntax checks are not domain verification, DNS resolution, authentication or authorization.
+- Release-candidate CI: **4,259 tests passed**, 0 failed, 0 skipped; **98.03% production line coverage** (3,485 / 3,555) and **85.43% branch coverage** (2,456 / 2,875).
+- All five 0.8.4 packages validate, the packaged-consumer smoke test passes, and the ASP.NET Core and ecosystem compatibility matrices pass. BenchmarkDotNet measurements are scenario-specific and are documented separately; no universal throughput claim is made.
+
 ## 0.8.3 - 2026-10-09
 
 > **Default-behavior note:** 0.8.3 narrows several collision-prone identity-list defaults while preserving the broader lists behind `Options.IncludeHighCollisionIdentityTerms`. It also corrects Unicode, email-domain, obfuscation, numeric-normalization, and scoped-exception behavior.

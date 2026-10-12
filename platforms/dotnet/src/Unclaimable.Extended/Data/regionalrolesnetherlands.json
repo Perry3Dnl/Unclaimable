@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "category": "regionalrolesnetherlands",
+  "description": "Netherlands municipal and provincial public-office titles. Opt in explicitly.",
+  "values": [
+    "burgemeester",
+    "wethouder",
+    "commissaris van de koning",
+    "gedeputeerde",
+    "gemeentesecretaris"
+  ]
+}

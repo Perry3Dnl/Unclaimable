@@ -48,6 +48,60 @@ public sealed class EmailOptions
     /// </summary>
     public global::Unclaimable.Options LocalPartOptions { get; }
 
+    /// <summary>
+    /// Gets or sets whether subdomains of configured IssuingDomains are accepted.
+    /// True by default to preserve earlier releases; false requires an exact domain match.
+    /// Applies when the issuing-domain allowlist is enforced.
+    /// </summary>
+    public bool AllowIssuingDomainSubdomains { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets whether IssuingDomains is also enforced for externally existing
+    /// email addresses (CheckExistingAddress). False by default for compatibility.
+    /// </summary>
+    public bool EnforceIssuingDomainsForExistingAddresses { get; set; } = false;
+
+    /// <summary>Overrides the per-call email purpose; Auto preserves the existing API behavior.</summary>
+    public EmailUsage EmailUsage { get; set; } = EmailUsage.Auto;
+
+    /// <summary>Strict retains earlier behavior; Relaxed permits reserved-looking local parts and suspicious domains for existing addresses.</summary>
+    public EmailProtectionLevel EmailProtectionLevel { get; set; } = EmailProtectionLevel.Strict;
+
+    /// <summary>
+    /// Optional maximum input length in UTF-16 code units, checked before parsing.
+    /// The default has no additional limit; email syntax still enforces its normal bounds.
+    /// </summary>
+    public int MaximumInputLength { get; set; } = int.MaxValue;
+
+    /// <summary>Preset for accepting existing third-party mailbox identities.</summary>
+    public static EmailOptions ForUserRegistration() => new EmailOptions
+    {
+        EmailUsage = EmailUsage.ExistingAddress,
+        EmailProtectionLevel = EmailProtectionLevel.Relaxed
+    };
+
+    /// <summary>Preset for restricting existing addresses to an exact organizational domain.</summary>
+    public static EmailOptions ForOrganizationEmail(string domain)
+    {
+        if (string.IsNullOrWhiteSpace(domain)) throw new ArgumentException("Domain is required.", nameof(domain));
+        var options = new EmailOptions
+        {
+            EmailUsage = EmailUsage.ExistingAddress,
+            EmailProtectionLevel = EmailProtectionLevel.Strict,
+            EnforceIssuingDomainsForExistingAddresses = true,
+            AllowIssuingDomainSubdomains = false
+        };
+        options.IssuingDomains.Add(domain);
+        return options;
+    }
+
+    /// <summary>Preset for email addresses created and issued by this application.</summary>
+    public static EmailOptions ForIssuedAddresses() => new EmailOptions
+    {
+        EmailUsage = EmailUsage.IssuedAddress,
+        EmailProtectionLevel = EmailProtectionLevel.Strict
+    };
+
     /// <summary>Gets or sets whether Unicode and common ASCII lookalike-domain detection is enabled.</summary>
     public bool DetectUnicodeLookalikes { get; set; } = true;
 

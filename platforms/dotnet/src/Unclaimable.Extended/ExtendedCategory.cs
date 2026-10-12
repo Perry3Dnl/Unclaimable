@@ -44,5 +44,19 @@ public enum ExtendedCategory
     /// <summary>Major websites, apps, services, and online platforms.</summary>
     Platforms = 19,
     /// <summary>Administrative subdivisions and major geographic landmarks.</summary>
-    Geography = 20
+    Geography = 20,
+    /// <summary>Netherlands municipal and provincial public-office titles; enabled with Extended by default.</summary>
+    RegionalRolesNetherlands = 21,
+    /// <summary>United States state and local public-office titles; enabled with Extended by default.</summary>
+    RegionalRolesUnitedStates = 22,
+    /// <summary>Crypto wallet provider identities; enabled with Extended by default.</summary>
+    CryptoWallets = 23,
+    /// <summary>Crypto exchange identities; enabled with Extended by default.</summary>
+    CryptoExchanges = 24,
+    /// <summary>DeFi protocol identities; enabled with Extended by default.</summary>
+    CryptoProtocols = 25,
+    /// <summary>Crypto token names and symbols; enabled with Extended by default.</summary>
+    CryptoTokens = 26,
+    /// <summary>Additional curated identity-targeting slurs; requires Extended opt-in.</summary>
+    HateSpeech = 27
 }

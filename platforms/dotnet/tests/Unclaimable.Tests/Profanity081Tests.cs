@@ -394,8 +394,7 @@ public sealed class Profanity081Tests
     [InlineData("cocktail")]
     [InlineData("penelope")]
     [InlineData("janus")]
-    [InlineData("dickens")]
-    public void CollisionProneExplicitTermsRemainExactOnlyByDefault(string value)
+    public void OtherCollisionProneExplicitTermsRemainExactOnlyByDefault(string value)
     {
         Assert.True(new Checker(new Options()).IsClaimable(value), value);
     }

@@ -2,12 +2,12 @@
 
 Large optional reserved-identity datasets for Unclaimable.
 
-**Package version: 0.8.3**
+**Package version: 0.8.4**
 
 ## Install
 
 ```bash
-dotnet add package Unclaimable.Extended --version 0.8.3
+dotnet add package Unclaimable.Extended --version 0.8.4
 ```
 
 Installing the package alone does not change validation behavior. Enable the data explicitly.
@@ -30,7 +30,7 @@ options.UseExtendedData();
 var checker = new Checker(options);
 ```
 
-All Extended groups are enabled after opt-in.
+All Extended dataset groups, including the new 0.8.4 categories, are enabled when `UseExtendedData()` is called. Developers can disable individual categories explicitly.
 
 The checker still uses the normal 0.8.3 Core defaults at the same time, including the lower-collision default treatment for generic Core identity vocabulary. Extended data remains explicitly opt-in and additive: enabling it does not disable or replace Core structural, matching, pattern, or identity rules already active in `Options`.
 
@@ -47,6 +47,21 @@ options.UseExtendedData(extended =>
 ```
 
 A disabled group can be enabled again with `EnableCategory(...)`.
+
+### New 0.8.4 modules
+
+All new modules are included automatically. Disable any categories your application does not want:
+
+```csharp
+options.UseExtendedData(extended =>
+{
+    extended.DisableCategory(ExtendedCategory.RegionalRolesNetherlands);
+    extended.DisableCategory(ExtendedCategory.CryptoWallets);
+    extended.DisableCategory(ExtendedCategory.CryptoExchanges);
+});
+```
+
+Also available: `RegionalRolesUnitedStates`, `CryptoProtocols`, and `CryptoTokens`. Each starts enabled when `UseExtendedData()` is called. Entries use whole-identifier matching; these are deliberately small curated sets rather than a broad or continuously updated market list. Review the terms for your application and use `AllowedIdentifiers` for exact exceptions.
 
 ## Exact Extended exceptions
 
@@ -78,7 +93,7 @@ This keeps Extended identity exceptions distinct from username-shape exceptions.
 
 ## Dataset snapshot
 
-The initial Extended snapshot contains **36,313 additional identifiers**:
+The original Extended snapshot contains **36,313 identifiers**. 0.8.4 adds 30 entries across six new regional/crypto modules and a separate curated hate-speech dataset; all are included with `UseExtendedData()` by default. The counts below describe the original snapshot and exclude the 0.8.4 additions:
 
 | Extended group | Entries |
 | --- | ---: |
@@ -103,6 +118,17 @@ The initial Extended snapshot contains **36,313 additional identifiers**:
 | Multilingual reserved vocabulary | 72 |
 | Regional slang / profanity | 69 |
 | International organizations | 61 |
+
+## Hate-speech dataset (0.8.4)
+
+`ExtendedCategory.HateSpeech` contributes an additional curated set of identity-targeting abusive identifiers and hateful slogans. It is included when `UseExtendedData()` is enabled, and may be disabled independently:
+
+```csharp
+options.UseExtendedData(extended =>
+    extended.DisableCategory(ExtendedCategory.HateSpeech));
+```
+
+As with all Extended groups, installation alone does not enable it. Entries are passed into Core using `ReservedMatchMode.WholeIdentifier`; no independent detection engine or blanket substring matching is introduced. Coverage is curated rather than exhaustive and should not be treated as a complete multilingual content-moderation system.
 
 ## Matching behavior
 

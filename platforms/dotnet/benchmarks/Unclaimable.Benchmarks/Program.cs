@@ -28,6 +28,18 @@ public class CheckerBenchmarks
     public Result OrdinaryAcceptedInput() => _defaultChecker.Check("zqvxpioneer");
 
     [Benchmark]
+    public bool OrdinaryAcceptedBoolean() => _defaultChecker.IsClaimable("zqvxpioneer");
+
+    [Benchmark]
+    public bool ReservedBoolean() => _defaultChecker.IsReserved("admin");
+
+    [Benchmark]
+    public bool OptionalNullBoolean() => _defaultChecker.IsClaimable(null);
+
+    [Benchmark]
+    public Result OptionalNullDetailed() => _defaultChecker.Check(null);
+
+    [Benchmark]
     public Result ExactRejection() => _defaultChecker.Check("admin");
 
     [Benchmark]

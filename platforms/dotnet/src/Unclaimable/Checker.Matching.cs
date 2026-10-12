@@ -39,8 +39,9 @@ public sealed partial class Checker
         out ReservedEntry? match,
         out int startIndex,
         out int matchLength,
-        out bool usedCompact) =>
-        TryMatchPartial(exact, compact, _partialEntries, out match, out startIndex, out matchLength, out usedCompact);
+        out bool usedCompact,
+        Rule ruleExceptions = Rule.None) =>
+        TryMatchPartial(exact, compact, _partialEntries, out match, out startIndex, out matchLength, out usedCompact, ruleExceptions);
 
     private bool TryMatchPartial(
         string exact,
@@ -49,10 +50,23 @@ public sealed partial class Checker
         out ReservedEntry? match,
         out int startIndex,
         out int matchLength,
-        out bool usedCompact)
+        out bool usedCompact,
+        Rule ruleExceptions = Rule.None)
     {
-        foreach (var partial in partialEntries)
+        var compactPartialEnabled = !_consistentCompactMatching || _compactMatching;
+        for (var entryIndex = 0; entryIndex < partialEntries.Count; entryIndex++)
         {
+            var partial = partialEntries[entryIndex];
+
+            if (ruleExceptions != Rule.None)
+            {
+                var sourceRule = GetRuleForReservedEntry(partial.Entry);
+                if (sourceRule.HasValue && HasRuleException(ruleExceptions, sourceRule.Value))
+                {
+                    continue;
+                }
+            }
+
             var exactIndex = exact.IndexOf(partial.Exact, StringComparison.Ordinal);
             if (exactIndex >= 0 && exact.Length > partial.Exact.Length)
             {
@@ -63,7 +77,6 @@ public sealed partial class Checker
                 return true;
             }
 
-            var compactPartialEnabled = !_consistentCompactMatching || _compactMatching;
             if (compactPartialEnabled && compact.Length > partial.Compact.Length)
             {
                 var compactIndex = compact.IndexOf(partial.Compact, StringComparison.Ordinal);

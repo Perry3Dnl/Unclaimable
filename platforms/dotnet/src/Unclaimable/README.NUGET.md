@@ -2,12 +2,12 @@
 
 Fast, dependency-free reserved username and identifier validation for .NET.
 
-**Package version: 0.8.3**
+**Package version: 0.8.4**
 
 ## Install
 
 ```bash
-dotnet add package Unclaimable --version 0.8.3
+dotnet add package Unclaimable --version 0.8.4
 ```
 
 ## Quick start
@@ -31,6 +31,14 @@ if (result.IsClaimable)
 The Core package targets `netstandard2.0` and is intended for portable application code. The 0.8.0 compatibility workflow compile-checks it in .NET MAUI, Blazor WebAssembly, WPF, Windows Forms, Console, Worker Service, Avalonia, and Uno Platform consumers.
 
 No MAUI-, Blazor-, Avalonia-, or Uno-specific adapter package is required for the Core checker; NuGet resolves the portable asset automatically.
+
+## What's new in 0.8.4
+
+- Curated default partial profanity detection now identifies additional embedded forms in larger identifiers. This intentionally rejects some identifiers that 0.8.3 allowed. Existing `Rule.Profanity` and `Rule.PartialMatching` controls still apply.
+- A scoped profanity exception no longer hides a different reserved partial match in the same identifier; regression tests cover both match orders.
+- Additional diagnostics, malformed-input and per-username benchmark fixtures support release verification.
+
+The Core package remains `netstandard2.0` and has no FluentValidation dependency. Null input is claimable by design; use required-field validation separately.
 
 ## What's new in 0.8.3
 
