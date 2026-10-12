@@ -361,7 +361,6 @@ public sealed partial class Checker : IChecker
         }
 
         var ruleExceptions = GetRuleExceptions(value);
-        var obfuscationInput = NormalizeCaseAwareObfuscationInput(value, exact);
 
         var exactCustomResult = CheckExactCustomReservation(value, exact);
         if (exactCustomResult is not null)
@@ -455,6 +454,12 @@ public sealed partial class Checker : IChecker
                 }
             }
         }
+
+        // Only prepare case-sensitive obfuscation input after exact, compact and partial checks miss.
+        var obfuscationInput = (_unicodeConfusableMatching && !HasRuleException(ruleExceptions, Rule.UnicodeConfusableMatching))
+            || (_obfuscationMatching && !HasRuleException(ruleExceptions, Rule.ObfuscationMatching))
+            ? NormalizeCaseAwareObfuscationInput(value, exact)
+            : exact;
 
         if (_unicodeConfusableMatching && !HasRuleException(ruleExceptions, Rule.UnicodeConfusableMatching))
         {
