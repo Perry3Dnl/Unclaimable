@@ -93,7 +93,7 @@ This keeps Extended identity exceptions distinct from username-shape exceptions.
 
 ## Dataset snapshot
 
-The original Extended snapshot contains **36,313 identifiers**. 0.8.4 adds 30 entries across six new modules; these are included with `UseExtendedData()` by default:
+The original Extended snapshot contains **36,313 identifiers**. 0.8.4 adds 30 entries across six new regional/crypto modules and a separate curated hate-speech dataset; all are included with `UseExtendedData()` by default. The counts below describe the original snapshot and exclude the 0.8.4 additions:
 
 | Extended group | Entries |
 | --- | ---: |
@@ -119,7 +119,7 @@ The original Extended snapshot contains **36,313 identifiers**. 0.8.4 adds 30 en
 | Regional slang / profanity | 69 |
 | International organizations | 61 |
 
-## Hate-speech dataset (0.8.4 development)
+## Hate-speech dataset (0.8.4)
 
 `ExtendedCategory.HateSpeech` contributes an additional curated set of identity-targeting abusive identifiers and hateful slogans. It is included when `UseExtendedData()` is enabled, and may be disabled independently:
 
