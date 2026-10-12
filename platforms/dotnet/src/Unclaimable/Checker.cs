@@ -380,8 +380,14 @@ public sealed partial class Checker : IChecker
             var sourceRule = GetRuleForReservedEntry(exactMatch);
             if (!sourceRule.HasValue || !HasRuleException(ruleExceptions, sourceRule.Value))
             {
-                var mapping = value is null ? null : TryCreateInputMapping(value, exact);
-            TryMapOriginalSpan(mapping?.ExactToOriginal, 0, exact.Length, out var originalStart, out var originalLength);
+                MapOriginalSpanFromInput(
+                    value,
+                    exact,
+                    useCompactMapping: false,
+                    0,
+                    exact.Length,
+                    out var originalStart,
+                    out var originalLength);
                 return CreateReservedResult(
                     value,
                     exactMatch,
@@ -402,8 +408,14 @@ public sealed partial class Checker : IChecker
                 var sourceRule = GetRuleForReservedEntry(compactMatch);
                 if (!sourceRule.HasValue || !HasRuleException(ruleExceptions, sourceRule.Value))
                 {
-                    var mapping = value is null ? null : TryCreateInputMapping(value, exact);
-                TryMapOriginalSpan(mapping?.CompactToOriginal, 0, compact.Length, out var originalStart, out var originalLength);
+                    MapOriginalSpanFromInput(
+                        value,
+                        exact,
+                        useCompactMapping: true,
+                        0,
+                        compact.Length,
+                        out var originalStart,
+                        out var originalLength);
                     return CreateReservedResult(
                         value,
                         compactMatch,
@@ -429,9 +441,14 @@ public sealed partial class Checker : IChecker
                 var sourceRule = GetRuleForReservedEntry(partialMatch!);
                 if (!sourceRule.HasValue || !HasRuleException(ruleExceptions, sourceRule.Value))
                 {
-                    var mapping = value is null ? null : TryCreateInputMapping(value, exact);
-                var sourceMap = usedCompact ? mapping?.CompactToOriginal : mapping?.ExactToOriginal;
-                TryMapOriginalSpan(sourceMap, partialStart, partialLength, out var originalStart, out var originalLength);
+                    MapOriginalSpanFromInput(
+                        value,
+                        exact,
+                        useCompactMapping: usedCompact,
+                        partialStart,
+                        partialLength,
+                        out var originalStart,
+                        out var originalLength);
                     return CreateReservedResult(
                         value,
                         partialMatch!,
