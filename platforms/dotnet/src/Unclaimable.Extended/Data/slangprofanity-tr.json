@@ -1,0 +1,21 @@
+{
+  "schema": 1,
+  "category": "slangprofanity",
+  "description": "Additional tr single-word vulgarity and slang entries for v0.8.5. Reviewed candidate set; further native-speaker review recommended.",
+  "language": "tr",
+  "values": [
+    "orospu",
+    "salak",
+    "aptal",
+    "gerizekalı",
+    "gerizekali",
+    "boktan",
+    "bokluk",
+    "sıçmak",
+    "sicmak",
+    "piçler",
+    "picler",
+    "puşt",
+    "pust"
+  ]
+}
