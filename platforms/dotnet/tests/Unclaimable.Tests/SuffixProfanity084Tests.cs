@@ -44,5 +44,8 @@ public sealed class SuffixProfanity084Tests
 
         var noProfanity = new Options().DisableRule(Rule.Profanity);
         Assert.True(new Checker(noProfanity).IsClaimable("saddick"));
+
+        var broadProfanity = new Options { ProfanityPartialMatching = true };
+        Assert.Equal("profanity", new Checker(broadProfanity).Check("mydickname").Category);
     }
 }
