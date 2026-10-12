@@ -19,6 +19,14 @@ public sealed class FluentValidationIntegrationTests
         }
     }
 
+    private sealed class DefaultAliasValidator : AbstractValidator<Signup>
+    {
+        public DefaultAliasValidator()
+        {
+            RuleFor(x => x.Username).MustNotBeReserved();
+        }
+    }
+
     private sealed class ConfiguredValidator : AbstractValidator<Signup>
     {
         public ConfiguredValidator(IChecker checker)
@@ -35,6 +43,7 @@ public sealed class FluentValidationIntegrationTests
         Assert.True(validator.Validate(new Signup { Username = "riverwalker47" }).IsValid);
         var failure = Assert.Single(validator.Validate(new Signup { Username = "admin" }).Errors);
         Assert.Contains("claimable", failure.ErrorMessage);
+        Assert.False(new DefaultAliasValidator().Validate(new Signup { Username = "admin" }).IsValid);
     }
 
     [Fact]
