@@ -77,6 +77,8 @@ public sealed partial class Options
 
     internal IReadOnlyList<ReservationRegistration> Reservations => BuildEffectiveReservations();
 
+    internal IReadOnlyList<ReservationRegistration> ConfiguredReservations => _reservations;
+
     internal bool IsCategoryEnabled(string category)
     {
         foreach (var disabled in _disabledCategories)

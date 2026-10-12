@@ -16,6 +16,85 @@ public sealed partial class Checker
     private readonly Dictionary<string, ReservedEntry> _identityRuleExact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
     private readonly Dictionary<string, ReservedEntry> _identityRuleCompact = new Dictionary<string, ReservedEntry>(StringComparer.Ordinal);
 
+    private void CaptureOptionalRuleReservations(Options options)
+    {
+        AddOptionalGeographyRuleValues(
+            options,
+            Rule.CountryNames,
+            GeographyData.CountryNames,
+            _countryRuleExact,
+            _countryRuleCompact);
+        AddOptionalGeographyRuleValues(
+            options,
+            Rule.PopularCityNames,
+            GeographyData.PopularCityNames,
+            _cityRuleExact,
+            _cityRuleCompact);
+
+        AddOptionalIdentityRuleValues(options, Rule.CelebrityNames, CelebrityData.Names, "celebrity");
+        AddOptionalIdentityRuleValues(options, Rule.Nationalities, OptionalIdentityData.Nationalities, "nationality");
+        AddOptionalIdentityRuleValues(options, Rule.Currencies, OptionalIdentityData.Currencies, "currency");
+        AddOptionalIdentityRuleValues(options, Rule.Religions, OptionalIdentityData.Religions, "religion");
+        AddOptionalIdentityRuleValues(options, Rule.Landmarks, OptionalIdentityData.Landmarks, "landmark");
+        AddOptionalIdentityRuleValues(options, Rule.Events, OptionalIdentityData.Events, "event");
+        AddOptionalIdentityRuleValues(options, Rule.Awards, OptionalIdentityData.Awards, "award");
+        AddOptionalIdentityRuleValues(
+            options,
+            Rule.FictionalCharacters,
+            OptionalIdentityData.FictionalCharacters,
+            "fictionalcharacter");
+        AddOptionalIdentityRuleValues(options, Rule.Franchises, OptionalIdentityData.Franchises, "franchise");
+        AddOptionalIdentityRuleValues(options, Rule.Professions, OptionalIdentityData.Professions, "profession");
+        AddOptionalIdentityRuleValues(options, Rule.Military, OptionalIdentityData.Military, "military");
+    }
+
+    private static void AddOptionalGeographyRuleValues(
+        Options options,
+        Rule rule,
+        string[] values,
+        Dictionary<string, string> exactValues,
+        Dictionary<string, string> compactValues)
+    {
+        if (!options.IsOptionalRuleEnabled(rule))
+        {
+            return;
+        }
+
+        foreach (var value in values)
+        {
+            if (!options.IncludeHighCollisionIdentityTerms
+                && OptionalIdentityData.IsHighCollisionValue(value, rule))
+            {
+                continue;
+            }
+
+            AddGeographyRuleValue(value, exactValues, compactValues);
+        }
+    }
+
+    private void AddOptionalIdentityRuleValues(
+        Options options,
+        Rule rule,
+        string[] values,
+        string category)
+    {
+        if (!options.IsOptionalRuleEnabled(rule))
+        {
+            return;
+        }
+
+        foreach (var value in values)
+        {
+            if (!options.IncludeHighCollisionIdentityTerms
+                && OptionalIdentityData.IsHighCollisionValue(value, rule))
+            {
+                continue;
+            }
+
+            AddIdentityRuleValue(value, category);
+        }
+    }
+
     private void CaptureAllowedIdentifiers(Options options)
     {
         foreach (var value in options.AllowedIdentifiers)

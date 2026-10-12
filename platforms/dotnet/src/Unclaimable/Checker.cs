@@ -265,7 +265,7 @@ public sealed partial class Checker : IChecker
             AddCustomDefault(new ReservedEntry(value, "custom"));
         }
 
-        foreach (var reservation in options.Reservations)
+        foreach (var reservation in options.ConfiguredReservations)
         {
             var entry = new ReservedEntry(reservation.Value, reservation.Category);
             if (reservation.Matching == ReservedMatchMode.Exact)
@@ -280,6 +280,7 @@ public sealed partial class Checker : IChecker
             }
         }
 
+        CaptureOptionalRuleReservations(options);
         CaptureAllowedIdentifiers(options);
 
         _partialEntries.Sort((left, right) => right.Compact.Length.CompareTo(left.Compact.Length));
