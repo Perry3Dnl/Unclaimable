@@ -99,6 +99,7 @@ internal static class ExtendedDataset
             case "cryptoexchanges": category = ExtendedCategory.CryptoExchanges; return true;
             case "cryptoprotocols": category = ExtendedCategory.CryptoProtocols; return true;
             case "cryptotokens": category = ExtendedCategory.CryptoTokens; return true;
+            case "hatespeech": category = ExtendedCategory.HateSpeech; return true;
             default: category = default; return false;
         }
     }
