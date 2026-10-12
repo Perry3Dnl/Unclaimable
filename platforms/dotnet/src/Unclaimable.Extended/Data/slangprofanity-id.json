@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "category": "slangprofanity",
+  "description": "Additional id single-word vulgarity and slang entries for v0.8.5. Reviewed candidate set; further native-speaker review recommended.",
+  "language": "id",
+  "values": [
+    "bangsat",
+    "anjir",
+    "anjay",
+    "kampret",
+    "bajingan",
+    "brengsek",
+    "sialan",
+    "tolol",
+    "goblok",
+    "bejat",
+    "mesum",
+    "bego",
+    "taik",
+    "jancok"
+  ]
+}
