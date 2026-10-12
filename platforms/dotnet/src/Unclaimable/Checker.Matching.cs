@@ -54,8 +54,10 @@ public sealed partial class Checker
         Rule ruleExceptions = Rule.None)
     {
         var compactPartialEnabled = !_consistentCompactMatching || _compactMatching;
-        foreach (var partial in partialEntries)
+        for (var entryIndex = 0; entryIndex < partialEntries.Count; entryIndex++)
         {
+            var partial = partialEntries[entryIndex];
+
             if (ruleExceptions != Rule.None)
             {
                 var sourceRule = GetRuleForReservedEntry(partial.Entry);
