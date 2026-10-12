@@ -296,12 +296,12 @@ public sealed partial class Checker : IChecker
     /// Returns whether the value is rejected. Structural validation failures are included.
     /// Null is accepted; use required-field validation separately when null is not allowed.
     /// </summary>
-    public bool IsReserved(string? value) => Check(value).IsReserved;
+    public bool IsReserved(string? value) => value is not null && Check(value).IsReserved;
 
     /// <summary>
     /// Returns whether the value is claimable. Null is accepted; required-field validation remains separate.
     /// </summary>
-    public bool IsClaimable(string? value) => !Check(value).IsReserved;
+    public bool IsClaimable(string? value) => value is null || !Check(value).IsReserved;
 
     /// <summary>Returns the first validation or reserved-name result.</summary>
     public Result Check(string? value)
