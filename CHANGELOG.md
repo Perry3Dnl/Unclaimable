@@ -1,8 +1,8 @@
 # Changelog
 
-## 0.8.4 - unreleased
+## 0.8.4 - 2026-10-12 (release candidate)
 
-> **Compatibility:** The default `EmailUsage.Auto` and `EmailProtectionLevel.Strict` preserve the established strict email-validation behavior. No existing `EmailAddressPurpose` or `EmailFailureKind` values are changed. The package is not released yet.
+> **Compatibility:** The default `EmailUsage.Auto` and `EmailProtectionLevel.Strict` preserve the established strict email-validation behavior. No existing `EmailAddressPurpose` or `EmailFailureKind` values are changed. This release candidate has not yet been published.
 
 ### Email policy
 - Add opt-in `EmailOptions.ForUserRegistration()`, `ForOrganizationEmail(domain)`, and `ForIssuedAddresses()` presets, plus independent email syntax, local-part reservation, and issuing-domain allowlist diagnostics.
@@ -29,7 +29,9 @@
 ### Matching correction
 - Add the explicit `dick` root to the curated default partial list so embedded forms such as `saddick` and `dickinson` are rejected as profanity. Existing partial and profanity rule controls still apply.
 
-- Ensure scoped profanity exceptions do not suppress unrelated custom partial matches; add regression coverage for both input orders and FluentValidation parity.\n\n### Diagnostics and boolean path
+- Ensure scoped profanity exceptions do not suppress unrelated custom partial matches; add regression coverage for both input orders and FluentValidation parity.
+
+### Diagnostics and boolean path
 - Add a usage guide for `Check`, `CheckDetailed`, match kinds, categories and original-input spans.
 - Avoid constructing a `Result` for null boolean checks; benchmark accepted, rejected and null boolean calls against `Check` before making broader matcher changes.
 
@@ -41,7 +43,8 @@
 - Ensure a trusted protected domain does not suppress detection of a different protected domain embedded earlier in the same hostname; extend constructor, invalid configuration, and overlapping-domain regression tests.
 - Report `EmailResult.EffectivePurpose` separately from the caller-supplied `Purpose`, including when malformed input is rejected before the policy checks; add override and normal-domain regression tests.
 - Clarify that the Core null-claimability behavior is not required-field validation and that email syntax checks are not domain verification, DNS resolution, authentication or authorization.
-- No performance or coverage claim is made until CI and benchmarks have completed.
+- Release-candidate CI: **4,259 tests passed**, 0 failed, 0 skipped; **98.03% production line coverage** (3,485 / 3,555) and **85.43% branch coverage** (2,456 / 2,875).
+- All five 0.8.4 packages validate, the packaged-consumer smoke test passes, and the ASP.NET Core and ecosystem compatibility matrices pass. BenchmarkDotNet measurements are scenario-specific and are documented separately; no universal throughput claim is made.
 
 ## 0.8.3 - 2026-10-09
 
