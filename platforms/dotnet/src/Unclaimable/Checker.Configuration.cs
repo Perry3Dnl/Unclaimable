@@ -148,11 +148,7 @@ public sealed partial class Checker
         Dictionary<string, string> exactValues,
         Dictionary<string, string> compactValues)
     {
-        var exact = NormalizeExact(value);
-        if (exact is null)
-        {
-            return;
-        }
+        var exact = NormalizeExact(value)!;
 
         if (!exactValues.ContainsKey(exact))
         {
@@ -168,11 +164,7 @@ public sealed partial class Checker
 
     private void AddIdentityRuleValue(string value, string category)
     {
-        var exact = NormalizeExact(value);
-        if (exact is null)
-        {
-            return;
-        }
+        var exact = NormalizeExact(value)!;
 
         var entry = new ReservedEntry(value, category);
         if (!_identityRuleExact.ContainsKey(exact))
