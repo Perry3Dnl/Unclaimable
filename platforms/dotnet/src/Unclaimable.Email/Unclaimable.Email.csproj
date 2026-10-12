@@ -24,7 +24,6 @@
     <None Include="public_suffix_list.dat" Pack="true" PackagePath="third-party/" />
     <None Include="PSL-LICENSE.txt" Pack="true" PackagePath="third-party/" />
     <ProjectReference Include="../Unclaimable/Unclaimable.csproj" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
     <None Include="README.NUGET.md" Pack="true" PackagePath="/" />
     <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
   </ItemGroup>
