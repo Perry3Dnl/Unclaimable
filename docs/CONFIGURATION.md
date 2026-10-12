@@ -95,6 +95,35 @@ set growth, and High/Extreme obfuscation independently before claiming
 denial-of-service resistance. No DoS vulnerability is established by the
 presence of expensive matching paths alone.
 
+## Explain a rejected identifier
+
+Use `Check` for the first rejection reason. `MatchKind` describes how a value failed; `Category` identifies the protected dataset when there is a reserved-name match. They are independent: for example, an obfuscated match can belong to the profanity category.
+
+```csharp
+var result = checker.Check(candidate);
+if (result.IsReserved)
+{
+    logger.LogInformation("Username denied: {Kind}, {Category}",
+        result.MatchKind, result.Category);
+
+    // Give users a general message; keep matched identities and raw input out of logs.
+    return "Choose another username.";
+}
+```
+
+Use `CheckDetailed(candidate, includeMessages: true)` when a UI or audit view needs every structural and matching diagnostic. Each item exposes `Kind`, `Category`, and an optional `Message`. `MatchStartIndex` and `MatchLength` refer to the transformed matching text; `OriginalMatchStartIndex` and `OriginalMatchLength` identify the original UTF-16 input where mapping is reliable. Do not use transformed offsets to highlight the original string.
+
+```csharp
+var detailed = checker.CheckDetailed(candidate, includeMessages: true);
+foreach (var diagnostic in detailed.Diagnostics)
+{
+    logger.LogInformation("Username check: {Kind}, {Category}",
+        diagnostic.Kind, diagnostic.Category);
+}
+```
+
+`IsReserved` and `IsClaimable` are convenient for decisions when no reason is needed. All these methods accept null as claimable; validate required fields and uniqueness separately.
+
 ## Copy-paste recipes
 
 ### Use the default policy
