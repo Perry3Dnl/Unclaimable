@@ -1,0 +1,12 @@
+{
+  "schema": 1,
+  "category": "cryptotokens",
+  "description": "Crypto token names and symbols. Opt in explicitly.",
+  "values": [
+    "EURC",
+    "PYUSD",
+    "USDT",
+    "Wrapped Bitcoin",
+    "crvUSD"
+  ]
+}
