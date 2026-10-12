@@ -158,6 +158,7 @@ public class SingleUsername084Benchmarks
         _default = new Checker();
         var options = new Options();
         options.DisableRule(Rule.ObfuscationMatching); // Isolate full partial-index traversal.
+        options.DisablePattern(Pattern.Repeated); // Prevent the synthetic 09999 suffix from rejecting early.
         for (var i = 0; i < ReservationCount; i++)
             options.AdditionalReserved.Add("zzpartial" + i.ToString("D5", System.Globalization.CultureInfo.InvariantCulture));
 
