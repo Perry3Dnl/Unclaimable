@@ -43,7 +43,7 @@ public sealed partial class Checker
                     continue;
                 }
 
-                if (partial.Entry.SuffixOnly && endIndex != value.Length)
+                if (partial.SuffixOnly && endIndex != value.Length)
                 {
                     continue;
                 }
