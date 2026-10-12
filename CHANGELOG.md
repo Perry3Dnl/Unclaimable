@@ -16,6 +16,10 @@
 - Add the optional `Unclaimable.FluentValidation` connector for .NET 8 and later, with `MustBeClaimable()` and `MustNotBeReserved()` rules using either the default or an application-supplied `IChecker`.
 - Preserve Core’s null-claimability contract, expose the match kind and category as message placeholders, and exercise the connector in unit and packaged-consumer tests. FluentValidation 12 is a transitive dependency only for consumers of this integration package.
 
+### Optional Extended datasets
+- Add six separately enabled Extended groups for Netherlands and United States public-office titles and for crypto wallets, exchanges, protocols and tokens (30 curated identifiers). Existing `UseExtendedData()` behavior remains unchanged until an application enables a new group.
+- Keep whole-identifier matching and exact Extended exceptions for these groups; document the source references in the packaged data notes.
+
 ### Tests and performance
 - Add regression cases for email usage, domain policy, multi-label suffix parsing, and a pinned subset of supported Unicode confusables.
 - Add parameterized BenchmarkDotNet scenarios for custom partial matching at 0, 100, 1,000, 5,000, and 10,000 participating reservations.
