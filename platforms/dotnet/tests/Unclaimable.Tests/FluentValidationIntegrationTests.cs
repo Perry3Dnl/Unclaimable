@@ -161,7 +161,7 @@ public sealed class FluentValidationIntegrationTests
             !error.ErrorMessage.Contains("{Category}"));
         Assert.Contains(validation.Errors, error =>
             error.PropertyName == "DisplayName" &&
-            error.ErrorMessage.Contains("DisplayName:Exact:customcategory"));
+            error.ErrorMessage == "Display Name:Exact:customcategory");
 
         Assert.True((await validator.ValidateAsync(new MultipleIdentifiers
         {
