@@ -28,6 +28,12 @@ Prevent reserved, protected, misleading, degenerate, and unsafe identifiers befo
 
 **Core:** a curated embedded-profanity matching correction, hardening of scoped exceptions so an exempted match cannot hide an independent reserved match, and additional adversarial tests.
 
+### 0.8.4 benchmark verification (pending measurements)
+
+0.8.4 performance results must be published **with measured mean latency and allocated bytes per operation**, not estimates. The single-username BenchmarkDotNet suite covers ordinary accepted and reserved usernames, embedded-profanity matches, custom partial-match hits and full-scan misses, and High-sensitivity obfuscation near misses. Separate partial-list scaling scenarios cover 0, 100, 1,000, 5,000, and 10,000 entries.
+
+Benchmark results are **not yet finalized for this release candidate**. We will add the measured results and run environment here before release, including the slower paths rather than only favorable results. Benchmark measurements exclude checker construction/dataset loading; results depend on hardware, .NET runtime, configuration, and inputs. See [benchmark methodology](docs/SINGLE_USERNAME_BENCHMARKS.md) and the [benchmark workflow](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/username-benchmarks.yml).
+
 **Release state:** This is an unreleased development candidate. Do not interpret the version references in source documentation as packages already available on NuGet. Benchmark results and final CI validation must be reviewed before publishing.
 
 See the [0.8.4 changelog](CHANGELOG.md) for migration considerations and individual package READMEs for their APIs.
