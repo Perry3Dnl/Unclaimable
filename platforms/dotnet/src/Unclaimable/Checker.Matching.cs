@@ -39,8 +39,9 @@ public sealed partial class Checker
         out ReservedEntry? match,
         out int startIndex,
         out int matchLength,
-        out bool usedCompact) =>
-        TryMatchPartial(exact, compact, _partialEntries, out match, out startIndex, out matchLength, out usedCompact);
+        out bool usedCompact,
+        Func<ReservedEntry, bool>? isEligible = null) =>
+        TryMatchPartial(exact, compact, _partialEntries, out match, out startIndex, out matchLength, out usedCompact, isEligible);
 
     private bool TryMatchPartial(
         string exact,
@@ -49,10 +50,16 @@ public sealed partial class Checker
         out ReservedEntry? match,
         out int startIndex,
         out int matchLength,
-        out bool usedCompact)
+        out bool usedCompact,
+        Func<ReservedEntry, bool>? isEligible = null)
     {
         foreach (var partial in partialEntries)
         {
+            if (isEligible is not null && !isEligible(partial.Entry))
+            {
+                continue;
+            }
+
             var exactIndex = exact.IndexOf(partial.Exact, StringComparison.Ordinal);
             if (exactIndex >= 0 && exact.Length > partial.Exact.Length)
             {
