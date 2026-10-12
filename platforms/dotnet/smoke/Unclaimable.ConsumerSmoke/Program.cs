@@ -19,6 +19,7 @@ var fluentValidator = new InlineValidator<string>();
 fluentValidator.RuleFor(value => value).MustBeClaimable();
 Require(fluentValidator.Validate("ordinary2").IsValid, "Packaged FluentValidation connector should accept ordinary identifiers.");
 Require(!fluentValidator.Validate("admin").IsValid, "Packaged FluentValidation connector should reject reserved identifiers.");
+Require(!fluentValidator.Validate("saddick").IsValid, "Packaged FluentValidation connector should reject embedded profanity.");
 
 var checker = Checker.Default;
 
@@ -33,6 +34,8 @@ Require(checker.Check("ordinary user").MatchKind == MatchKind.BlockedCharacter, 
 Require(checker.Check("ab").MatchKind == MatchKind.TooShort, "Minimum length should be enforced by default.");
 Require(checker.Check(new string('a', 33)).MatchKind == MatchKind.TooLong, "Maximum length should be enforced by default.");
 Require(checker.Check("fuckwaffle").Category == "profanity", "Curated English profanity compounds should participate by default.");
+Require(checker.Check("saddick").Category == "profanity", "Packaged Core should reject prefixed explicit profanity.");
+Require(checker.Check("dickinson").Category == "profanity", "Packaged Core should reject embedded explicit profanity.");
 Require(checker.Check("penis").Category == "profanity", "English explicit profanity should be reserved by default.");
 Require(checker.Check("p3n1s").MatchKind == MatchKind.Obfuscated, "Explicit profanity should use the existing leetspeak pipeline.");
 Require(checker.Check("myp3n1sname").MatchKind == MatchKind.Partial, "Curated explicit profanity should reject wrapped leetspeak forms.");
