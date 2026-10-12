@@ -92,6 +92,7 @@ jobs:
           dotnet build "$trimmed_dir/platforms/dotnet/src/Unclaimable.AspNetCore/Unclaimable.AspNetCore.csproj" --configuration Release
           dotnet build "$trimmed_dir/platforms/dotnet/src/Unclaimable.Email/Unclaimable.Email.csproj" --configuration Release
           dotnet build "$trimmed_dir/platforms/dotnet/src/Unclaimable.Extended/Unclaimable.Extended.csproj" --configuration Release
+          dotnet build "$trimmed_dir/platforms/dotnet/src/Unclaimable.FluentValidation/Unclaimable.FluentValidation.csproj" --configuration Release
 
       - name: Pack core
         run: dotnet pack platforms/dotnet/src/Unclaimable/Unclaimable.csproj --configuration Release --output artifacts
@@ -104,6 +105,9 @@ jobs:
 
       - name: Pack extended datasets
         run: dotnet pack platforms/dotnet/src/Unclaimable.Extended/Unclaimable.Extended.csproj --configuration Release --output artifacts
+
+      - name: Pack FluentValidation integration
+        run: dotnet pack platforms/dotnet/src/Unclaimable.FluentValidation/Unclaimable.FluentValidation.csproj --configuration Release --output artifacts
 
       - name: Validate package contents and metadata
         shell: pwsh
