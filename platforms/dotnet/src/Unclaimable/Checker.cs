@@ -35,13 +35,15 @@ public sealed partial class Checker : IChecker
 
     private sealed class PartialEntry
     {
-        public PartialEntry(string exact, string compact, ReservedEntry entry)
+        public PartialEntry(string exact, string compact, ReservedEntry entry, bool suffixOnly = false)
         {
             Exact = exact;
             Compact = compact;
             Entry = entry;
+            SuffixOnly = suffixOnly;
         }
 
+        public bool SuffixOnly { get; }
         public string Exact { get; }
         public string Compact { get; }
         public ReservedEntry Entry { get; }
@@ -262,9 +264,11 @@ public sealed partial class Checker : IChecker
                 continue;
             }
 
+            var broadPartial = entry.SafePartial || (isProfanity && options.ProfanityPartialMatching);
             Add(
                 entry,
-                includeInPartialMatching: entry.SafePartial || entry.SuffixOnly || (isProfanity && options.ProfanityPartialMatching));
+                includeInPartialMatching: broadPartial || entry.SuffixOnly,
+                suffixOnly: entry.SuffixOnly && !broadPartial);
         }
 
         foreach (var value in options.AdditionalReserved)
