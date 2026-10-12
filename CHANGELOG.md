@@ -21,7 +21,7 @@
 - Keep whole-identifier matching and exact Extended exceptions for these groups; document the source references in the packaged data notes.
 
 ### Matching correction
-- Protect prefixed identifiers ending in the explicit `dick` root (for example, `saddick`) with a curated suffix-only rule. The root remains an exact match on its own; ordinary identifiers that merely begin with it, such as `dickinson`, do not become arbitrary substring matches.
+- Add the explicit `dick` root to the curated default partial list so embedded forms such as `saddick` and `dickinson` are rejected as profanity. Existing partial and profanity rule controls still apply.
 
 ### Diagnostics and boolean path
 - Add a usage guide for `Check`, `CheckDetailed`, match kinds, categories and original-input spans.
