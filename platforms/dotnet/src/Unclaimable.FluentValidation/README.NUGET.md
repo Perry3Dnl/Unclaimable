@@ -32,7 +32,7 @@ public sealed class SignupValidator : AbstractValidator<Signup>
 }
 ```
 
-The rule accepts null; combine it with NotNull or NotEmpty for a required property. MustNotBeReserved is an alias.
+The rule accepts null; combine it with `NotNull()` or `NotEmpty()` for a required property. `MustNotBeReserved()` is an alias. The validator uses the same checker pipeline as Core, including scoped exception semantics. Only this optional connector brings the FluentValidation 12 dependency.
 
 ## Use application settings
 
