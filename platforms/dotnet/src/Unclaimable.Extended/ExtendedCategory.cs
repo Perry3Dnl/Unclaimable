@@ -56,5 +56,7 @@ public enum ExtendedCategory
     /// <summary>DeFi protocol identities; explicit opt-in.</summary>
     CryptoProtocols = 25,
     /// <summary>Crypto token names and symbols; explicit opt-in.</summary>
-    CryptoTokens = 26
+    CryptoTokens = 26,
+    /// <summary>Additional curated identity-targeting slurs; requires Extended opt-in.</summary>
+    HateSpeech = 27
 }
