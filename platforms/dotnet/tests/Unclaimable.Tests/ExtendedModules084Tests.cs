@@ -17,7 +17,7 @@ public sealed class ExtendedModules084Tests
     {
         var existingGroups = new Options();
         existingGroups.UseExtendedData();
-        Assert.True(new Checker(existingGroups).IsClaimable(identifier));
+        Assert.NotEqual(categoryName, new Checker(existingGroups).Check(identifier).Category);
 
         var selected = new Options();
         selected.UseExtendedData(extended => extended.EnableCategory(category));
