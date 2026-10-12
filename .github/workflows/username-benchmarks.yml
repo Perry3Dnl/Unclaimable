@@ -40,6 +40,11 @@ jobs:
           --filter '*SingleUsername084Benchmarks*'
           --exporters json csv markdown
 
+      - name: Publish benchmark summary in Actions
+        if: success()
+        run: |
+          cat BenchmarkDotNet.Artifacts/results/SingleUsername084Benchmarks-report-github.md >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload raw benchmark results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
