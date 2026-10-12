@@ -174,6 +174,26 @@ public class SingleUsername084Benchmarks
         _highSensitivity = new Checker(high);
     }
 
+    // Boolean APIs are the target for allocation-free steady-state validation.
+    // Keep these alongside Check() to avoid confusing diagnostic costs with matching costs.
+    [Benchmark]
+    public bool IsClaimableOrdinaryUsername() => _default.IsClaimable("zqvxpioneer");
+
+    [Benchmark]
+    public bool IsReservedExactUsername() => _default.IsReserved("admin");
+
+    [Benchmark]
+    public bool IsClaimableEmbeddedProfanity() => _default.IsClaimable("saddick");
+
+    [Benchmark]
+    public bool IsClaimableFullScanMiss() => _largeDataset.IsClaimable("zznomatchingreservationhere");
+
+    [Benchmark]
+    public bool IsReservedLatePartialMatch() => _largeDataset.IsReserved(_lateMatch);
+
+    [Benchmark]
+    public bool IsClaimableHighSensitivityNearMiss() => _highSensitivity.IsClaimable("admmmin");
+
     [Benchmark(Baseline = true)]
     public Result CheckOrdinaryUsername() => _default.Check("zqvxpioneer");
 
