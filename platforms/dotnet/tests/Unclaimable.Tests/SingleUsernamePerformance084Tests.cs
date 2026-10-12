@@ -10,6 +10,7 @@ public sealed class SingleUsernamePerformance084Tests
     {
         var options = new Options();
         options.DisableRule(Rule.ObfuscationMatching);
+        options.DisablePattern(Pattern.Repeated);
         for (var i = 0; i < 10000; i++)
             options.AdditionalReserved.Add("zzpartial" + i.ToString("D5", CultureInfo.InvariantCulture));
 
