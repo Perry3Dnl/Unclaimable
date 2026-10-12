@@ -76,4 +76,33 @@ public sealed class FluentValidationIntegrationTests
         Assert.Throws<ArgumentNullException>(() =>
             new InlineValidator<Signup>().RuleFor(x => x.Username).MustBeClaimable(null!));
     }
+
+    [Theory]
+    [InlineData("saddick")]
+    [InlineData("dickinson")]
+    [InlineData("admin")]
+    public void AdapterAgreesWithCoreCheckerOnEmbeddedAndExactMatches(string username)
+    {
+        var checker = new Checker();
+        var validator = new ConfiguredValidator(checker);
+        var result = checker.Check(username);
+        var validation = validator.Validate(new Signup { Username = username });
+
+        Assert.Equal(result.IsClaimable, validation.IsValid);
+        Assert.False(validation.IsValid);
+    }
+
+    [Fact]
+    public void AdapterHonorsScopedExceptionsAndOtherReservedMatches()
+    {
+        const string username = "dickzorb";
+        var options = new Options();
+        options.AdditionalReserved.Add("zorb");
+        options.AllowIdentifierForRule(username, Rule.Profanity);
+        var checker = new Checker(options);
+        var validator = new ConfiguredValidator(checker);
+
+        Assert.Equal("custom", checker.Check(username).Category);
+        Assert.False(validator.Validate(new Signup { Username = username }).IsValid);
+    }
 }
