@@ -138,3 +138,56 @@ public class AdversarialObfuscation084Benchmarks
     [Benchmark]
     public Result CheckLongMiss() => _checker.Check(_candidate);
 }
+
+ 
+// Single-identifier latency. BenchmarkDotNet reports mean, spread, and allocated bytes
+// per Check invocation. Construct checkers and test values outside the timed methods.
+[MemoryDiagnoser]
+[SimpleJob(warmupCount: 3, iterationCount: 10)]
+public class SingleUsername084Benchmarks
+{
+    private const int ReservationCount = 10000;
+    private Checker _default = null!;
+    private Checker _largeDataset = null!;
+    private Checker _highSensitivity = null!;
+    private string _lateMatch = null!;
+
+    [GlobalSetup]
+    public void Setup()
+    {
+        _default = new Checker();
+        var options = new Options();
+        options.DisableRule(Rule.ObfuscationMatching); // Isolate full partial-index traversal.
+        for (var i = 0; i < ReservationCount; i++)
+            options.AdditionalReserved.Add("zzpartial" + i.ToString("D5", System.Globalization.CultureInfo.InvariantCulture));
+
+        _largeDataset = new Checker(options);
+        // All custom entries have equal compact length; the final inserted entry
+        // is examined last by the stable List.Sort ordering only when ties preserve
+        // insertion order. Do not assume stability: this measures a late candidate,
+        // while the guaranteed full traversal is CheckFullScanMiss below.
+        _lateMatch = "prefixzzpartial09999suffix";
+
+        var high = new Options { ObfuscationSensitivity = ObfuscationSensitivity.High };
+        high.DisablePattern(Pattern.Repeated);
+        _highSensitivity = new Checker(high);
+    }
+
+    [Benchmark(Baseline = true)]
+    public Result CheckOrdinaryUsername() => _default.Check("zqvxpioneer");
+
+    [Benchmark]
+    public Result CheckExactReservedUsername() => _default.Check("admin");
+
+    [Benchmark]
+    public Result CheckEmbeddedProfanity() => _default.Check("saddick");
+
+    [Benchmark]
+    public Result CheckFullScanMiss() => _largeDataset.Check("zznomatchingreservationhere");
+
+    [Benchmark]
+    public Result CheckLatePartialMatch() => _largeDataset.Check(_lateMatch);
+
+    [Benchmark]
+    public Result CheckHighSensitivityNearMiss() => _highSensitivity.Check("admmmin");
+}
