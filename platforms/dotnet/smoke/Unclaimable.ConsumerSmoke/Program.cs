@@ -21,6 +21,20 @@ Require(fluentValidator.Validate("ordinary2").IsValid, "Packaged FluentValidatio
 Require(!fluentValidator.Validate("admin").IsValid, "Packaged FluentValidation connector should reject reserved identifiers.");
 Require(!fluentValidator.Validate("saddick").IsValid, "Packaged FluentValidation connector should reject embedded profanity.");
 
+Require(!(await fluentValidator.ValidateAsync("admin")).IsValid,
+    "Packaged FluentValidation connector should reject reserved identifiers asynchronously.");
+Require((await fluentValidator.ValidateAsync("ordinary2")).IsValid,
+    "Packaged FluentValidation connector should accept ordinary identifiers asynchronously.");
+var fluentCustomOptions = new Options();
+fluentCustomOptions.Reserve("localbrandexample", "customcategory", ReservedMatchMode.Exact);
+var fluentCustom = new InlineValidator<string>();
+fluentCustom.RuleFor(value => value)
+    .MustNotBeReserved(new Checker(fluentCustomOptions))
+    .WithMessage("{MatchKind}:{Category}");
+var fluentFailure = (await fluentCustom.ValidateAsync("localbrandexample")).Errors.Single();
+Require(fluentFailure.ErrorMessage == "Exact:customcategory",
+    "Packaged FluentValidation connector should resolve reason and category placeholders.");
+
 var checker = Checker.Default;
 
 Require(checker.Check("customersupport").Category == "support", "English support names should be reserved by default.");
