@@ -422,7 +422,13 @@ public sealed partial class Checker : IChecker
             int partialStart;
             int partialLength;
             bool usedCompact;
-            if (TryMatchPartial(exact, compact, out partialMatch, out partialStart, out partialLength, out usedCompact))
+            if (TryMatchPartial(
+                    exact, compact, out partialMatch, out partialStart, out partialLength, out usedCompact,
+                    entry =>
+                    {
+                        var sourceRule = GetRuleForReservedEntry(entry);
+                        return !sourceRule.HasValue || !HasRuleException(ruleExceptions, sourceRule.Value);
+                    }))
             {
                 var sourceRule = GetRuleForReservedEntry(partialMatch!);
                 if (!sourceRule.HasValue || !HasRuleException(ruleExceptions, sourceRule.Value))
