@@ -2,12 +2,12 @@
 
 Fast, dependency-free reserved username and identifier validation for .NET.
 
-**Package version: 0.8.3**
+**Package version: 0.8.4**
 
 ## Install
 
 ```bash
-dotnet add package Unclaimable --version 0.8.3
+dotnet add package Unclaimable --version 0.8.4
 ```
 
 ## Quick start
