@@ -20,6 +20,10 @@
 - Add six separately enabled Extended groups for Netherlands and United States public-office titles and for crypto wallets, exchanges, protocols and tokens (30 curated identifiers). Existing `UseExtendedData()` behavior remains unchanged until an application enables a new group.
 - Keep whole-identifier matching and exact Extended exceptions for these groups; document the source references in the packaged data notes.
 
+### Diagnostics and boolean path
+- Add a usage guide for `Check`, `CheckDetailed`, match kinds, categories and original-input spans.
+- Avoid constructing a `Result` for null boolean checks; benchmark accepted, rejected and null boolean calls against `Check` before making broader matcher changes.
+
 ### Tests and performance
 - Add regression cases for email usage, domain policy, multi-label suffix parsing, and a pinned subset of supported Unicode confusables.
 - Add parameterized BenchmarkDotNet scenarios for custom partial matching at 0, 100, 1,000, 5,000, and 10,000 participating reservations.
