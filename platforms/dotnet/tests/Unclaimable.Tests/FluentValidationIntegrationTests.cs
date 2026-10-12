@@ -44,6 +44,8 @@ public sealed class FluentValidationIntegrationTests
         var failure = Assert.Single(validator.Validate(new Signup { Username = "admin" }).Errors);
         Assert.Contains("claimable", failure.ErrorMessage);
         Assert.False(new DefaultAliasValidator().Validate(new Signup { Username = "admin" }).IsValid);
+        Assert.Contains("TooShort", Assert.Single(new DefaultAliasValidator()
+            .Validate(new Signup { Username = "ab" }).Errors).ErrorMessage);
     }
 
     [Fact]
