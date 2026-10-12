@@ -1,4 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using FluentValidation;
+using Unclaimable.FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Unclaimable;
 using Unclaimable.AspNetCore;
@@ -12,6 +14,11 @@ static void Require(bool condition, string message)
         throw new InvalidOperationException(message);
     }
 }
+
+var fluentValidator = new InlineValidator<string>();
+fluentValidator.RuleFor(value => value).MustBeClaimable();
+Require(fluentValidator.Validate("ordinary2").IsValid, "Packaged FluentValidation connector should accept ordinary identifiers.");
+Require(!fluentValidator.Validate("admin").IsValid, "Packaged FluentValidation connector should reject reserved identifiers.");
 
 var checker = Checker.Default;
 
