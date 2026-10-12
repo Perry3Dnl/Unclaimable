@@ -47,7 +47,7 @@ public sealed class ExtendedProfanity085Tests
             total += values.Length;
         }
 
-        Assert.Equal(206, total);
+        Assert.Equal(314, total);
     }
 
     [Fact]
@@ -67,7 +67,7 @@ public sealed class ExtendedProfanity085Tests
         options.UseExtendedData(extended =>
             extended.DisableCategory(ExtendedCategory.SlangProfanity));
 
-        Assert.True(ExtendedData.GetCount(ExtendedCategory.SlangProfanity) >= 206);
+        Assert.True(ExtendedData.GetCount(ExtendedCategory.SlangProfanity) >= 314);
         Assert.NotEqual("slangprofanity", new Checker(options).Check("schijters").Category);
     }
 }
