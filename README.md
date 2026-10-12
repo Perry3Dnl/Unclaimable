@@ -4,13 +4,13 @@
 </h1>
 
 [![build](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml)
-[![latest line coverage](https://img.shields.io/badge/latest%20line%20coverage-98.06%25-brightgreen.svg)](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml)
+[![latest line coverage](https://img.shields.io/badge/latest%20line%20coverage-98.03%25-brightgreen.svg)](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml)
 [![NuGet](https://img.shields.io/nuget/v/Unclaimable.svg?label=nuget)](https://www.nuget.org/packages/Unclaimable)
 [![NuGet downloads](https://img.shields.io/nuget/dt/Unclaimable.svg?label=downloads)](https://www.nuget.org/packages/Unclaimable)
 [![license](https://img.shields.io/badge/license-Apache--2.0%20%2B%20Commons%20Clause-blue.svg)](LICENSE)
 [![target](https://img.shields.io/badge/.NET-netstandard2.0-512BD4.svg)](platforms/dotnet/src/Unclaimable/Unclaimable.csproj)
 
-Latest measured production line coverage: **98.06%**. Engineering target: **100%**; enforced CI minimum: **98%**.
+Latest measured production line coverage: **98.03%**. Engineering target: **100%**; enforced CI minimum: **98%**.
 
 **Strict, fast username and identifier validation for .NET.**
 
@@ -18,7 +18,9 @@ Prevent reserved, protected, misleading, degenerate, and unsafe identifiers befo
 
 [**NuGet**](https://www.nuget.org/packages/Unclaimable) · [**Configuration guide**](docs/CONFIGURATION.md) · [**Changelog**](CHANGELOG.md)
 
-## 0.8.4: email policies, Extended datasets and FluentValidation (release candidate)
+## 0.8.4: email policies, Extended datasets and FluentValidation
+
+**Released: 2026-10-12**
 
 0.8.4 introduces the optional **Unclaimable.FluentValidation** connector for .NET 8+ (FluentValidation 12) with `MustBeClaimable()` and `MustNotBeReserved()`. The Core package remains free of that dependency.
 
@@ -45,7 +47,7 @@ The ordinary, exact-reserved, embedded-profanity, full-scan-miss and late-partia
 
 **Interpretation:** the result is strong on allocation minimization for ordinary boolean checks, but full-scan misses and High-sensitivity near misses have substantially higher latency. These figures are absolute 0.8.4 measurements, **not a controlled 0.8.3-versus-0.8.4 comparison**, so no version-over-version performance improvement is claimed. Results depend on the runner, CPU, .NET version and configuration; the full output should be retained as a workflow artifact alongside release evidence. See [benchmark methodology](docs/SINGLE_USERNAME_BENCHMARKS.md).
 
-**Release state:** This is an unreleased development candidate. Do not interpret the version references in source documentation as packages already available on NuGet. Benchmark results and final CI validation must be reviewed before publishing.
+**Release verification:** All five 0.8.4 packages passed CI package validation, 4,259 tests and packaged-consumer smoke testing; the benchmark figures above document measured release-candidate performance.
 
 See the [0.8.4 changelog](CHANGELOG.md) for migration considerations and individual package READMEs for their APIs.
 
