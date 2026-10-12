@@ -23,7 +23,8 @@
 
 ### Optional Extended datasets
 - Add six Extended groups for Netherlands and United States public-office titles and for crypto wallets, exchanges, protocols and tokens (30 curated identifiers). All groups are included by default when an application calls `UseExtendedData()`; each can be disabled individually.
-- Add the curated `HateSpeech` Extended group, enabled with `UseExtendedData()` and individually disableable; matching remains whole-identifier, not blanket substring filtering.\n- Keep whole-identifier matching and exact Extended exceptions for these groups; document the source references in the packaged data notes.
+- Add the curated `HateSpeech` Extended group, enabled with `UseExtendedData()` and individually disableable; matching remains whole-identifier, not blanket substring filtering.
+- Keep whole-identifier matching and exact Extended exceptions for these groups; document the source references in the packaged data notes.
 
 ### Matching correction
 - Add the explicit `dick` root to the curated default partial list so embedded forms such as `saddick` and `dickinson` are rejected as profanity. Existing partial and profanity rule controls still apply.
