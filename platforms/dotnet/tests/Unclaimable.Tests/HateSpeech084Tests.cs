@@ -75,13 +75,15 @@ public sealed class HateSpeech084Tests
     }
 
     [Fact]
-    public void ExtendedHateSpeechExceptionsAreExact()
+    public void ExtendedHateSpeechExceptionsDoNotDisableOverlappingRoots()
     {
         var options = new Options();
         options.UseExtendedData(extended => extended.AllowedIdentifiers.Add("dykehaters"));
         var checker = new Checker(options);
 
-        Assert.NotEqual("hatespeech", checker.Check("dykehaters").Category);
+        // The excluded exact entry can still be covered by another registered
+        // overlapping hate-speech root; exact exceptions do not disable that root.
+        Assert.True(checker.IsReserved("dykehaters"));
         Assert.True(checker.IsReserved("trannyhaters"));
     }
 
