@@ -29,7 +29,9 @@ public sealed partial class Checker
 
         if (includeInPartialMatching
             && (compact.Length >= _partialMatchMinimumLength
-                || (entry.SafePartial && compact == "fag")))
+                || (entry.SafePartial
+                    && entry.Category == "profanity"
+                    && compact.Length >= 3))
         {
             _partialEntries.Add(new PartialEntry(exact, compact, entry));
         }
