@@ -12,7 +12,7 @@
     <Description>ASP.NET Core dependency injection and DataAnnotations integration for Unclaimable, with explicit .NET 6 through .NET 11 framework assets.</Description>
     <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
     <PackageIcon>unclaimable-icon.png</PackageIcon>
-    <PackageTags>username;validation;security;aspnetcore;reserved-names;identity;impersonation;dotnet;web;blazor;server;dependency-injection;dataannotations</PackageTags>
+    <PackageTags>aspnetcore;aspnet-core;username;username-validation;username-validator;identifier-validation;reserved-names;reserved-words;profanity-filter;impersonation;identity-protection;validation;model-validation;dataannotations;data-annotations;dependency-injection;di;web-api;web;blazor;server;security;dotnet</PackageTags>
 
     <EnablePackageValidation>true</EnablePackageValidation>
     <PackageValidationBaselineVersion>0.8.0</PackageValidationBaselineVersion>
