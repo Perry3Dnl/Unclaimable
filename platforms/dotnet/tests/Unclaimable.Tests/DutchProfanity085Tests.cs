@@ -32,8 +32,8 @@ public sealed class DutchProfanity085Tests
     }
 
     [Fact]
-    public void DutchExactEntryDoesNotBlockUnrelatedSimilarWords()
+    public void DutchExactEntryDoesNotBlockUnrelatedIdentifier()
     {
-        Assert.True(new Checker(new Options { ProfanityPartialMatching = false, PartialMatchMinimumLength = 4 }).IsClaimable("pikachu"));
+        Assert.True(new Checker(new Options { ProfanityPartialMatching = false, PartialMatchMinimumLength = 4 }).IsClaimable("pikzebra"));
     }
 }
