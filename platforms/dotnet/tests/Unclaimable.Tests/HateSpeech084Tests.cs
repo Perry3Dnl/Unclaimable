@@ -7,9 +7,22 @@ public sealed class HateSpeech084Tests
 {
     [Theory]
     [InlineData("wetback")]
+    [InlineData("fag")]
+    [InlineData("fags")]
     [InlineData("faggot")]
     [InlineData("towelhead")]
     public void CoreProtectsHighConfidenceIdentitySlurs(string identifier)
+    {
+        var result = new Checker().Check(identifier);
+        Assert.True(result.IsReserved, $"Expected {identifier} to be protected.");
+        Assert.Equal("profanity", result.Category);
+    }
+
+    [Theory]
+    [InlineData("saggyfag")]
+    [InlineData("fagprofile")]
+    [InlineData("myfagaccount")]
+    public void CoreBlocksEmbeddedHighConfidenceSlurRootByDefault(string identifier)
     {
         var result = new Checker().Check(identifier);
         Assert.True(result.IsReserved, $"Expected {identifier} to be protected.");
