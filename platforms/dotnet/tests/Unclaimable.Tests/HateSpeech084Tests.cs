@@ -29,6 +29,25 @@ public sealed class HateSpeech084Tests
         Assert.Equal("profanity", result.Category);
     }
 
+    [Theory]
+    [InlineData("cocksmoker")]
+    [InlineData("dumbfucks")]
+    [InlineData("shitholes")]
+    [InlineData("whoremongers")]
+    public void CoreProtectsNewStandaloneProfanityWords(string identifier)
+    {
+        var result = new Checker().Check(identifier);
+        Assert.True(result.IsReserved, $"Expected {identifier} to be reserved by default.");
+        Assert.Equal("profanity", result.Category);
+    }
+
+    [Fact]
+    public void DisablingProfanityDoesNotBlockExplicitProfanityRoots()
+    {
+        var options = new Options { ProfanityMatching = false };
+        Assert.True(new Checker(options).IsClaimable("saggyfag"));
+    }
+
     [Fact]
     public void ExtendedCategoryIsOptInAndUsesCoreChecker()
     {
