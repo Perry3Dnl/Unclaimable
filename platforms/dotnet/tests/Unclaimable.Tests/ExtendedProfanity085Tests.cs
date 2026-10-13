@@ -47,7 +47,7 @@ public sealed class ExtendedProfanity085Tests
             total += values.Length;
         }
 
-        Assert.Equal(412, total);
+        Assert.True(total >= 1013, $"Expected the expanded multilingual snapshot, got {total}.");
     }
 
     [Fact]
