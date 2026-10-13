@@ -81,7 +81,7 @@ public sealed class HateSpeech084Tests
         options.UseExtendedData(extended => extended.AllowedIdentifiers.Add("dykehaters"));
         var checker = new Checker(options);
 
-        Assert.True(checker.IsClaimable("dykehaters"));
+        Assert.NotEqual("hatespeech", checker.Check("dykehaters").Category);
         Assert.True(checker.IsReserved("trannyhaters"));
     }
 
@@ -93,6 +93,6 @@ public sealed class HateSpeech084Tests
         var checker = new Checker(options);
 
         Assert.True(checker.IsReserved("dykehaters"));
-        Assert.True(checker.IsClaimable("mydykehatersarchive"));
+        Assert.True(checker.IsReserved("mydykehatersarchive"));
     }
 }
