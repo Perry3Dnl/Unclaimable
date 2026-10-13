@@ -5,7 +5,9 @@
   "language": "pt",
   "values": [
     "babaca",
+    "babacão",
     "babacas",
+    "babacões",
     "bosta",
     "bostas",
     "bostinha",
@@ -26,6 +28,10 @@
     "cretinos",
     "escrota",
     "escroto",
+    "estúpida",
+    "estúpidas",
+    "estúpido",
+    "estúpidos",
     "fodase",
     "fodedor",
     "fodedora",
@@ -37,6 +43,7 @@
     "idiota",
     "idiotas",
     "imbecil",
+    "imbecilidade",
     "imbecis",
     "merda",
     "merdas",
@@ -52,6 +59,10 @@
     "palhaças",
     "palhaço",
     "palhaços",
+    "parva",
+    "parvas",
+    "parvo",
+    "parvos",
     "porcaria",
     "porcarias",
     "putanheira",
@@ -60,6 +71,8 @@
     "safada",
     "safadas",
     "safado",
-    "safados"
+    "safados",
+    "trouxa",
+    "trouxas"
   ]
 }
