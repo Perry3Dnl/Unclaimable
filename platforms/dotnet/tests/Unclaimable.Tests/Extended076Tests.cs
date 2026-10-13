@@ -194,6 +194,11 @@ public sealed class Extended076Tests
             Assert.Equal(1, root.GetProperty("schema").GetInt32());
             Assert.False(string.IsNullOrWhiteSpace(root.GetProperty("category").GetString()));
 
+            // Language-specific dictionaries may legitimately contain the same word in
+            // different languages. Preserve cross-category uniqueness for other datasets.
+            var isLanguageDataset = resourceName.Contains(".slangprofanity-", StringComparison.Ordinal);
+            var fileExact = isLanguageDataset ? new HashSet<string>(StringComparer.Ordinal) : exact;
+            var fileCompact = isLanguageDataset ? new HashSet<string>(StringComparer.Ordinal) : compact;
             foreach (var item in root.GetProperty("values").EnumerateArray())
             {
                 var value = item.GetString();
@@ -202,8 +207,8 @@ public sealed class Extended076Tests
                 var normalized = value!.Trim().Normalize(NormalizationForm.FormKC).ToLowerInvariant();
                 var compactValue = new string(normalized.Where(char.IsLetterOrDigit).ToArray());
 
-                Assert.True(exact.Add(normalized), $"Duplicate Extended value: {value}");
-                Assert.True(compact.Add(compactValue), $"Duplicate compact Extended value: {value}");
+                Assert.True(fileExact.Add(normalized), $"Duplicate Extended value: {value}");
+                Assert.True(fileCompact.Add(compactValue), $"Duplicate compact Extended value: {value}");
             }
         }
     }
