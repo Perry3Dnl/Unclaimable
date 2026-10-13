@@ -31,7 +31,7 @@ public sealed partial class Checker
             && (compact.Length >= _partialMatchMinimumLength
                 || (entry.SafePartial
                     && entry.Category == "profanity"
-                    && compact.Length >= 3))
+                    && compact.Length >= 3)))
         {
             _partialEntries.Add(new PartialEntry(exact, compact, entry));
         }
