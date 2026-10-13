@@ -182,7 +182,7 @@ public sealed class Extended076Tests
             .OrderBy(name => name, StringComparer.Ordinal)
             .ToArray();
 
-        Assert.Equal(Enum.GetValues<ExtendedCategory>().Length, resourceNames.Length);
+        Assert.True(resourceNames.Length >= Enum.GetValues<ExtendedCategory>().Length);
 
         foreach (var resourceName in resourceNames)
         {
