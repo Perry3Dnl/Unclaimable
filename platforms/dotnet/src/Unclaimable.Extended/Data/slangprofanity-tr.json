@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "category": "slangprofanity",
-  "description": "Additional tr vulgarity, insults, and slang expressions for v0.8.5. Reviewed candidate set; further native-speaker review recommended.",
+  "description": "Additional tr single-word vulgarity and slang entries for v0.8.5. Reviewed candidate set; further native-speaker review recommended.",
   "language": "tr",
   "values": [
     "ahmak",
@@ -114,6 +114,7 @@
     "haysiyetsizlik",
     "hergele",
     "hergeleler",
+    "hınzır",
     "hıyar",
     "hıyarlar",
     "hödük",
@@ -275,7 +276,6 @@
     "yalakalar",
     "yalakalık",
     "yalancı",
-    "yalancı herif",
     "yalancılar",
     "yalancılık",
     "yalancılıklar",
