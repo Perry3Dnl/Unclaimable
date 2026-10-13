@@ -12,7 +12,7 @@ public sealed class CoreProfanityWordCoverage085Tests
 {
     private const string SafeWord = "orchid";
     private static readonly Lazy<Checker> CoreChecker = new(() =>
-        new Checker(new Options { MaximumLength = 512 }));
+        new Checker(new Options { MaximumLength = 512, PartialMatchMinimumLength = 1, ProfanityPartialMatching = true }));
 
     public static IEnumerable<object[]> AllCoreProfanityWords()
     {
