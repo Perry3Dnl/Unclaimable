@@ -14,7 +14,7 @@ public sealed class ExtendedWordCoverage085Tests
     private const string SafeWord = "orchid";
     private static readonly Lazy<Checker> ExtendedChecker = new(() =>
     {
-        var options = new Options { MaximumLength = 512 };
+        var options = new Options { MaximumLength = 512, PartialMatchMinimumLength = 1, ProfanityPartialMatching = true };
         options.UseExtendedData();
         return new Checker(options);
     });
