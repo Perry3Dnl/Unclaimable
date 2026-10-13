@@ -40,9 +40,13 @@ public sealed class ExtendedProfanity085Tests
             Assert.All(values, entry =>
             {
                 Assert.False(string.IsNullOrWhiteSpace(entry));
-                Assert.DoesNotContain(' ', entry);
+                if (language != "vi")
+                    Assert.DoesNotContain(' ', entry);
                 Assert.Equal(entry, entry.Trim());
             });
+
+            if (language == "vi")
+                Assert.Contains(values, entry => entry.Contains(' '));
 
             total += values.Length;
         }
