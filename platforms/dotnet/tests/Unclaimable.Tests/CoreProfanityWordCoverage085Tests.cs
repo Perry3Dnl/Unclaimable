@@ -17,6 +17,7 @@ public sealed class CoreProfanityWordCoverage085Tests
     public static IEnumerable<object[]> AllCoreProfanityWords()
     {
         var assembly = typeof(Checker).Assembly;
+        var words = new HashSet<string>(StringComparer.Ordinal);
         foreach (var resourceName in assembly.GetManifestResourceNames()
                      .Where(name => name.StartsWith("Unclaimable.Data.", StringComparison.Ordinal)
                                     && name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
@@ -33,7 +34,6 @@ public sealed class CoreProfanityWordCoverage085Tests
             var language = root.TryGetProperty("language", out var lang)
                 ? lang.GetString() ?? "en"
                 : "en";
-            var words = new HashSet<string>(StringComparer.Ordinal);
             foreach (var name in new[] { "values", "partialValues" })
             {
                 if (!root.TryGetProperty(name, out var entries))
@@ -42,7 +42,7 @@ public sealed class CoreProfanityWordCoverage085Tests
                 {
                     var word = item.GetString();
                     if (!string.IsNullOrWhiteSpace(word)
-                        && words.Add(word.Normalize().ToLowerInvariant()))
+                        && words.Add(language + "\u0000" + word.Normalize().ToLowerInvariant()))
                         yield return new object[] { language, word };
                 }
             }
