@@ -23,7 +23,9 @@ public sealed partial class Checker
 
         private static Dictionary<ulong, int[]> Build(IReadOnlyList<PartialEntry> entries, bool compact)
         {
-            var pending = new Dictionary<ulong, List<int>>();
+            // Two passes: count prefix members, allocate each bucket once, then fill.
+            // Avoids a List<int> and a ToArray copy for every prefix during startup.
+            var counts = new Dictionary<ulong, int>();
             for (var i = 0; i < entries.Count; i++)
             {
                 var pattern = compact ? entries[i].Compact : entries[i].Exact;
@@ -33,19 +35,34 @@ public sealed partial class Checker
                 }
 
                 var key = Prefix(pattern, 0);
-                if (!pending.TryGetValue(key, out var indexes))
-                {
-                    indexes = new List<int>();
-                    pending.Add(key, indexes);
-                }
-
-                indexes.Add(i);
+                counts.TryGetValue(key, out var count);
+                counts[key] = count + 1;
             }
 
-            var result = new Dictionary<ulong, int[]>(pending.Count);
-            foreach (var pair in pending)
+            var result = new Dictionary<ulong, int[]>(counts.Count);
+            foreach (var pair in counts)
             {
-                result.Add(pair.Key, pair.Value.ToArray());
+                result.Add(pair.Key, new int[pair.Value]);
+            }
+
+            // Reuse the counts table for write positions, with no extra per-bucket objects.
+            foreach (var key in result.Keys)
+            {
+                counts[key] = 0;
+            }
+
+            for (var i = 0; i < entries.Count; i++)
+            {
+                var pattern = compact ? entries[i].Compact : entries[i].Exact;
+                if (pattern.Length == 0)
+                {
+                    continue;
+                }
+
+                var key = Prefix(pattern, 0);
+                var position = counts[key];
+                result[key][position] = i;
+                counts[key] = position + 1;
             }
 
             return result;
