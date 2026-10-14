@@ -129,4 +129,17 @@ public sealed class PartialCandidateIndex085Tests
         Assert.Equal("synthetic", checker.Check("qzxentry0023").Category);
     }
 
+    [Fact]
+    public void LargeIndexHonorsUnrelatedPerIdentifierRuleExceptions()
+    {
+        var options = LargeOptions();
+        options.AllowIdentifierForRule("prefixqzxentry0824suffix", Rule.Numbers);
+        var checker = new Checker(options);
+
+        var result = checker.Check("prefixqzxentry0824suffix");
+        Assert.True(result.IsReserved);
+        Assert.Equal("synthetic", result.Category);
+        Assert.Equal(MatchKind.Partial, result.MatchKind);
+    }
+
 }
