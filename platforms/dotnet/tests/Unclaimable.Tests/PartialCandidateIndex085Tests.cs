@@ -71,4 +71,62 @@ public sealed class PartialCandidateIndex085Tests
 
         Assert.Equal("slangprofanity", checker.Check("prefixpillocksuffix").Category);
     }
+    // Force the >=1024-entry index rather than exercising only the fallback path.
+    private static Options LargeOptions()
+    {
+        var options = new Options();
+        for (var i = 0; i < 1100; i++)
+        {
+            options.Reserve("qzxentry" + i.ToString("D4"), "synthetic");
+        }
+
+        return options;
+    }
+
+    [Fact]
+    public void LargeIndexRecognizesExactAndCompactEmbeddedTermsWithoutChangingPriority()
+    {
+        var options = LargeOptions();
+        options.Reserve("qzx-extra", "punctuation");
+        var checker = new Checker(options);
+
+        var embedded = checker.Check("prefixqzxentry0824suffix");
+        Assert.True(embedded.IsReserved);
+        Assert.Equal("synthetic", embedded.Category);
+        Assert.Equal(MatchKind.Partial, embedded.MatchKind);
+        Assert.Equal(6, embedded.MatchStartIndex);
+
+        var compact = checker.Check("prefixqzxextrasuffix");
+        Assert.True(compact.IsReserved);
+        Assert.Equal("punctuation", compact.Category);
+        Assert.Equal(MatchKind.Partial, compact.MatchKind);
+
+        Assert.True(checker.IsClaimable("harmlessinputwithoutindexpattern"));
+    }
+
+    [Fact]
+    public void LargeIndexPreservesShortWordFalsePositiveSensitivity()
+    {
+        var options = LargeOptions();
+        options.FalsePositiveSensitivity = FalsePositiveSensitivity.Medium;
+        options.Reserve("zzuv", "slangprofanity");
+        var checker = new Checker(options);
+
+        Assert.True(checker.IsClaimable("prefixzzuv"));
+        Assert.Equal("slangprofanity", checker.Check("zzuvx").Category);
+    }
+
+    [Fact]
+    public void LargeIndexHonorsDisabledCompactMatching()
+    {
+        var options = LargeOptions();
+        options.CompactMatching = false;
+        options.ConsistentCompactMatching = true;
+        options.Reserve("xy-ztoken", "separator");
+        var checker = new Checker(options);
+
+        Assert.True(checker.IsClaimable("prefixxyztokensuffix"));
+        Assert.Equal("separator", checker.Check("prefixxy-ztokensuffix").Category);
+    }
+
 }
