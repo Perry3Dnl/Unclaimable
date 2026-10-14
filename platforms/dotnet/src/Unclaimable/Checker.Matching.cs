@@ -58,13 +58,13 @@ public sealed partial class Checker
         Rule ruleExceptions = Rule.None)
     {
         var compactPartialEnabled = !_consistentCompactMatching || _compactMatching;
-        if (ReferenceEquals(partialEntries, _partialEntries))
+        if (_mainPartialCandidateIndex is not null && ReferenceEquals(partialEntries, _partialEntries))
         {
             return _mainPartialCandidateIndex.TryMatch(this, exact, compact, partialEntries,
                 compactPartialEnabled, ruleExceptions, out match, out startIndex, out matchLength, out usedCompact);
         }
 
-        if (ReferenceEquals(partialEntries, _customPartialEntries))
+        if (_customPartialCandidateIndex is not null && ReferenceEquals(partialEntries, _customPartialEntries))
         {
             return _customPartialCandidateIndex.TryMatch(this, exact, compact, partialEntries,
                 compactPartialEnabled, ruleExceptions, out match, out startIndex, out matchLength, out usedCompact);
