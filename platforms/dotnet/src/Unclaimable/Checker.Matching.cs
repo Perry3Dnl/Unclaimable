@@ -58,6 +58,19 @@ public sealed partial class Checker
         Rule ruleExceptions = Rule.None)
     {
         var compactPartialEnabled = !_consistentCompactMatching || _compactMatching;
+        if (ReferenceEquals(partialEntries, _partialEntries))
+        {
+            return _mainPartialCandidateIndex.TryMatch(this, exact, compact, partialEntries,
+                compactPartialEnabled, ruleExceptions, out match, out startIndex, out matchLength, out usedCompact);
+        }
+
+        if (ReferenceEquals(partialEntries, _customPartialEntries))
+        {
+            return _customPartialCandidateIndex.TryMatch(this, exact, compact, partialEntries,
+                compactPartialEnabled, ruleExceptions, out match, out startIndex, out matchLength, out usedCompact);
+        }
+
+        // Keep the original path for any caller supplying a different entry collection.
         for (var entryIndex = 0; entryIndex < partialEntries.Count; entryIndex++)
         {
             var partial = partialEntries[entryIndex];
