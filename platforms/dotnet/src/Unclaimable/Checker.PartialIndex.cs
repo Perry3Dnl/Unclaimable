@@ -9,7 +9,9 @@ public sealed partial class Checker
     // occur in the candidate input are considered for partial matching.
     private sealed class PartialCandidateIndex
     {
-        private const ulong SingleCharacterFlag = 1UL << 32;
+        private const ulong SingleCharacterFlag = 1UL << 48;
+        private const ulong TwoCharacterFlag = 2UL << 48;
+        private const ulong ThreeCharacterFlag = 3UL << 48;
         private readonly Dictionary<ulong, int[]> _exact;
         private readonly Dictionary<ulong, int[]> _compact;
 
@@ -51,8 +53,15 @@ public sealed partial class Checker
 
         private static ulong Prefix(string text, int start)
         {
-            return start + 1 < text.Length
-                ? ((ulong)text[start] << 16) | text[start + 1]
+            var remaining = text.Length - start;
+            if (remaining >= 3)
+            {
+                return ThreeCharacterFlag | ((ulong)text[start] << 32)
+                    | ((ulong)text[start + 1] << 16) | text[start + 2];
+            }
+
+            return remaining == 2
+                ? TwoCharacterFlag | ((ulong)text[start] << 16) | text[start + 1]
                 : SingleCharacterFlag | text[start];
         }
 
@@ -111,10 +120,19 @@ public sealed partial class Checker
         {
             for (var start = 0; start < input.Length; start++)
             {
+                if (start + 2 < input.Length)
+                {
+                    ScanBucket(ThreeCharacterFlag | ((ulong)input[start] << 32)
+                        | ((ulong)input[start + 1] << 16) | input[start + 2],
+                        checker, input, entries, buckets, compact, ruleExceptions,
+                        start, ref bestIndex, ref bestStart, ref bestCompact);
+                }
+
                 if (start + 1 < input.Length)
                 {
-                    ScanBucket(Prefix(input, start), checker, input, entries, buckets,
-                        compact, ruleExceptions, start, ref bestIndex, ref bestStart, ref bestCompact);
+                    ScanBucket(TwoCharacterFlag | ((ulong)input[start] << 16) | input[start + 1],
+                        checker, input, entries, buckets, compact, ruleExceptions,
+                        start, ref bestIndex, ref bestStart, ref bestCompact);
                 }
 
                 ScanBucket(SingleCharacterFlag | input[start], checker, input, entries, buckets,
