@@ -34,6 +34,12 @@ jobs:
           mkdir -p baseline/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085
           cp candidate/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/* baseline/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/
 
+      - name: Checkout original v0.8.5 index for same-dataset A/B
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 80629e97467e1e7821471e05b7db6f0e35bdb31a
+          path: previous
+
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
@@ -48,6 +54,10 @@ jobs:
         working-directory: baseline
         run: dotnet run --project platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/Unclaimable.ExtendedBenchmarks085.csproj -c Release -- --exporters json markdown
 
+      - name: Benchmark previous v0.8.5 index
+        working-directory: previous
+        run: dotnet run --project platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/Unclaimable.ExtendedBenchmarks085.csproj -c Release -- --exporters json markdown
+
       - name: Benchmark v0.8.5 candidate
         working-directory: candidate
         run: dotnet run --project platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/Unclaimable.ExtendedBenchmarks085.csproj -c Release -- --exporters json markdown
@@ -59,6 +69,7 @@ jobs:
           name: extended-085-compare
           path: |
             baseline/BenchmarkDotNet.Artifacts/results/*
+            previous/BenchmarkDotNet.Artifacts/results/*
             candidate/BenchmarkDotNet.Artifacts/results/*
           if-no-files-found: warn
           retention-days: 30
