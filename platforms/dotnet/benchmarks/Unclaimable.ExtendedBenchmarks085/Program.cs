@@ -1,9 +1,38 @@
+using System.Diagnostics;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
 using Unclaimable;
 using Unclaimable.Extended;
 
-BenchmarkRunner.Run<ExtendedIndex085Benchmarks>();
+if (args.Length > 0 && args[0] == "--cold-measure")
+{
+    var extended = args.Length > 1 && args[1] == "extended";
+    GC.Collect();
+    GC.WaitForPendingFinalizers();
+    GC.Collect();
+    var allocatedBefore = GC.GetTotalAllocatedBytes(true);
+    var timer = Stopwatch.StartNew();
+    var options = new Options();
+    if (extended)
+    {
+        options.UseExtendedData();
+    }
+
+    var checker = new Checker(options);
+    timer.Stop();
+    var allocated = GC.GetTotalAllocatedBytes(true) - allocatedBefore;
+    GC.KeepAlive(checker);
+    GC.KeepAlive(options);
+    GC.Collect();
+    GC.WaitForPendingFinalizers();
+    GC.Collect();
+    var retained = GC.GetTotalMemory(true);
+    Console.WriteLine($"COLD_RESULT,mode={(extended ? "Core+Extended" : "Core")},elapsed_ms={timer.Elapsed.TotalMilliseconds:F3},allocated_bytes={allocated},heap_after_gc_bytes={retained},working_set_bytes={Environment.WorkingSet}");
+}
+else
+{
+    BenchmarkRunner.Run<ExtendedIndex085Benchmarks>();
+}
 
 [MemoryDiagnoser]
 [SimpleJob(warmupCount: 3, iterationCount: 8)]
