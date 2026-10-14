@@ -83,8 +83,18 @@ Package pages are marked **release candidate / not yet published** and give a st
 
 - Audited all 43 Extended JSON files with a new repeatable CI validator (`platforms/dotnet/scripts/audit_extended_085.py`). Prior to corrections: 43,780 raw records and 43,623 NFKC+lower normalized unique values; zero duplicate normalized values within a single JSON file; one cross-category collision; eight C1 control-character encoding artifacts.
 - Repaired four quoted Polish institution names containing Windows-1252 C1 quote codes; repaired four Slovenian geography names where the `ž` letter was stored as C1 code U+009E.
-- Removed the `palermo` record incorrectly classified as Portuguese slang profanity (also a sports/geographical identity). After correction: **43,779 raw Extended records**; expected **43,622 normalized unique values**; the actual post-change CI audit is authoritative.
+- Removed the `palermo` record incorrectly classified as Portuguese slang profanity (also a sports/geographical identity). After correction: **43,779 raw Extended records**; **43,623 normalized unique values**, as confirmed by the post-change CI audit.
 - Normalized duplicates across separate files can represent intentional same-language/alternate dataset overlap; this scan only identifies collisions, and does not certify idiomatic accuracy or completeness of language labels.
 - Added CI checking all five candidate packages against the published v0.8.4 NuGet package API baseline; first attempt failed in workflow setup because it lacked the project's required .NET 11 preview SDK, not because of an API diagnostic. SDK setup was updated; final API verdict awaits the new run.
 - No changes to public API were made as part of these dataset corrections. Validation outcomes may change for corrected terms.
 
+
+## Final automated audit verdict — passed (2026-10-14)
+
+GitHub Actions run https://github.com/Perry3Dnl/Unclaimable/actions/runs/38558971047 completed both jobs successfully on commit `1c3b6d17` (same source code and datasets as this documentation update).
+
+- **Published v0.8.4 API baseline:** All five v0.8.5 packages successfully packed using `PackageValidationBaselineVersion=0.8.4` with no reported compatibility errors: Core, Extended, Email, ASP.NET Core and FluentValidation. Targets include the ASP.NET Core .NET 11 preview asset. The completed workflow is the objective baseline-compatibility sign-off.
+- **Extended data audit:** 43 JSON files; **43,779 raw records**; **43,623 NFKC/case-normalized unique strings**; 0 duplicate normalized keys within individual files; 0 cross-category normalized collisions; 0 invalid/control-character values; 0 warnings. Normalized deduplication across files is expected to account for remaining record overlap.
+- Deliberate behavior changes remain: new data may reject usernames that v0.8.4 accepted. Medium/High false-positive sensitivity intentionally changes suppression for certain one-sided slang substrings.
+- Human linguistic classification quality is inherently not fully provable with automated schema/duplicate audits; no comprehensive expert review of every term is claimed.
+- Final production workflow and package smoke test should be green on the actual release HEAD, which may differ only by documentation commits. Do not merge, tag, or publish until explicitly authorized.
