@@ -6,8 +6,10 @@ Email-address identity and protected-domain impersonation checks.
 
 ## Install
 
+**Until v0.8.5 is published, install the latest stable v0.8.4 package.** After release, use `--version 0.8.5` or upgrade via your package manager.
+
 ```bash
-dotnet add package Unclaimable.Email --version 0.8.5
+dotnet add package Unclaimable.Email --version 0.8.4
 ```
 
 ## 0.8.5 release candidate (not yet published)
