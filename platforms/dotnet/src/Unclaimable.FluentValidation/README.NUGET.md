@@ -2,19 +2,19 @@
 
 FluentValidation rules for usernames and identifiers checked by Unclaimable.
 
-**Package version: 0.8.5 (release candidate; not published)**
+**Package version: 0.8.5 LTS**
 
 ## Install
 
-**Until v0.8.5 is published, install the latest stable v0.8.4 package.** After release, use `--version 0.8.5` or upgrade via your package manager.
+**Install the v0.8.5 LTS package once it is available on NuGet.org.**
 
 ```bash
-dotnet add package Unclaimable.FluentValidation --version 0.8.4
+dotnet add package Unclaimable.FluentValidation --version 0.8.5
 ```
 
 This package targets .NET 8 or newer and depends on Unclaimable and FluentValidation 12. FluentValidation is restored as a normal NuGet dependency; its license is Apache-2.0. The Unclaimable Core package does not acquire this dependency.
 
-## 0.8.5 release candidate (not yet published)
+## 0.8.5 LTS
 
 The optional FluentValidation 12 connector keeps the existing `MustBeClaimable()` and `MustNotBeReserved()` API. v0.8.5 updates the underlying Core checker with broader profanity coverage, faster matching, and an optional `FalsePositiveSensitivity` setting (default `Low`). No new FluentValidation runtime dependency is added to Core.
 
