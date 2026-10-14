@@ -295,8 +295,20 @@ public sealed partial class Checker : IChecker
         _partialEntries.Sort((left, right) => right.Compact.Length.CompareTo(left.Compact.Length));
         _customPartialEntries.Sort((left, right) => right.Compact.Length.CompareTo(left.Compact.Length));
 
-        _mainPartialCandidateIndex = new PartialCandidateIndex(_partialEntries);
-        _customPartialCandidateIndex = new PartialCandidateIndex(_customPartialEntries);
+        // Avoid index construction for small lists and configurations without partial matching.
+        // The original linear path remains faster and uses less memory for those cases.
+        if (_partialMatching)
+        {
+            if (_partialEntries.Count >= 1024)
+            {
+                _mainPartialCandidateIndex = new PartialCandidateIndex(_partialEntries);
+            }
+
+            if (_customPartialEntries.Count >= 1024)
+            {
+                _customPartialCandidateIndex = new PartialCandidateIndex(_customPartialEntries);
+            }
+        }
 
         _mainObfuscationIndex = new ObfuscationIndex(_exact, _compact, _partialEntries);
         _customObfuscationIndex = new ObfuscationIndex(_customExact, _customCompact, _customPartialEntries);
