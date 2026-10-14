@@ -31,7 +31,7 @@ public sealed partial class Checker : IChecker
         public bool SafePartial { get; }
     }
 
-    private sealed class PartialEntry
+    private readonly struct PartialEntry
     {
         public PartialEntry(string exact, string compact, ReservedEntry entry)
         {
@@ -113,6 +113,7 @@ public sealed partial class Checker : IChecker
     private readonly int _partialMatchMinimumLength;
     private readonly bool _obfuscationMatching;
     private readonly ObfuscationSensitivity _obfuscationSensitivity;
+    private readonly FalsePositiveSensitivity _falsePositiveSensitivity;
     private readonly bool _unicodeConfusableMatching;
     private readonly bool _allowNumbers;
     private readonly bool _asciiOnly;
@@ -202,6 +203,13 @@ public sealed partial class Checker : IChecker
                 "ObfuscationSensitivity must be a supported ObfuscationSensitivity value.");
         }
 
+        if (!Enum.IsDefined(typeof(FalsePositiveSensitivity), options.FalsePositiveSensitivity))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(options.FalsePositiveSensitivity),
+                "FalsePositiveSensitivity must be a supported FalsePositiveSensitivity value.");
+        }
+
         _policy = policy;
         CaptureExceptions(options);
         _enabledPatterns = options.EnabledPatterns;
@@ -220,6 +228,7 @@ public sealed partial class Checker : IChecker
         _partialMatchMinimumLength = options.PartialMatchMinimumLength;
         _obfuscationMatching = options.ObfuscationMatching && options.IsRuleEnabled(Rule.ObfuscationMatching);
         _obfuscationSensitivity = options.ObfuscationSensitivity;
+        _falsePositiveSensitivity = options.FalsePositiveSensitivity;
         _unicodeConfusableMatching = options.UnicodeConfusableMatching && options.IsRuleEnabled(Rule.UnicodeConfusableMatching);
         _allowNumbers = options.AllowNumbers || !options.IsRuleEnabled(Rule.Numbers);
         _asciiOnly = options.AsciiOnly;
@@ -228,6 +237,22 @@ public sealed partial class Checker : IChecker
         _rejectFormatCharacters = options.RejectFormatCharacters;
 
         var profanityMatching = options.ProfanityMatching && options.IsRuleEnabled(Rule.Profanity);
+
+        // Large Extended snapshots are registered as custom reservations.
+        // Reserve list capacity once instead of repeatedly reallocating and
+        // copying the partial-match entries while constructing each checker.
+        var configuredReservationCount = options.ConfiguredReservations.Count;
+        if (configuredReservationCount >= 1024)
+        {
+            // netstandard2.0-compatible capacity constructors avoid repeated
+            // dictionary growth/rehashing during large Extended registration.
+            _exact = new Dictionary<string, ReservedEntry>(configuredReservationCount, StringComparer.Ordinal);
+            _compact = new Dictionary<string, ReservedEntry>(configuredReservationCount, StringComparer.Ordinal);
+            _customExact = new Dictionary<string, ReservedEntry>(configuredReservationCount, StringComparer.Ordinal);
+            _customCompact = new Dictionary<string, ReservedEntry>(configuredReservationCount, StringComparer.Ordinal);
+            _partialEntries.Capacity = Math.Max(_partialEntries.Capacity, configuredReservationCount);
+            _customPartialEntries.Capacity = Math.Max(_customPartialEntries.Capacity, configuredReservationCount);
+        }
 
         foreach (var entry in BuiltInEntries.Value)
         {
@@ -285,6 +310,21 @@ public sealed partial class Checker : IChecker
 
         _partialEntries.Sort((left, right) => right.Compact.Length.CompareTo(left.Compact.Length));
         _customPartialEntries.Sort((left, right) => right.Compact.Length.CompareTo(left.Compact.Length));
+
+        // Avoid index construction for small lists and configurations without partial matching.
+        // The original linear path remains faster and uses less memory for those cases.
+        if (_partialMatching)
+        {
+            if (_partialEntries.Count >= 1024)
+            {
+                _mainPartialCandidateIndex = new PartialCandidateIndex(_partialEntries);
+            }
+
+            if (_customPartialEntries.Count >= 1024)
+            {
+                _customPartialCandidateIndex = new PartialCandidateIndex(_customPartialEntries);
+            }
+        }
 
         _mainObfuscationIndex = new ObfuscationIndex(_exact, _compact, _partialEntries);
         _customObfuscationIndex = new ObfuscationIndex(_customExact, _customCompact, _customPartialEntries);

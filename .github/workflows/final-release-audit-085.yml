@@ -1,0 +1,49 @@
+name: v0.8.5 Final API and Dataset Audit
+
+on:
+  push:
+    branches: [feature/0.8.5]
+    paths:
+      - "platforms/dotnet/src/**"
+      - "platforms/dotnet/scripts/audit_extended_085.py"
+      - ".github/workflows/final-release-audit-085.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dataset-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Audit raw Extended data and normalized collisions
+        run: python3 platforms/dotnet/scripts/audit_extended_085.py
+
+  api-compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "11.0.x"
+          dotnet-quality: preview
+      - name: Package validation against released v0.8.4
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/api-audit
+          for name in Unclaimable Unclaimable.Extended Unclaimable.Email Unclaimable.AspNetCore Unclaimable.FluentValidation; do
+            echo "::group::Verify $name against v0.8.4"
+            dotnet pack "platforms/dotnet/src/$name/$name.csproj" -c Release -o artifacts/api-audit -p:PackageValidationBaselineVersion=0.8.4
+            echo "::endgroup::"
+          done
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: v085-api-compat-packages
+          path: artifacts/api-audit/*.nupkg
+          if-no-files-found: warn

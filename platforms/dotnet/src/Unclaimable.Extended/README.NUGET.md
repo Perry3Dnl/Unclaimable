@@ -2,15 +2,26 @@
 
 Large optional reserved-identity datasets for Unclaimable.
 
-**Package version: 0.8.4**
+**Package version: 0.8.5 LTS**
 
 ## Install
 
+**Install the v0.8.5 LTS package once it is available on NuGet.org.**
+
 ```bash
-dotnet add package Unclaimable.Extended --version 0.8.4
+dotnet add package Unclaimable.Extended --version 0.8.5
 ```
 
 Installing the package alone does not change validation behavior. Enable the data explicitly.
+
+## What's new in 0.8.5 (LTS)
+
+- Expanded reserved identities, institutions, companies, media, professions, public figures, cryptocurrency and other curated categories.
+- Added language-specific profanity/slang datasets covering Czech, German, English, Spanish, French, Hungarian, Indonesian, Italian, Dutch, Polish, Portuguese, Romanian, Swedish, Turkish and Vietnamese, plus other hate-speech and offensive-language coverage.
+- Extended **supplies data, not a separate detection engine**. Explicitly activate it using `options.UseExtendedData()`; Core's matching and false-positive settings apply.
+- **Core + Extended CI benchmark:** warm checker construction 66.95 → 72.04 ms (+7.6%), construction allocations 35.76 → 28.61 MB (−20.0%), ordinary lookup 9.81 → 5.34 µs, and embedded lookup 11.79 → 2.76 µs. Warm-process results; increased vocabulary and application-specific settings may affect timings.
+- Larger reserved lists intentionally block additional names. Applications should evaluate categories and `FalsePositiveSensitivity` before upgrading.
+
 
 ## Cross-platform app compatibility
 

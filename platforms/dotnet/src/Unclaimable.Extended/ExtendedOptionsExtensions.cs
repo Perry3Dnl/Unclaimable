@@ -4,7 +4,8 @@ namespace Unclaimable.Extended;
 public static class ExtendedOptionsExtensions
 {
     /// <summary>
-    /// Adds the selected Extended datasets to Core options using whole-identifier matching.
+    /// Adds the selected Extended datasets to Core options using Core's configured
+    /// reserved-identifier matching pipeline. Extended supplies data, not a matching engine.
     /// Merely installing Unclaimable.Extended does not change Core behavior.
     /// </summary>
     public static global::Unclaimable.Options UseExtendedData(
@@ -29,7 +30,7 @@ public static class ExtendedOptionsExtensions
             options.Reserve(
                 entry.Value,
                 entry.CategoryName,
-                global::Unclaimable.ReservedMatchMode.WholeIdentifier);
+                global::Unclaimable.ReservedMatchMode.Default);
         }
 
         return options;

@@ -161,7 +161,9 @@ public sealed partial class Options
         }
     }
 
-    internal sealed class ReservationRegistration
+    // Compact value-type registrations avoid allocating an object for every
+    // Extended word while preserving the same immutable registration data.
+    internal readonly struct ReservationRegistration
     {
         internal ReservationRegistration(
             string value,

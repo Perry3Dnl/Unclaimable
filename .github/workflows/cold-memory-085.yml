@@ -1,0 +1,81 @@
+name: v0.8.4 vs v0.8.5 Cold Memory Audit
+
+on:
+  push:
+    branches:
+      - feature/0.8.5
+    paths:
+      - "platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/**"
+      - ".github/workflows/cold-memory-085.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cold-start:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - version: "0.8.4"
+            ref: "v0.8.4"
+          - version: "0.8.5"
+            ref: "feature/0.8.5"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ matrix.ref }}
+          path: tested
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: feature/0.8.5
+          path: harness
+      - name: Install common harness
+        run: |
+          mkdir -p tested/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085
+          cp harness/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/* tested/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Build once, without including compilation in cold measurements
+        working-directory: tested
+        run: dotnet build platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/Unclaimable.ExtendedBenchmarks085.csproj -c Release
+      - name: Record hardware and source
+        working-directory: tested
+        run: |
+          dotnet --info
+          lscpu
+          git rev-parse HEAD
+      - name: Ten fresh processes per package configuration
+        working-directory: tested
+        run: |
+          mkdir -p cold-audit
+          echo "version,mode,run,elapsed_ms,allocated_bytes,heap_after_gc_bytes,working_set_bytes" > cold-audit/results.csv
+          dll="platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/bin/Release/net8.0/Unclaimable.ExtendedBenchmarks085.dll"
+          for mode in core extended; do
+            for i in $(seq 1 10); do
+              output=$(dotnet "$dll" --cold-measure "$mode")
+              echo "$output"
+              echo "$output" | sed -n 's/^COLD_RESULT,//p' | tr ',' '\n' | cut -d= -f2 | paste -sd, - | awk -v ver="${{ matrix.version }}" -v run="$i" -F, '{print ver "," $1 "," run "," $2 "," $3 "," $4 "," $5}' >> cold-audit/results.csv
+            done
+          done
+          cat cold-audit/results.csv
+          {
+            echo "### Cold-process memory audit v${{ matrix.version }}"
+            echo "Each row is a fresh process. Elapsed includes options creation and (for Extended) first lazy dataset loading, but not runtime launch or compilation. Heap is post-full-GC total managed heap, not isolated retained object size."
+            echo '![CSV artifact](https://github.com/Perry3Dnl/Unclaimable/actions)'
+            echo '~~~csv'
+            cat cold-audit/results.csv
+            echo '~~~'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload measurements
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: cold-memory-v${{ matrix.version }}
+          path: tested/cold-audit/results.csv
+          if-no-files-found: error
+          retention-days: 30

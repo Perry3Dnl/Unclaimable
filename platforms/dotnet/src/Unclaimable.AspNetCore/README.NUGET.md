@@ -2,15 +2,31 @@
 
 ASP.NET Core dependency-injection and DataAnnotations integration for Unclaimable.
 
-**Package version: 0.8.4**
+**Package version: 0.8.5 LTS**
 
 ## Install
 
+**Install the v0.8.5 LTS package once it is available on NuGet.org.**
+
 ```bash
-dotnet add package Unclaimable.AspNetCore --version 0.8.4
+dotnet add package Unclaimable.AspNetCore --version 0.8.5
 ```
 
 The required `Unclaimable` core dependency is installed transitively.
+
+## 0.8.5 LTS
+
+The ASP.NET Core adapter preserves the established dependency-injection and DataAnnotations integration. It uses the updated Core 0.8.5 engine, expanded reserved-word coverage, matching improvements and optional false-positive guard; no adapter-specific public API changes are intended.
+
+```csharp
+builder.Services.AddUnclaimable(options =>
+{
+    options.FalsePositiveSensitivity = FalsePositiveSensitivity.Medium;
+});
+```
+
+`Low` remains the default. Updated reserved names may change which user inputs are rejected; these are content/validation changes rather than a change to DI registration semantics.
+
 
 ## Framework support
 

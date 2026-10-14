@@ -109,20 +109,22 @@ public sealed partial class Checker
 
     private void AddCustomDefault(ReservedEntry entry, bool includeInPartialMatching = true)
     {
-        Add(entry, includeInPartialMatching);
-
         var exact = NormalizeExact(entry.Value);
         if (exact is null)
         {
             return;
         }
 
+        var compact = NormalizeCompact(exact);
+        // One normalization pass supplies every index. Previously Add() and
+        // this method each normalized the same reservation independently.
+        AddNormalized(entry, exact, compact, includeInPartialMatching);
+
         if (!_customExact.ContainsKey(exact))
         {
             _customExact.Add(exact, entry);
         }
 
-        var compact = NormalizeCompact(exact);
         if (compact.Length > 0 && !_customCompact.ContainsKey(compact))
         {
             _customCompact.Add(compact, entry);

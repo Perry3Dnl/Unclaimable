@@ -1,0 +1,71 @@
+name: Versioned Package Performance Matrix
+
+on:
+  push:
+    branches:
+      - feature/0.8.5
+    paths:
+      - "platforms/dotnet/src/**"
+      - "platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/**"
+      - ".github/workflows/extended-performance-085.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    name: "Benchmark ${{ matrix.version }} (Core and Core+Extended)"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - version: "0.8.4"
+            git_ref: "v0.8.4"
+          - version: "0.8.5"
+            git_ref: "feature/0.8.5"
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout package source at selected version
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ matrix.git_ref }}
+          path: tested
+
+      - name: Checkout benchmark harness from feature branch
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: feature/0.8.5
+          path: harness
+
+      - name: Install identical benchmark harness into tested source
+        run: |
+          mkdir -p tested/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085
+          cp harness/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/* tested/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Record exact version and environment
+        working-directory: tested
+        run: |
+          echo "Version: ${{ matrix.version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Source SHA: $(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
+          dotnet --info
+          lscpu
+
+      - name: Benchmark Core only and Core with its versioned Extended datasets
+        working-directory: tested
+        run: dotnet run --project platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/Unclaimable.ExtendedBenchmarks085.csproj -c Release -- --exporters json markdown
+
+      - name: Publish benchmark results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: version-${{ matrix.version }}-package-matrix
+          path: tested/BenchmarkDotNet.Artifacts/results/*
+          if-no-files-found: warn
+          retention-days: 30

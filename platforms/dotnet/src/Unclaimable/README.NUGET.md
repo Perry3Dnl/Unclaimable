@@ -2,13 +2,32 @@
 
 Fast, dependency-free reserved username and identifier validation for .NET.
 
-**Package version: 0.8.4**
+**Package version: 0.8.5 LTS**
 
 ## Install
 
+**Install the v0.8.5 LTS package once it is available on NuGet.org.**
+
 ```bash
-dotnet add package Unclaimable --version 0.8.4
+dotnet add package Unclaimable --version 0.8.5
 ```
+
+## What's new in 0.8.5 (LTS)
+
+- Expanded Core profanity coverage, including Dutch and English reserved vocabulary, and new regression tests for embedded terms.
+- Added `Options.FalsePositiveSensitivity`: `Low` (default, previous behavior), `Medium` and `High` for selectively suppressing one-sided short slang/profanity substring false positives. Whole-identifier, Core profanity and hate-speech matches remain protected.
+- Optimized large-set matching with prefix indexes and reduced redundant normalization; kept the existing Core API, matching rules and `netstandard2.0` target.
+- **Core-only CI benchmark:** checker construction 2.29 → 1.41 ms; no-match 9.61 → 7.04 µs; allocation 1.297 → 1.303 MB (+0.4%). Warm-process comparisons against v0.8.4; actual results depend on configuration and hardware.
+- Dataset additions can cause some previously claimable identifiers to be blocked. The new false-positive guard is opt-in above `Low`.
+
+```csharp
+var options = new Options
+{
+    FalsePositiveSensitivity = FalsePositiveSensitivity.Medium
+};
+var checker = new Checker(options);
+```
+
 
 ## Quick start
 

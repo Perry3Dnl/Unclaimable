@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.8.5 LTS — 2026-10-14
+
+> **Upgrade impact:** More profanity, slang, hate-speech and reserved identifiers are rejected by expanded Core and opt-in Extended datasets. No public API removals were identified in the initial source diff; the published v0.8.4 API baseline and final automated dataset audit passed.
+
+### Core and matching
+- Expand English and Dutch Core profanity coverage and embedded-name regression tests.
+- Add `Options.FalsePositiveSensitivity` with `Low` (default and previous matching suppression behavior), `Medium`, and `High`. Opt-in higher values suppress certain short one-sided slang/profanity partial matches; surrounded, whole-identifier, Core profanity and hate-speech matching remains protected.
+- Introduce indexed partial-match candidate selection for large lists, using short-term-aware prefix buckets, retaining the original small-list path, match-order rules, exceptions and compact matching.
+- Reduce repeated reserved-word normalization; optimize dictionaries and representation of large partial/reservation sets.
+
+### Extended datasets
+- Keep Extended as an explicitly enabled **data-only** addition to the Core matching pipeline.
+- Add language-specific slang/profanity data in Czech, German, English, Spanish, French, Hungarian, Indonesian, Italian, Dutch, Polish, Portuguese, Romanian, Swedish, Turkish and Vietnamese.
+- Expand hate speech, companies, cryptocurrency, government, historical/public figures, media, fiction, platforms, professions and other identity/reserved-name categories.
+- The previously counted working dataset contains **43,779 raw entries across 43 JSON files**; final release totals remain subject to the dataset audit.
+
+### Performance — measured versioned CI workloads
+- **Core only:** warm checker construction 2.29 → 1.41 ms (38.6% faster); managed construction allocations 1.297 → 1.303 MB (+0.4%); no-match lookup 9.61 → 7.04 µs.
+- **Core + Extended:** warm checker construction 66.95 → 72.04 ms (**7.6% slower**); managed construction allocations 35.76 → 28.61 MB (20.0% lower); no-match lookup 9.81 → 5.34 µs; embedded matching 11.79 → 2.76 µs.
+- In the tested workloads boolean validation remains at **0 B** allocated and detailed diagnostic matching at 104 B. These are not guarantees for every input or environment.
+- Fresh-process median initialization: Core 104.35 → 67.42 ms; Core+Extended 274.57 → 214.00 ms. Core+Extended total post-GC managed heap decreased, but measured process working set increased; monitor deployments with strict RSS budgets.
+- Versioned per-package benchmarks: https://github.com/Perry3Dnl/Unclaimable/actions/runs/38552005773; cold-process audit: https://github.com/Perry3Dnl/Unclaimable/actions/runs/38554147577.
+
+### Release verification
+- Expanded happy-path, unexpected-input, multilingual matching, false-positive, index and per-category regression coverage.
+- Added a versioned Core/Core+Extended benchmark matrix and isolated-process initialization/memory audit.
+- Formal v0.8.4 package API validation and the automated Extended dataset audit passed; publication is performed by the tagged release workflow.
+
+
 ## 0.8.4 - 2026-10-12
 
 > **Compatibility:** The default `EmailUsage.Auto` and `EmailProtectionLevel.Strict` preserve the established strict email-validation behavior. No existing `EmailAddressPurpose` or `EmailFailureKind` values are changed. This release is published following successful tests, package validation, and release approval.

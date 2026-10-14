@@ -16,18 +16,27 @@ public sealed partial class Checker
             return;
         }
 
+        var compact = NormalizeCompact(exact);
+        AddNormalized(entry, exact, compact, includeInPartialMatching);
+    }
+
+    private void AddNormalized(ReservedEntry entry, string exact, string compact, bool includeInPartialMatching)
+    {
         if (!_exact.ContainsKey(exact))
         {
             _exact.Add(exact, entry);
         }
 
-        var compact = NormalizeCompact(exact);
         if (compact.Length > 0 && !_compact.ContainsKey(compact))
         {
             _compact.Add(compact, entry);
         }
 
-        if (includeInPartialMatching && compact.Length >= _partialMatchMinimumLength)
+        if (includeInPartialMatching
+            && (compact.Length >= _partialMatchMinimumLength
+                || (entry.SafePartial
+                    && entry.Category == "profanity"
+                    && compact.Length >= 3)))
         {
             _partialEntries.Add(new PartialEntry(exact, compact, entry));
         }
@@ -54,6 +63,19 @@ public sealed partial class Checker
         Rule ruleExceptions = Rule.None)
     {
         var compactPartialEnabled = !_consistentCompactMatching || _compactMatching;
+        if (_mainPartialCandidateIndex is not null && ReferenceEquals(partialEntries, _partialEntries))
+        {
+            return _mainPartialCandidateIndex.TryMatch(this, exact, compact, partialEntries,
+                compactPartialEnabled, ruleExceptions, out match, out startIndex, out matchLength, out usedCompact);
+        }
+
+        if (_customPartialCandidateIndex is not null && ReferenceEquals(partialEntries, _customPartialEntries))
+        {
+            return _customPartialCandidateIndex.TryMatch(this, exact, compact, partialEntries,
+                compactPartialEnabled, ruleExceptions, out match, out startIndex, out matchLength, out usedCompact);
+        }
+
+        // Keep the original path for any caller supplying a different entry collection.
         for (var entryIndex = 0; entryIndex < partialEntries.Count; entryIndex++)
         {
             var partial = partialEntries[entryIndex];
@@ -68,6 +90,12 @@ public sealed partial class Checker
             }
 
             var exactIndex = exact.IndexOf(partial.Exact, StringComparison.Ordinal);
+            while (exactIndex >= 0
+                   && ShouldSuppressSlangPartial(partial.Entry, exact.Length, exactIndex, partial.Exact.Length))
+            {
+                exactIndex = exact.IndexOf(partial.Exact, exactIndex + 1, StringComparison.Ordinal);
+            }
+
             if (exactIndex >= 0 && exact.Length > partial.Exact.Length)
             {
                 match = partial.Entry;
@@ -80,6 +108,12 @@ public sealed partial class Checker
             if (compactPartialEnabled && compact.Length > partial.Compact.Length)
             {
                 var compactIndex = compact.IndexOf(partial.Compact, StringComparison.Ordinal);
+                while (compactIndex >= 0
+                       && ShouldSuppressSlangPartial(partial.Entry, compact.Length, compactIndex, partial.Compact.Length))
+                {
+                    compactIndex = compact.IndexOf(partial.Compact, compactIndex + 1, StringComparison.Ordinal);
+                }
+
                 if (compactIndex >= 0)
                 {
                     match = partial.Entry;
@@ -96,6 +130,25 @@ public sealed partial class Checker
         matchLength = 0;
         usedCompact = false;
         return false;
+    }
+
+    private bool ShouldSuppressSlangPartial(ReservedEntry entry, int inputLength, int start, int length)
+    {
+        if (_falsePositiveSensitivity == FalsePositiveSensitivity.Low
+            || !string.Equals(entry.Category, "slangprofanity", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var limit = _falsePositiveSensitivity == FalsePositiveSensitivity.Medium ? 4 : 6;
+        if (length > limit || start < 0 || start + length > inputLength)
+        {
+            return false;
+        }
+
+        // A one-character appendage is an easy evasion, not convincing word context.
+        return (start == 0 && inputLength - length >= 4)
+            || (start + length == inputLength && start >= 4);
     }
 
     private bool TryMatchUnicodeConfusable(

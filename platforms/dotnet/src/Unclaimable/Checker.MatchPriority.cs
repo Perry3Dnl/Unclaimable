@@ -59,6 +59,11 @@ public sealed partial class Checker
                         continue;
                     }
 
+                    if (ShouldSuppressSlangPartial(partial.Entry, value.Length, sourceStart, end - sourceStart))
+                    {
+                        continue;
+                    }
+
                     match = partial.Entry;
                     kind = MatchKind.Partial;
                     start = sourceStart;

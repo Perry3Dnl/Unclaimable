@@ -2,13 +2,27 @@
 
 Email-address identity and protected-domain impersonation checks.
 
-**Package version: 0.8.4**
+**Package version: 0.8.5 LTS**
 
 ## Install
 
+**Install the v0.8.5 LTS package once it is available on NuGet.org.**
+
 ```bash
-dotnet add package Unclaimable.Email --version 0.8.4
+dotnet add package Unclaimable.Email --version 0.8.5
 ```
+
+## 0.8.5 LTS
+
+Email retains its existing domain/syntax/issued-address checking behavior and integration API. Its local-part Core checker picks up v0.8.5 dataset and matching improvements, with the optional `FalsePositiveSensitivity` guard available through `LocalPartOptions`; `Low` remains the default.
+
+```csharp
+var options = new EmailOptions();
+options.LocalPartOptions.FalsePositiveSensitivity = FalsePositiveSensitivity.Medium;
+```
+
+The guard affects eligible local-part slang substring matching, **not** protected-domain detection. New reserved terms can change local-part acceptance. No new Email-specific matching engine is introduced.
+
 
 ## Cross-platform app compatibility
 

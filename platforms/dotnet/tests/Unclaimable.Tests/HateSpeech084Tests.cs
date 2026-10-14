@@ -7,6 +7,8 @@ public sealed class HateSpeech084Tests
 {
     [Theory]
     [InlineData("wetback")]
+    [InlineData("fag")]
+    [InlineData("fags")]
     [InlineData("faggot")]
     [InlineData("towelhead")]
     public void CoreProtectsHighConfidenceIdentitySlurs(string identifier)
@@ -14,6 +16,36 @@ public sealed class HateSpeech084Tests
         var result = new Checker().Check(identifier);
         Assert.True(result.IsReserved, $"Expected {identifier} to be protected.");
         Assert.Equal("profanity", result.Category);
+    }
+
+    [Theory]
+    [InlineData("saggyfag")]
+    [InlineData("fagprofile")]
+    [InlineData("myfagaccount")]
+    public void CoreBlocksEmbeddedHighConfidenceSlurRootByDefault(string identifier)
+    {
+        var result = new Checker().Check(identifier);
+        Assert.True(result.IsReserved, $"Expected {identifier} to be protected.");
+        Assert.Equal("profanity", result.Category);
+    }
+
+    [Theory]
+    [InlineData("cocksmoker")]
+    [InlineData("dumbfucks")]
+    [InlineData("shitholes")]
+    [InlineData("whoremongers")]
+    public void CoreProtectsNewStandaloneProfanityWords(string identifier)
+    {
+        var result = new Checker().Check(identifier);
+        Assert.True(result.IsReserved, $"Expected {identifier} to be reserved by default.");
+        Assert.Equal("profanity", result.Category);
+    }
+
+    [Fact]
+    public void DisablingProfanityDoesNotBlockExplicitProfanityRoots()
+    {
+        var options = new Options { ProfanityMatching = false };
+        Assert.True(new Checker(options).IsClaimable("saggyfag"));
     }
 
     [Fact]
@@ -43,13 +75,15 @@ public sealed class HateSpeech084Tests
     }
 
     [Fact]
-    public void ExtendedHateSpeechExceptionsAreExact()
+    public void ExtendedHateSpeechExceptionsDoNotDisableOverlappingRoots()
     {
         var options = new Options();
         options.UseExtendedData(extended => extended.AllowedIdentifiers.Add("dykehaters"));
         var checker = new Checker(options);
 
-        Assert.True(checker.IsClaimable("dykehaters"));
+        // The excluded exact entry can still be covered by another registered
+        // overlapping hate-speech root; exact exceptions do not disable that root.
+        Assert.True(checker.IsReserved("dykehaters"));
         Assert.True(checker.IsReserved("trannyhaters"));
     }
 
@@ -61,6 +95,6 @@ public sealed class HateSpeech084Tests
         var checker = new Checker(options);
 
         Assert.True(checker.IsReserved("dykehaters"));
-        Assert.True(checker.IsClaimable("mydykehatersarchive"));
+        Assert.True(checker.IsReserved("mydykehatersarchive"));
     }
 }
