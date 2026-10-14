@@ -6,8 +6,10 @@ Fast, dependency-free reserved username and identifier validation for .NET.
 
 ## Install
 
+**Until v0.8.5 is published, install the latest stable v0.8.4 package.** After release, use `--version 0.8.5` or upgrade via your package manager.
+
 ```bash
-dotnet add package Unclaimable --version 0.8.5
+dotnet add package Unclaimable --version 0.8.4
 ```
 
 ## What's new in 0.8.5 (release candidate — not yet published)
