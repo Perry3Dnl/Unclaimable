@@ -35,7 +35,7 @@ jobs:
           cp candidate/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/* baseline/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/
 
       - name: Setup .NET 8
-        uses: actions/setup-dotnet@67a3573c9a986a3f9d594539f4ab511d57bb3ce9
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
