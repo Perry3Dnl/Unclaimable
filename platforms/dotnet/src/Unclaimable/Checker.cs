@@ -244,6 +244,12 @@ public sealed partial class Checker : IChecker
         var configuredReservationCount = options.ConfiguredReservations.Count;
         if (configuredReservationCount >= 1024)
         {
+            // netstandard2.0-compatible capacity constructors avoid repeated
+            // dictionary growth/rehashing during large Extended registration.
+            _exact = new Dictionary<string, ReservedEntry>(configuredReservationCount, StringComparer.Ordinal);
+            _compact = new Dictionary<string, ReservedEntry>(configuredReservationCount, StringComparer.Ordinal);
+            _customExact = new Dictionary<string, ReservedEntry>(configuredReservationCount, StringComparer.Ordinal);
+            _customCompact = new Dictionary<string, ReservedEntry>(configuredReservationCount, StringComparer.Ordinal);
             _partialEntries.Capacity = Math.Max(_partialEntries.Capacity, configuredReservationCount);
             _customPartialEntries.Capacity = Math.Max(_customPartialEntries.Capacity, configuredReservationCount);
         }
