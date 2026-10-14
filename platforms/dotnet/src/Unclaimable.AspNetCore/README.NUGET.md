@@ -6,8 +6,10 @@ ASP.NET Core dependency-injection and DataAnnotations integration for Unclaimabl
 
 ## Install
 
+**Until v0.8.5 is published, install the latest stable v0.8.4 package.** After release, use `--version 0.8.5` or upgrade via your package manager.
+
 ```bash
-dotnet add package Unclaimable.AspNetCore --version 0.8.5
+dotnet add package Unclaimable.AspNetCore --version 0.8.4
 ```
 
 The required `Unclaimable` core dependency is installed transitively.
