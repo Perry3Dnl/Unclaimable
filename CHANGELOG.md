@@ -1,8 +1,8 @@
 # Changelog
 
-## 0.8.5 — release candidate (not published)
+## 0.8.5 LTS — 2026-10-14
 
-> **Upgrade impact:** More profanity, slang, hate-speech and reserved identifiers are rejected by expanded Core and opt-in Extended datasets. No public API removals were identified in the initial source diff; full binary/API baseline review and release validation are separate sign-off gates.
+> **Upgrade impact:** More profanity, slang, hate-speech and reserved identifiers are rejected by expanded Core and opt-in Extended datasets. No public API removals were identified in the initial source diff; the published v0.8.4 API baseline and final automated dataset audit passed.
 
 ### Core and matching
 - Expand English and Dutch Core profanity coverage and embedded-name regression tests.
@@ -26,7 +26,7 @@
 ### Release verification
 - Expanded happy-path, unexpected-input, multilingual matching, false-positive, index and per-category regression coverage.
 - Added a versioned Core/Core+Extended benchmark matrix and isolated-process initialization/memory audit.
-- Final release-candidate CI, formal API assessment and dataset quality sign-off are required before tagging and NuGet publication.
+- Formal v0.8.4 package API validation and the automated Extended dataset audit passed; publication is performed by the tagged release workflow.
 
 
 ## 0.8.4 - 2026-10-12
