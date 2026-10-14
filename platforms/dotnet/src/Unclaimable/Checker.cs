@@ -113,6 +113,7 @@ public sealed partial class Checker : IChecker
     private readonly int _partialMatchMinimumLength;
     private readonly bool _obfuscationMatching;
     private readonly ObfuscationSensitivity _obfuscationSensitivity;
+    private readonly FalsePositiveSensitivity _falsePositiveSensitivity;
     private readonly bool _unicodeConfusableMatching;
     private readonly bool _allowNumbers;
     private readonly bool _asciiOnly;
@@ -202,6 +203,13 @@ public sealed partial class Checker : IChecker
                 "ObfuscationSensitivity must be a supported ObfuscationSensitivity value.");
         }
 
+        if (!Enum.IsDefined(typeof(FalsePositiveSensitivity), options.FalsePositiveSensitivity))
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(options.FalsePositiveSensitivity),
+                "FalsePositiveSensitivity must be a supported FalsePositiveSensitivity value.");
+        }
+
         _policy = policy;
         CaptureExceptions(options);
         _enabledPatterns = options.EnabledPatterns;
@@ -220,6 +228,7 @@ public sealed partial class Checker : IChecker
         _partialMatchMinimumLength = options.PartialMatchMinimumLength;
         _obfuscationMatching = options.ObfuscationMatching && options.IsRuleEnabled(Rule.ObfuscationMatching);
         _obfuscationSensitivity = options.ObfuscationSensitivity;
+        _falsePositiveSensitivity = options.FalsePositiveSensitivity;
         _unicodeConfusableMatching = options.UnicodeConfusableMatching && options.IsRuleEnabled(Rule.UnicodeConfusableMatching);
         _allowNumbers = options.AllowNumbers || !options.IsRuleEnabled(Rule.Numbers);
         _asciiOnly = options.AsciiOnly;

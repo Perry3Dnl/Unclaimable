@@ -186,6 +186,14 @@ public sealed partial class Options
     public ObfuscationSensitivity ObfuscationSensitivity { get; set; } = ObfuscationSensitivity.Medium;
 
     /// <summary>
+    /// Reduces false positives from short, one-sided Extended slang/profanity substring matches.
+    /// Low preserves existing matching; Medium relaxes terms up to four characters, and High
+    /// relaxes terms up to six characters. A match surrounded on both sides remains blocked.
+    /// Whole-identifier matches, Core profanity, hate speech, and other categories are unaffected.
+    /// </summary>
+    public FalsePositiveSensitivity FalsePositiveSensitivity { get; set; } = FalsePositiveSensitivity.Low;
+
+    /// <summary>
     /// Detect selected common Unicode lookalikes and diacritic-based impersonation forms.
     /// This is not a complete Unicode confusable implementation.
     /// Kept for compatibility; prefer disabling <see cref="Rule.UnicodeConfusableMatching"/>.

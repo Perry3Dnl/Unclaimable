@@ -72,6 +72,12 @@ public sealed partial class Checker
             }
 
             var exactIndex = exact.IndexOf(partial.Exact, StringComparison.Ordinal);
+            while (exactIndex >= 0
+                   && ShouldSuppressSlangPartial(partial.Entry, exact.Length, exactIndex, partial.Exact.Length))
+            {
+                exactIndex = exact.IndexOf(partial.Exact, exactIndex + 1, StringComparison.Ordinal);
+            }
+
             if (exactIndex >= 0 && exact.Length > partial.Exact.Length)
             {
                 match = partial.Entry;
@@ -84,6 +90,12 @@ public sealed partial class Checker
             if (compactPartialEnabled && compact.Length > partial.Compact.Length)
             {
                 var compactIndex = compact.IndexOf(partial.Compact, StringComparison.Ordinal);
+                while (compactIndex >= 0
+                       && ShouldSuppressSlangPartial(partial.Entry, compact.Length, compactIndex, partial.Compact.Length))
+                {
+                    compactIndex = compact.IndexOf(partial.Compact, compactIndex + 1, StringComparison.Ordinal);
+                }
+
                 if (compactIndex >= 0)
                 {
                     match = partial.Entry;
@@ -100,6 +112,19 @@ public sealed partial class Checker
         matchLength = 0;
         usedCompact = false;
         return false;
+    }
+
+    private bool ShouldSuppressSlangPartial(ReservedEntry entry, int inputLength, int start, int length)
+    {
+        if (_falsePositiveSensitivity == FalsePositiveSensitivity.Low
+            || !string.Equals(entry.Category, "slangprofanity", StringComparison.Ordinal))
+        {
+            return false;
+        }
+
+        var limit = _falsePositiveSensitivity == FalsePositiveSensitivity.Medium ? 4 : 6;
+        return length <= limit && (start == 0 || start + length == inputLength)
+            && start + length <= inputLength;
     }
 
     private bool TryMatchUnicodeConfusable(

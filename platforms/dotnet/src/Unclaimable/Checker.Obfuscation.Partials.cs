@@ -44,6 +44,11 @@ public sealed partial class Checker
                     continue;
                 }
 
+                if (ShouldSuppressSlangPartial(partial.Entry, value.Length, start, endIndex - start))
+                {
+                    continue;
+                }
+
                 match = partial.Entry;
                 matchStartIndex = start;
                 matchLength = Math.Max(1, endIndex - start);
