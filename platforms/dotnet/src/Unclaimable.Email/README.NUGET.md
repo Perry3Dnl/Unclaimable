@@ -2,17 +2,17 @@
 
 Email-address identity and protected-domain impersonation checks.
 
-**Package version: 0.8.5 (release candidate; not published)**
+**Package version: 0.8.5 LTS**
 
 ## Install
 
-**Until v0.8.5 is published, install the latest stable v0.8.4 package.** After release, use `--version 0.8.5` or upgrade via your package manager.
+**Install the v0.8.5 LTS package once it is available on NuGet.org.**
 
 ```bash
-dotnet add package Unclaimable.Email --version 0.8.4
+dotnet add package Unclaimable.Email --version 0.8.5
 ```
 
-## 0.8.5 release candidate (not yet published)
+## 0.8.5 LTS
 
 Email retains its existing domain/syntax/issued-address checking behavior and integration API. Its local-part Core checker picks up v0.8.5 dataset and matching improvements, with the optional `FalsePositiveSensitivity` guard available through `LocalPartOptions`; `Low` remains the default.
 
