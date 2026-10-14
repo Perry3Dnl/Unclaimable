@@ -16,12 +16,17 @@ public sealed partial class Checker
             return;
         }
 
+        var compact = NormalizeCompact(exact);
+        AddNormalized(entry, exact, compact, includeInPartialMatching);
+    }
+
+    private void AddNormalized(ReservedEntry entry, string exact, string compact, bool includeInPartialMatching)
+    {
         if (!_exact.ContainsKey(exact))
         {
             _exact.Add(exact, entry);
         }
 
-        var compact = NormalizeCompact(exact);
         if (compact.Length > 0 && !_compact.ContainsKey(compact))
         {
             _compact.Add(compact, entry);
