@@ -78,3 +78,13 @@ Package pages are marked **release candidate / not yet published** and give a st
 3. Conduct explicit public API compatibility comparison and final dataset quality/count review.
 4. Confirm package-page rendering and the published-version installation commands immediately before release.
 
+
+## Final dataset audit findings (2026-10-14)
+
+- Audited all 43 Extended JSON files with a new repeatable CI validator (`platforms/dotnet/scripts/audit_extended_085.py`). Prior to corrections: 43,780 raw records and 43,623 NFKC+lower normalized unique values; zero duplicate normalized values within a single JSON file; one cross-category collision; eight C1 control-character encoding artifacts.
+- Repaired four quoted Polish institution names containing Windows-1252 C1 quote codes; repaired four Slovenian geography names where the `ž` letter was stored as C1 code U+009E.
+- Removed the `palermo` record incorrectly classified as Portuguese slang profanity (also a sports/geographical identity). After correction: **43,779 raw Extended records**; expected **43,622 normalized unique values**; the actual post-change CI audit is authoritative.
+- Normalized duplicates across separate files can represent intentional same-language/alternate dataset overlap; this scan only identifies collisions, and does not certify idiomatic accuracy or completeness of language labels.
+- Added CI checking all five candidate packages against the published v0.8.4 NuGet package API baseline; first attempt failed in workflow setup because it lacked the project's required .NET 11 preview SDK, not because of an API diagnostic. SDK setup was updated; final API verdict awaits the new run.
+- No changes to public API were made as part of these dataset corrections. Validation outcomes may change for corrected terms.
+
