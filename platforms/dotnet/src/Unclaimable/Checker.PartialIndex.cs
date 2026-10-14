@@ -181,6 +181,6 @@ public sealed partial class Checker
         }
     }
 
-    private readonly PartialCandidateIndex _mainPartialCandidateIndex;
-    private readonly PartialCandidateIndex _customPartialCandidateIndex;
+    private readonly PartialCandidateIndex? _mainPartialCandidateIndex;
+    private readonly PartialCandidateIndex? _customPartialCandidateIndex;
 }
