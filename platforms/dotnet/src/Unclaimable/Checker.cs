@@ -239,15 +239,11 @@ public sealed partial class Checker : IChecker
         var profanityMatching = options.ProfanityMatching && options.IsRuleEnabled(Rule.Profanity);
 
         // Large Extended snapshots are registered as custom reservations.
-        // Reserve capacity once instead of repeatedly growing and rehashing
-        // multiple dictionaries while constructing each checker.
+        // Reserve list capacity once instead of repeatedly reallocating and
+        // copying the partial-match entries while constructing each checker.
         var configuredReservationCount = options.ConfiguredReservations.Count;
         if (configuredReservationCount >= 1024)
         {
-            _exact.EnsureCapacity(configuredReservationCount);
-            _compact.EnsureCapacity(configuredReservationCount);
-            _customExact.EnsureCapacity(configuredReservationCount);
-            _customCompact.EnsureCapacity(configuredReservationCount);
             _partialEntries.Capacity = Math.Max(_partialEntries.Capacity, configuredReservationCount);
             _customPartialEntries.Capacity = Math.Max(_customPartialEntries.Capacity, configuredReservationCount);
         }
