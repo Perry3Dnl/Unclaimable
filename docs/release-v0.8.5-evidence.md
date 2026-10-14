@@ -15,7 +15,7 @@ GitHub compare `v0.8.4...feature/0.8.5` at preparation found 221 commits and cha
 - Dataset-only package continues using Core's `Options.Reserve(..., ReservedMatchMode.Default)` pipeline through `UseExtendedData`. No independent Extended matching engine.
 - New language-specific slang/profanity data files: Czech, German, English, Spanish, French, Hungarian, Indonesian, Italian, Dutch, Polish, Portuguese, Romanian, Swedish, Turkish and Vietnamese.
 - Expanded categories include celebrities, companies, cryptocurrency, entertainment, fiction, government, hate speech, historical figures, organizations, media, platforms, professions, public figures and slang.
-- Prior complete inventory reported 43,780 Extended raw entries across 43 JSON datasets; recalculate from the release commit before publication, including enabled/duplicate registration counts.
+- The initial inventory reported 43,780 Extended raw entries across 43 JSON datasets; the final correction removed one erroneous entry, leaving 43,779 raw entries (the final audit determines normalized unique counts).
 
 ## Compatibility and behavioral notes
 - API additions are additive in reviewed files: `FalsePositiveSensitivity` and `Options.FalsePositiveSensitivity`; no intended public API removals identified by repository file-diff review. **This is not a formal public API binary-diff result**; do not claim fully verified source/binary compatibility until package validation and API baseline comparison are complete.
