@@ -14,7 +14,7 @@
 - Keep Extended as an explicitly enabled **data-only** addition to the Core matching pipeline.
 - Add language-specific slang/profanity data in Czech, German, English, Spanish, French, Hungarian, Indonesian, Italian, Dutch, Polish, Portuguese, Romanian, Swedish, Turkish and Vietnamese.
 - Expand hate speech, companies, cryptocurrency, government, historical/public figures, media, fiction, platforms, professions and other identity/reserved-name categories.
-- The previously counted working dataset contains **43,780 raw entries across 43 JSON files**; final release totals remain subject to the dataset audit.
+- The previously counted working dataset contains **43,779 raw entries across 43 JSON files**; final release totals remain subject to the dataset audit.
 
 ### Performance — measured versioned CI workloads
 - **Core only:** warm checker construction 2.29 → 1.41 ms (38.6% faster); managed construction allocations 1.297 → 1.303 MB (+0.4%); no-match lookup 9.61 → 7.04 µs.
