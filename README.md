@@ -18,6 +18,28 @@ Prevent reserved, protected, misleading, degenerate, and unsafe identifiers befo
 
 [**NuGet**](https://www.nuget.org/packages/Unclaimable) · [**Configuration guide**](docs/CONFIGURATION.md) · [**Changelog**](CHANGELOG.md)
 
+## v0.8.5 release candidate — expanded multilingual coverage and faster matching
+
+**Status: unreleased (development branch `feature/0.8.5`).** The latest published release remains v0.8.4.
+
+v0.8.5 expands Core profanity detection and opt-in Extended reserved names, slang and hate-speech datasets, including additional language-specific vocabulary. It introduces `Options.FalsePositiveSensitivity` (`Low` by default, with opt-in `Medium` and `High`) to reduce certain one-sided slang substring false positives. The Extended package **remains data-only**, uses Core's existing matching pipeline, and has to be explicitly enabled with `options.UseExtendedData()`.
+
+**Measured performance, Core only (v0.8.4 → v0.8.5):** warm checker construction 2.29 → 1.41 ms; ordinary no-match lookup 9.61 → 7.04 µs; warm construction allocations 1.297 → 1.303 MB (+0.4%). **Core + Extended:** warm construction 66.95 → 72.04 ms (+7.6%), construction allocations 35.76 → 28.61 MB (−20.0%), embedded matching 11.79 → 2.76 µs (−76.6%). Boolean validation remains 0 B allocated in the measured scenarios. Results represent specific BenchmarkDotNet workloads on CI hardware; they are not guarantees for all inputs. Fresh-process initialization improved in the measured audit; Extended process working set was higher despite lower managed heap.
+
+**Upgrade note:** Larger reserved-name datasets intentionally reject some identifiers accepted by v0.8.4. Source/API compatibility checks and final dataset QC remain release gates. See [release evidence](docs/release-v0.8.5-evidence.md) and [draft changelog](CHANGELOG.md).
+
+### Configuring the new false-positive guard
+
+```csharp
+var options = new Options
+{
+    FalsePositiveSensitivity = FalsePositiveSensitivity.Medium
+};
+var checker = new Checker(options);
+```
+
+`Low` (default) preserves existing suppression semantics. `Medium` and `High` selectively relax some one-sided short slang/profanity partial matches, without relaxing whole-identifier, Core profanity or hate-speech matches.
+
 ## 0.8.4: email policies, Extended datasets and FluentValidation
 
 **Released: 2026-10-12**
