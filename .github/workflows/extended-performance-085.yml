@@ -1,0 +1,64 @@
+name: Extended v0.8.5 Performance Gate
+
+on:
+  push:
+    branches:
+      - feature/0.8.5
+    paths:
+      - "platforms/dotnet/src/**"
+      - "platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/**"
+      - ".github/workflows/extended-performance-085.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare-extended:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - name: Checkout v0.8.5 candidate
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          path: candidate
+
+      - name: Checkout released v0.8.4 baseline
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+          path: baseline
+
+      - name: Use identical Extended benchmark harness on baseline
+        run: |
+          mkdir -p baseline/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085
+          cp candidate/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/* baseline/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@67a3573c9a986a3f9d594539f4ab511d57bb3ce9
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Record environment
+        run: |
+          dotnet --info
+          lscpu
+
+      - name: Benchmark v0.8.4 baseline
+        working-directory: baseline
+        run: dotnet run --project platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/Unclaimable.ExtendedBenchmarks085.csproj -c Release -- --exporters json markdown
+
+      - name: Benchmark v0.8.5 candidate
+        working-directory: candidate
+        run: dotnet run --project platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/Unclaimable.ExtendedBenchmarks085.csproj -c Release -- --exporters json markdown
+
+      - name: Publish result files
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: extended-085-compare
+          path: |
+            baseline/BenchmarkDotNet.Artifacts/results/*
+            candidate/BenchmarkDotNet.Artifacts/results/*
+          if-no-files-found: warn
+          retention-days: 30
