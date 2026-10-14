@@ -126,7 +126,7 @@ public sealed class PartialCandidateIndex085Tests
         var checker = new Checker(options);
 
         Assert.True(checker.IsClaimable("prefixxyztokensuffix"));
-        Assert.Equal("separator", checker.Check("xy-ztoken").Category);
+        Assert.Equal("synthetic", checker.Check("qzxentry0023").Category);
     }
 
 }
