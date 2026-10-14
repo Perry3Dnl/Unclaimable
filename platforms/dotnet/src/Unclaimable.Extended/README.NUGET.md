@@ -6,8 +6,10 @@ Large optional reserved-identity datasets for Unclaimable.
 
 ## Install
 
+**Until v0.8.5 is published, install the latest stable v0.8.4 package.** After release, use `--version 0.8.5` or upgrade via your package manager.
+
 ```bash
-dotnet add package Unclaimable.Extended --version 0.8.5
+dotnet add package Unclaimable.Extended --version 0.8.4
 ```
 
 Installing the package alone does not change validation behavior. Enable the data explicitly.
