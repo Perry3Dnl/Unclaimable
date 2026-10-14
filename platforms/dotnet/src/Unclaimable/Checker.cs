@@ -31,7 +31,7 @@ public sealed partial class Checker : IChecker
         public bool SafePartial { get; }
     }
 
-    private sealed class PartialEntry
+    private readonly struct PartialEntry
     {
         public PartialEntry(string exact, string compact, ReservedEntry entry)
         {
