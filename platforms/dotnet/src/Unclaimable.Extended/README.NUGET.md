@@ -2,19 +2,19 @@
 
 Large optional reserved-identity datasets for Unclaimable.
 
-**Package version: 0.8.5 (release candidate; not published)**
+**Package version: 0.8.5 LTS**
 
 ## Install
 
-**Until v0.8.5 is published, install the latest stable v0.8.4 package.** After release, use `--version 0.8.5` or upgrade via your package manager.
+**Install the v0.8.5 LTS package once it is available on NuGet.org.**
 
 ```bash
-dotnet add package Unclaimable.Extended --version 0.8.4
+dotnet add package Unclaimable.Extended --version 0.8.5
 ```
 
 Installing the package alone does not change validation behavior. Enable the data explicitly.
 
-## What's new in 0.8.5 (release candidate — not yet published)
+## What's new in 0.8.5 (LTS)
 
 - Expanded reserved identities, institutions, companies, media, professions, public figures, cryptocurrency and other curated categories.
 - Added language-specific profanity/slang datasets covering Czech, German, English, Spanish, French, Hungarian, Indonesian, Italian, Dutch, Polish, Portuguese, Romanian, Swedish, Turkish and Vietnamese, plus other hate-speech and offensive-language coverage.
