@@ -1,4 +1,4 @@
-name: Extended v0.8.5 Performance Gate
+name: Versioned Package Performance Matrix
 
 on:
   push:
@@ -14,62 +14,58 @@ permissions:
   contents: read
 
 jobs:
-  compare-extended:
+  benchmark:
+    name: "Benchmark ${{ matrix.version }} (Core and Core+Extended)"
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - version: "0.8.4"
+            git_ref: "v0.8.4"
+          - version: "0.8.5"
+            git_ref: "feature/0.8.5"
     runs-on: ubuntu-latest
-    timeout-minutes: 55
+    timeout-minutes: 60
     steps:
-      - name: Checkout v0.8.5 candidate
+      - name: Checkout package source at selected version
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          path: candidate
+          ref: ${{ matrix.git_ref }}
+          path: tested
 
-      - name: Checkout released v0.8.4 baseline
+      - name: Checkout benchmark harness from feature branch
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          ref: main
-          path: baseline
+          ref: feature/0.8.5
+          path: harness
 
-      - name: Use identical Extended benchmark harness on baseline
+      - name: Install identical benchmark harness into tested source
         run: |
-          mkdir -p baseline/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085
-          cp candidate/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/* baseline/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/
-
-      - name: Checkout original v0.8.5 index for same-dataset A/B
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        with:
-          ref: 80629e97467e1e7821471e05b7db6f0e35bdb31a
-          path: previous
+          mkdir -p tested/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085
+          cp harness/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/* tested/platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/
 
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.0.x"
 
-      - name: Record environment
+      - name: Record exact version and environment
+        working-directory: tested
         run: |
+          echo "Version: ${{ matrix.version }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Source SHA: $(git rev-parse HEAD)" >> "$GITHUB_STEP_SUMMARY"
           dotnet --info
           lscpu
 
-      - name: Benchmark v0.8.4 baseline
-        working-directory: baseline
+      - name: Benchmark Core only and Core with its versioned Extended datasets
+        working-directory: tested
         run: dotnet run --project platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/Unclaimable.ExtendedBenchmarks085.csproj -c Release -- --exporters json markdown
 
-      - name: Benchmark previous v0.8.5 index
-        working-directory: previous
-        run: dotnet run --project platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/Unclaimable.ExtendedBenchmarks085.csproj -c Release -- --exporters json markdown
-
-      - name: Benchmark v0.8.5 candidate
-        working-directory: candidate
-        run: dotnet run --project platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/Unclaimable.ExtendedBenchmarks085.csproj -c Release -- --exporters json markdown
-
-      - name: Publish result files
+      - name: Publish benchmark results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: extended-085-compare
-          path: |
-            baseline/BenchmarkDotNet.Artifacts/results/*
-            previous/BenchmarkDotNet.Artifacts/results/*
-            candidate/BenchmarkDotNet.Artifacts/results/*
+          name: version-${{ matrix.version }}-package-matrix
+          path: tested/BenchmarkDotNet.Artifacts/results/*
           if-no-files-found: warn
           retention-days: 30
