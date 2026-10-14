@@ -295,6 +295,9 @@ public sealed partial class Checker : IChecker
         _partialEntries.Sort((left, right) => right.Compact.Length.CompareTo(left.Compact.Length));
         _customPartialEntries.Sort((left, right) => right.Compact.Length.CompareTo(left.Compact.Length));
 
+        _mainPartialCandidateIndex = new PartialCandidateIndex(_partialEntries);
+        _customPartialCandidateIndex = new PartialCandidateIndex(_customPartialEntries);
+
         _mainObfuscationIndex = new ObfuscationIndex(_exact, _compact, _partialEntries);
         _customObfuscationIndex = new ObfuscationIndex(_customExact, _customCompact, _customPartialEntries);
         _identityObfuscationIndex = new ObfuscationIndex(_identityRuleExact, _identityRuleCompact, NoPartialEntries);
