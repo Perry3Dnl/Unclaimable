@@ -6,9 +6,9 @@ public enum FalsePositiveSensitivity
     /// <summary>Preserves existing matching behavior. No slang matches are suppressed.</summary>
     Low = 0,
 
-    /// <summary>Allows one-sided slang fragments up to four characters long.</summary>
+    /// <summary>Relaxes edge-only slang fragments up to four characters with at least four adjoining characters.</summary>
     Medium = 1,
 
-    /// <summary>Allows one-sided slang fragments up to six characters long.</summary>
+    /// <summary>Relaxes edge-only slang fragments up to six characters with at least four adjoining characters.</summary>
     High = 2
 }

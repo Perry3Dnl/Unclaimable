@@ -188,7 +188,8 @@ public sealed partial class Options
     /// <summary>
     /// Reduces false positives from short, one-sided Extended slang/profanity substring matches.
     /// Low preserves existing matching; Medium relaxes terms up to four characters, and High
-    /// relaxes terms up to six characters. A match surrounded on both sides remains blocked.
+    /// relaxes terms up to six characters when the adjoining part has at least four characters.
+    /// A match surrounded on both sides remains blocked.
     /// Whole-identifier matches, Core profanity, hate speech, and other categories are unaffected.
     /// </summary>
     public FalsePositiveSensitivity FalsePositiveSensitivity { get; set; } = FalsePositiveSensitivity.Low;

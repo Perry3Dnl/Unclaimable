@@ -123,8 +123,14 @@ public sealed partial class Checker
         }
 
         var limit = _falsePositiveSensitivity == FalsePositiveSensitivity.Medium ? 4 : 6;
-        return length <= limit && (start == 0 || start + length == inputLength)
-            && start + length <= inputLength;
+        if (length > limit || start < 0 || start + length > inputLength)
+        {
+            return false;
+        }
+
+        // A one-character appendage is an easy evasion, not convincing word context.
+        return (start == 0 && inputLength - length >= 4)
+            || (start + length == inputLength && start >= 4);
     }
 
     private bool TryMatchUnicodeConfusable(

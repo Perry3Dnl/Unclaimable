@@ -50,6 +50,18 @@ public sealed class FalsePositiveGuard085Tests
         Assert.False(checker.CheckDetailed(value).IsReserved);
     }
 
+    [Theory]
+    [InlineData(FalsePositiveSensitivity.Medium)]
+    [InlineData(FalsePositiveSensitivity.High)]
+    public void SingleCharacterAppendagesRemainBlocked(FalsePositiveSensitivity sensitivity)
+    {
+        var checker = Create(sensitivity);
+        Assert.True(checker.IsReserved("zorbx"));
+        Assert.True(checker.IsReserved("xzorb"));
+        Assert.True(checker.IsReserved("zorb_"));
+        Assert.True(checker.IsReserved("z0rbx"));
+    }
+
     [Fact]
     public void HighAllowsLongerOneSidedSlang()
     {
