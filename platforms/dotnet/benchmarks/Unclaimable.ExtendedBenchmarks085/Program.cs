@@ -9,6 +9,9 @@ BenchmarkRunner.Run<ExtendedIndex085Benchmarks>();
 [SimpleJob(warmupCount: 3, iterationCount: 8)]
 public class ExtendedIndex085Benchmarks
 {
+    [Params("Core", "Core+Extended")]
+    public string PackageSet { get; set; } = "Core";
+
     private Checker _checker = null!;
     private Options _options = null!;
 
@@ -16,14 +19,18 @@ public class ExtendedIndex085Benchmarks
     public void Setup()
     {
         _options = new Options();
-        _options.UseExtendedData();
+        if (PackageSet == "Core+Extended")
+        {
+            _options.UseExtendedData();
+        }
         _checker = new Checker(_options);
     }
 
-    // Warm re-construction, with JSON already deserialized, tracks per-instance
-    // retained indexes and allocations. For true cold start, use a new process.
+    // Warm re-construction with data already loaded. Measures allocations,
+    // not retained heap or first-process startup. PackageSet identifies Core-only
+    // versus Core+Extended, while the Git ref identifies package version.
     [Benchmark]
-    public Checker ConstructCheckerWithAllExtended() => new Checker(_options);
+    public Checker ConstructChecker() => new Checker(_options);
 
     [Benchmark]
     public bool NoMatch() => _checker.IsClaimable("qzxnormalusername");
