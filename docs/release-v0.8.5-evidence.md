@@ -28,8 +28,25 @@ GitHub compare `v0.8.4...feature/0.8.5` at preparation found 221 commits and cha
 - Last verified matrix (run 38552005773): Core warm construction 2.292 ms -> 1.406 ms, allocations 1,297,233 B -> 1,302,813 B. Core+Extended warm construction 66.950 ms -> 72.042 ms, allocations 35,756,663 B -> 28,605,751 B. Both comply with maximum +15% time and managed allocations in that run; ordinary validations remain 0 B allocated.
 - Cold-process matrix: `.github/workflows/cold-memory-085.yml`. Each version runs ten independent processes for Core and Core+Extended, capturing initialization stopwatch duration, process-side allocated bytes, GC heap after full collection and working set. Source build excluded from timing. These measures differ from warm checker-construction cost; heap after GC is **not an isolated retained-checker footprint**.
 
+## Fresh-process cold audit results (20 processes per version: 10 Core, 10 Core+Extended)
+
+Source: successful GitHub run 38554147577; .NET 8, independent runners for each version; timings are median of 10 new processes per version/configuration. Time includes Options initialization, Extended first dataset load (when enabled), and Checker construction, not the .NET host startup and not compilation.
+
+| Cold metric | 0.8.4 | 0.8.5 | Interpretation |
+| --- | ---: | ---: | --- |
+| Core initialization time median | 104.35 ms | 67.42 ms | 35.4% faster |
+| Core + Extended initialization time median | 274.57 ms | 214.00 ms | 22.1% faster |
+| Core first-init managed allocations (typical) | ~8.56 MB | ~8.58 MB | ~0.2% higher |
+| Core + Extended first-init allocations (typical) | ~58.74 MB | ~54.40 MB | ~7.4% lower |
+| Core post-GC heap (typical) | ~2.85 MB | ~2.84 MB | roughly unchanged |
+| Core + Extended post-GC heap (typical) | ~28.37 MB | ~26.91 MB | ~5.2% lower |
+| Core process working set (typical) | ~59 MB | ~59 MB | roughly unchanged |
+| Core + Extended process working set (typical) | ~83–86 MB | ~87.5 MB | increased; investigate if strict RSS cap matters |
+
+Post-GC total heap is not an isolated object-graph retained-memory measurement; each version is run in a separate GitHub runner, so physical host differences may affect absolute timing. Repeated paired hardware testing and dedicated retained-heap measurements would provide stronger confirmation.
+
 ## Remaining release gates
-- Collect and assess fresh-process cold start, allocation, and heap measurements.
+- Review cold-process audit above and optionally repeat on paired hardware; inspect Core+Extended process RSS increase despite lower managed heap.
 - Confirm .NET compatibility, test/coverage, package validation, and smoke tests against the final release commit.
 - Audit full dataset totals, duplicates, provenance, language mapping, and representative accepted/rejected values for changed categories.
 - Do not publish, merge or tag until explicitly approved.
