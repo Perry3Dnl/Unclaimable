@@ -2,17 +2,17 @@
 
 Fast, dependency-free reserved username and identifier validation for .NET.
 
-**Package version: 0.8.5 (release candidate; not published)**
+**Package version: 0.8.5 LTS**
 
 ## Install
 
-**Until v0.8.5 is published, install the latest stable v0.8.4 package.** After release, use `--version 0.8.5` or upgrade via your package manager.
+**Install the v0.8.5 LTS package once it is available on NuGet.org.**
 
 ```bash
-dotnet add package Unclaimable --version 0.8.4
+dotnet add package Unclaimable --version 0.8.5
 ```
 
-## What's new in 0.8.5 (release candidate — not yet published)
+## What's new in 0.8.5 (LTS)
 
 - Expanded Core profanity coverage, including Dutch and English reserved vocabulary, and new regression tests for embedded terms.
 - Added `Options.FalsePositiveSensitivity`: `Low` (default, previous behavior), `Medium` and `High` for selectively suppressing one-sided short slang/profanity substring false positives. Whole-identifier, Core profanity and hate-speech matches remain protected.
