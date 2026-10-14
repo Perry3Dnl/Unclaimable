@@ -21,12 +21,12 @@ jobs:
 
     steps:
       - name: Checkout 0.8.3
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: current
 
       - name: Checkout 0.8.2 baseline
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: main
           path: baseline
