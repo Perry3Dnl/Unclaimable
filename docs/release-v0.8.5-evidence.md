@@ -55,3 +55,26 @@ Post-GC total heap is not an isolated object-graph retained-memory measurement; 
 - Code diff: https://github.com/Perry3Dnl/Unclaimable/compare/v0.8.4...feature/0.8.5
 - Four-case warm benchmark: https://github.com/Perry3Dnl/Unclaimable/actions/runs/38552005773
 - Cold benchmark: https://github.com/Perry3Dnl/Unclaimable/actions/runs/38554147577
+
+## Release candidate documentation and QC pass — 2026-10-14
+
+The GitHub README, all five package `README.NUGET.md` files (Core, Extended, ASP.NET Core, Email, FluentValidation), and `CHANGELOG.md` have been prepared for v0.8.5 on the development branch. Release notes explicitly describe the expanded detection coverage, the optional `FalsePositiveSensitivity` behavior, Core-only versus Core+Extended performance, the +7.6% Extended warm-construction trade-off, and the observation that working set increased in the cold-process audit.
+
+Package pages are marked **release candidate / not yet published** and give a stable v0.8.4 installation command until publication. Package versions in `Directory.Build.props` are set to 0.8.5 but no NuGet publish or tag action has been taken.
+
+### QC review findings and limits
+
+- The diff from tag `v0.8.4` to `feature/0.8.5` includes added Core option/enum APIs; no source-level public API removals were identified in the inspected changed files. **Formal binary API-baseline compatibility has not independently been established.**
+- `Unclaimable.Extended` remains a data registration extension: `UseExtendedData()` explicitly calls `Options.Reserve`, feeding Core's matcher; disabling Core partial matching still disables Extended substring detections in regression tests.
+- Existing targeted regression cases cover default Low false-positive sensitivity, Medium/High one-sided suppression, wrapped-term blocking, category toggles, short Unicode terms, long indexed candidate lists, disabled compact matching and rule exceptions.
+- Dataset expansion intentionally changes validation outputs. A complete human-language accuracy/provenance audit of all records is **not** certified by passing automated tests. Raw file entry counts do not equal unique normalized registered terms.
+- The latest verified passing full test-and-pack run before these documentation edits is linked in GitHub CI history. Final commit checks must pass before release approval.
+- Do not describe v0.8.5 as already available on NuGet; installation examples on package README files point to the currently released v0.8.4 until v0.8.5 is published.
+
+### Release approval remaining
+
+1. Verify final-commit .NET full test, coverage threshold, five NuGet package validations, and packaged-consumer smoke tests.
+2. Verify final-commit frozen defaults and ecosystem compatibility workflows.
+3. Conduct explicit public API compatibility comparison and final dataset quality/count review.
+4. Confirm package-page rendering and the published-version installation commands immediately before release.
+
