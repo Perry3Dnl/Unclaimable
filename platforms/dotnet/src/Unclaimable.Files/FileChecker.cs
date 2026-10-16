@@ -16,15 +16,15 @@ public sealed class FileChecker : IFileChecker
     private readonly string[] _blockedExtensions;
 
     /// <summary>Creates a checker with portable filename defaults.</summary>
-    public FileChecker() : this(new FileOptions()) { }
+    public FileChecker() : this(new FileCheckerOptions()) { }
 
     /// <summary>Captures filename settings and constructs the underlying Core name checker.</summary>
-    public FileChecker(FileOptions options)
+    public FileChecker(FileCheckerOptions options)
         : this(options is null ? throw new ArgumentNullException(nameof(options))
             : new global::Unclaimable.Checker(options.NameOptions), options) { }
 
     /// <summary>Captures filename settings and uses a supplied Core checker for full-name and stem decisions.</summary>
-    public FileChecker(global::Unclaimable.IChecker nameChecker, FileOptions options)
+    public FileChecker(global::Unclaimable.IChecker nameChecker, FileCheckerOptions options)
     {
         _nameChecker = nameChecker ?? throw new ArgumentNullException(nameof(nameChecker));
         if (options is null) throw new ArgumentNullException(nameof(options));
@@ -59,7 +59,7 @@ public sealed class FileChecker : IFileChecker
         foreach (var character in fileName)
         {
             if (character == '\0' || character == '/'
-                || (_profile != FileProfile.Linux && "<>:\"\\|?*".IndexOf(character) >= 0))
+                || (_profile != FileProfile.Linux && (character < 32 || "<>:\"\\|?*".IndexOf(character) >= 0)))
                 return new FileResult(fileName, FileFailureKind.InvalidCharacter);
         }
 
@@ -125,7 +125,7 @@ public sealed class FileChecker : IFileChecker
 
     private static global::Unclaimable.Checker CreateDeviceNameChecker()
     {
-        var options = FileOptions.CreateNameOptions();
+        var options = FileCheckerOptions.CreateNameOptions();
         foreach (var name in new[] { "CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$" })
             options.Reserve(name, "file-device", global::Unclaimable.ReservedMatchMode.Exact);
         for (var index = 1; index <= 9; index++)

@@ -56,7 +56,7 @@ public sealed class FileCheckerTests
     [InlineData("a\0b.txt", FileFailureKind.InvalidCharacter)]
     [InlineData("report.txt.", FileFailureKind.TrailingDotOrSpace)]
     [InlineData("report.txt ", FileFailureKind.TrailingDotOrSpace)]
-    [InlineData("a\nb.txt", FileFailureKind.NamePolicy)]
+    [InlineData("a\nb.txt", FileFailureKind.InvalidCharacter)]
     [InlineData("a\u202Eb.txt", FileFailureKind.NamePolicy)]
     [InlineData("\u200B", FileFailureKind.NamePolicy)]
     public void DefaultsRejectWithStructuredReasons(string? name, FileFailureKind expected)
@@ -99,7 +99,7 @@ public sealed class FileCheckerTests
     [Fact]
     public void ExplicitWindowsProfileDoesNotDependOnHostOrUtf8Length()
     {
-        var checker = new FileChecker(new FileOptions { Profile = FileProfile.Windows });
+        var checker = new FileChecker(new FileCheckerOptions { Profile = FileProfile.Windows });
         Assert.Equal(FileFailureKind.ReservedDeviceName, checker.Check("NUL.txt").FailureKind);
         Assert.Equal(FileFailureKind.TrailingDotOrSpace, checker.Check("a.").FailureKind);
         Assert.True(checker.IsAllowed(new string('船', 100)));
@@ -112,7 +112,7 @@ public sealed class FileCheckerTests
     [InlineData("a:b?c*d<e>f|g\"h\\i")]
     public void LinuxPermitsItsOwnFilenameCharacters(string name)
     {
-        Assert.True(new FileChecker(new FileOptions { Profile = FileProfile.Linux }).IsAllowed(name));
+        Assert.True(new FileChecker(new FileCheckerOptions { Profile = FileProfile.Linux }).IsAllowed(name));
     }
 
     [Theory]
@@ -121,13 +121,13 @@ public sealed class FileCheckerTests
     [InlineData("a\nb")]
     public void LinuxStillRejectsSeparatorsNulAndCoreUnicodeViolations(string name)
     {
-        Assert.False(new FileChecker(new FileOptions { Profile = FileProfile.Linux }).IsAllowed(name));
+        Assert.False(new FileChecker(new FileCheckerOptions { Profile = FileProfile.Linux }).IsAllowed(name));
     }
 
     [Fact]
     public void LengthLimitsIncludeTheExtensionAndCountUtf8Bytes()
     {
-        var checker = new FileChecker(new FileOptions { MaximumLength = 8, MaximumUtf8Bytes = 8 });
+        var checker = new FileChecker(new FileCheckerOptions { MaximumLength = 8, MaximumUtf8Bytes = 8 });
         Assert.True(checker.IsAllowed("1234.txt"));
         Assert.Equal(FileFailureKind.TooLong, checker.Check("12345.txt").FailureKind);
         Assert.True(checker.IsAllowed("éééé"));
@@ -147,7 +147,7 @@ public sealed class FileCheckerTests
     [Fact]
     public void AllowedExtensionsSupportCaseOptionalDotAndCompoundSuffixes()
     {
-        var options = new FileOptions();
+        var options = new FileCheckerOptions();
         options.AllowedExtensions.UnionWith(new[] { "PDF", ".tar.gz", ".pdf" });
         var checker = new FileChecker(options);
         Assert.True(checker.IsAllowed("report.PdF"));
@@ -159,7 +159,7 @@ public sealed class FileCheckerTests
     [Fact]
     public void BlockedExtensionsWinOverAllowsAndCatchInnerExtensions()
     {
-        var options = new FileOptions();
+        var options = new FileCheckerOptions();
         options.AllowedExtensions.UnionWith(new[] { ".pdf", ".exe" });
         options.BlockedExtensions.UnionWith(new[] { "exe", ".tar.gz" });
         var checker = new FileChecker(options);
@@ -176,7 +176,7 @@ public sealed class FileCheckerTests
     [Fact]
     public void NameReservationsUseCoreOnFullNamesAndStems()
     {
-        var options = new FileOptions();
+        var options = new FileCheckerOptions();
         options.NameOptions.Reserve("internal", "file-app", ReservedMatchMode.Exact);
         options.NameOptions.Reserve("secret.config", ReservedMatchMode.Exact);
         var checker = new FileChecker(options);
@@ -192,14 +192,14 @@ public sealed class FileCheckerTests
     [Fact]
     public void OptionalCoreProfanityAndObfuscationCanBeEnabled()
     {
-        var options = new FileOptions();
+        var options = new FileCheckerOptions();
         options.NameOptions.EnableCategory(Category.Profanity);
         options.NameOptions.EnableRule(Rule.Profanity | Rule.ObfuscationMatching | Rule.UnicodeConfusableMatching);
         var result = new FileChecker(options).Check("fuck.txt");
         Assert.Equal(FileFailureKind.NamePolicy, result.FailureKind);
         Assert.Equal("profanity", result.CoreResult!.Category);
 
-        var custom = new FileOptions();
+        var custom = new FileCheckerOptions();
         custom.NameOptions.EnableRule(Rule.ObfuscationMatching);
         custom.NameOptions.Reserve("nike", ReservedMatchMode.WholeIdentifier);
         Assert.False(new FileChecker(custom).IsAllowed("n1ke.txt"));
@@ -208,18 +208,20 @@ public sealed class FileCheckerTests
     [Fact]
     public void ApplicationAllowancesCannotBypassPlatformRules()
     {
-        var options = new FileOptions();
+        var options = new FileCheckerOptions();
         options.NameOptions.AllowedIdentifiers.Add("CON");
         options.NameOptions.AllowCharacters("/");
+        options.NameOptions.RejectControlCharacters = false;
         var checker = new FileChecker(options);
         Assert.Equal(FileFailureKind.ReservedDeviceName, checker.Check("CON.txt").FailureKind);
         Assert.Equal(FileFailureKind.InvalidCharacter, checker.Check("a/b.txt").FailureKind);
+        Assert.Equal(FileFailureKind.InvalidCharacter, checker.Check("a\u0001b.txt").FailureKind);
     }
 
     [Fact]
     public void ConstructionCapturesFileAndCoreSettings()
     {
-        var options = new FileOptions();
+        var options = new FileCheckerOptions();
         options.AllowedExtensions.Add("pdf");
         options.BlockedExtensions.Add("exe");
         var checker = new FileChecker(options);
@@ -239,7 +241,7 @@ public sealed class FileCheckerTests
     [Fact]
     public void CallerCanSupplyAnExistingCoreChecker()
     {
-        var options = new FileOptions();
+        var options = new FileCheckerOptions();
         options.NameOptions.Reserve("private", ReservedMatchMode.Exact);
         var checker = new FileChecker(new Checker(options.NameOptions), options);
         Assert.False(checker.IsAllowed("private.txt"));
@@ -247,15 +249,29 @@ public sealed class FileCheckerTests
     }
 
     [Fact]
+    public void InjectedCoreRuntimePolicyRemainsLive()
+    {
+        var options = new FileCheckerOptions();
+        options.NameOptions.EnableRule(Rule.BlockedCharacters);
+        var policy = new Policy(options.NameOptions.ConfiguredBlockedCharacters);
+        var checker = new FileChecker(new Checker(options.NameOptions, policy), options);
+        Assert.True(checker.IsAllowed("readme"));
+        policy.BlockCharacter("r");
+        var result = checker.Check("readme");
+        Assert.Equal(FileFailureKind.NamePolicy, result.FailureKind);
+        Assert.Equal(MatchKind.BlockedCharacter, result.CoreResult!.MatchKind);
+    }
+
+    [Fact]
     public void InvalidConstructorArgumentsFailEarly()
     {
-        var core = new Checker(new FileOptions().NameOptions);
+        var core = new Checker(new FileCheckerOptions().NameOptions);
         Assert.Throws<ArgumentNullException>(() => new FileChecker(null!));
-        Assert.Throws<ArgumentNullException>(() => new FileChecker(null!, new FileOptions()));
+        Assert.Throws<ArgumentNullException>(() => new FileChecker(null!, new FileCheckerOptions()));
         Assert.Throws<ArgumentNullException>(() => new FileChecker(core, null!));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new FileChecker(new FileOptions { Profile = (FileProfile)42 }));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new FileChecker(new FileOptions { MaximumLength = 0 }));
-        Assert.Throws<ArgumentOutOfRangeException>(() => new FileChecker(new FileOptions { MaximumUtf8Bytes = 0 }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new FileChecker(new FileCheckerOptions { Profile = (FileProfile)42 }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new FileChecker(new FileCheckerOptions { MaximumLength = 0 }));
+        Assert.Throws<ArgumentOutOfRangeException>(() => new FileChecker(new FileCheckerOptions { MaximumUtf8Bytes = 0 }));
     }
 
     [Theory]
@@ -272,7 +288,7 @@ public sealed class FileCheckerTests
     [InlineData("p:df")]
     public void InvalidExtensionConfigurationIsRejected(string? extension)
     {
-        var options = new FileOptions();
+        var options = new FileCheckerOptions();
         options.AllowedExtensions.Add(extension!);
         Assert.Throws<ArgumentException>(() => new FileChecker(options));
         options.AllowedExtensions.Clear();
@@ -283,7 +299,7 @@ public sealed class FileCheckerTests
     [Fact]
     public void SurrogateExtensionConfigurationIsRejected()
     {
-        var options = new FileOptions();
+        var options = new FileCheckerOptions();
         options.AllowedExtensions.Add("p\uD800df");
         Assert.Throws<ArgumentException>(() => new FileChecker(options));
     }

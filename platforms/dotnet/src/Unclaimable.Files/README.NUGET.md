@@ -38,7 +38,7 @@ Core rejects malformed UTF-16, control characters, formatting characters, and in
 ## Extension policies
 
 ```csharp
-var options = new FileOptions();
+var options = new FileCheckerOptions();
 options.AllowedExtensions.UnionWith(new[] { ".pdf", ".tar.gz" });
 options.BlockedExtensions.Add("exe");
 var checker = new FileChecker(options);
@@ -56,7 +56,7 @@ Sets start empty. Extensions are case-insensitive; the leading dot is optional a
 using Unclaimable;
 using Unclaimable.Files;
 
-var options = new FileOptions();
+var options = new FileCheckerOptions();
 options.NameOptions.Reserve("internal", "application", ReservedMatchMode.Exact);
 var checker = new FileChecker(options);
 checker.IsAllowed("INTERNAL.pdf"); // false; Core checks the stem too

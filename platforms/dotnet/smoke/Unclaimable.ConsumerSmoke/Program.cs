@@ -208,7 +208,7 @@ var noEducationOptions = new Options();
 noEducationOptions.UseExtendedData(extended => extended.DisableCategory(ExtendedCategory.Education));
 Require(new Checker(noEducationOptions).IsClaimable("aalborguniversity"), "Extended categories should be independently disableable.");
 
-var fileOptions = new FileOptions();
+var fileOptions = new FileCheckerOptions();
 fileOptions.AllowedExtensions.Add("pdf");
 fileOptions.BlockedExtensions.Add("exe");
 fileOptions.NameOptions.Reserve("internal", ReservedMatchMode.Exact);

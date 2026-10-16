@@ -2,7 +2,7 @@ using Unclaimable;
 using Unclaimable.Files;
 
 // This project deliberately references only the Files package. Core must arrive transitively.
-var options = new FileOptions();
+var options = new FileCheckerOptions();
 options.NameOptions.Reserve("internal", ReservedMatchMode.Exact);
 var checker = new FileChecker(options);
 if (!checker.IsAllowed("annual_report_2026.pdf")

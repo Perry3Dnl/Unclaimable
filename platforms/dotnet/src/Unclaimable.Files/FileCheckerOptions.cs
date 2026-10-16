@@ -1,10 +1,10 @@
 namespace Unclaimable.Files;
 
 /// <summary>Configures filename checks. Values are captured when a <see cref="FileChecker"/> is constructed.</summary>
-public sealed class FileOptions
+public sealed class FileCheckerOptions
 {
     /// <summary>Creates filename-adapted Core options with optional content protection disabled.</summary>
-    public FileOptions()
+    public FileCheckerOptions()
     {
         NameOptions = CreateNameOptions();
     }
