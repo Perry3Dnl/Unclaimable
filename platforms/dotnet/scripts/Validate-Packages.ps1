@@ -90,6 +90,15 @@ $packages = @(
         RequiredTags = @("dotnet", "fluentvalidation")
     },
     @{
+        Id = "Unclaimable.Files"
+        Frameworks = @("netstandard2.0")
+        Assembly = "Unclaimable.Files"
+        RequiresCoreDependency = $true
+        ReadmeHeading = "# Unclaimable.Files"
+        ForbiddenReadmeText = @("Unclaimable.AspNetCore", "Unclaimable.Email", "Unclaimable.Extended")
+        RequiredTags = @("dotnet", "cross-platform", "filename", "filename-validation")
+    },
+    @{
         Id = "Unclaimable.Extended"
         Frameworks = @("netstandard2.0")
         Assembly = "Unclaimable.Extended"
@@ -232,3 +241,4 @@ foreach ($package in $packages) {
 }
 
 Write-Host "All Unclaimable NuGet packages passed validation."
+

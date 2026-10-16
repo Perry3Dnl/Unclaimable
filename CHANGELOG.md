@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Add `Unclaimable.Files`, a `netstandard2.0` companion with a required Core dependency. Reuse Core for Unicode safety, exact platform device-name reservations, and configured filename/stem protection. Add explicit portable/Windows/Linux profiles, length limits, extension policies, structured diagnostics, regression tests, and packaging/smoke checks.
+
 ## 0.8.5 LTS — 2026-10-14
 
 > **Upgrade impact:** More profanity, slang, hate-speech and reserved identifiers are rejected by expanded Core and opt-in Extended datasets. No public API removals were identified in the initial source diff; the published v0.8.4 API baseline and final automated dataset audit passed.
@@ -679,3 +683,4 @@ Initial public NuGet release.
 - Source Link, deterministic builds, portable PDBs, and `.snupkg` symbol packages.
 - CI package-content validation and a clean consumer smoke test that restores the generated packages from a local feed.
 - GitHub Actions NuGet release workflow using Trusted Publishing/OIDC rather than a long-lived NuGet API key.
+
