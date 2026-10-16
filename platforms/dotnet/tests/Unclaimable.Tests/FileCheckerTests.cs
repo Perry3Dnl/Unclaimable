@@ -219,6 +219,18 @@ public sealed class FileCheckerTests
     }
 
     [Fact]
+    public void CorePartialMatchingCanBeEnabledWithItsRuleFlag()
+    {
+        var options = new FileCheckerOptions();
+        options.NameOptions.Reserve("internal");
+        Assert.True(new FileChecker(options).IsAllowed("internal_notes.pdf"));
+        options.NameOptions.EnableRule(Rule.PartialMatching);
+        var result = new FileChecker(options).Check("internal_notes.pdf");
+        Assert.Equal(FileFailureKind.NamePolicy, result.FailureKind);
+        Assert.Equal(MatchKind.Partial, result.CoreResult!.MatchKind);
+    }
+
+    [Fact]
     public void ConstructionCapturesFileAndCoreSettings()
     {
         var options = new FileCheckerOptions();

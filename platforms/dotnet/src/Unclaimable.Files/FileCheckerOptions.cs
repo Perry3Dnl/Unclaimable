@@ -36,7 +36,7 @@ public sealed class FileCheckerOptions
 
     internal static global::Unclaimable.Options CreateNameOptions()
     {
-        var options = new global::Unclaimable.Options { Strictness = global::Unclaimable.Strictness.Standard };
+        var options = new global::Unclaimable.Options();
         foreach (global::Unclaimable.Rule rule in Enum.GetValues(typeof(global::Unclaimable.Rule)))
             options.DisableRule(rule);
         foreach (global::Unclaimable.Pattern pattern in Enum.GetValues(typeof(global::Unclaimable.Pattern)))
