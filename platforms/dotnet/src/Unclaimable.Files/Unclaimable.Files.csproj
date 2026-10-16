@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);1591</WarningsAsErrors>
+    <PackageId>Unclaimable.Files</PackageId>
+    <Version>$(UnclaimableVersion)</Version>
+    <Description>Filename policies powered by the Unclaimable engine: portable naming rules, reserved device names, extension policies, and configurable name protection.</Description>
+    <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
+    <PackageIcon>unclaimable-icon.png</PackageIcon>
+    <PackageTags>filename;filename-validation;reserved-names;files;validation;dotnet;netstandard;cross-platform</PackageTags>
+    <EnablePackageValidation>true</EnablePackageValidation>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Unclaimable/Unclaimable.csproj" />
+    <None Include="README.NUGET.md" Pack="true" PackagePath="/" />
+    <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
+  </ItemGroup>
+</Project>

@@ -58,7 +58,7 @@ if ($env:GITHUB_STEP_SUMMARY) {
 
 New work should aim to cover all reachable production paths. The 98% floor is a regression guardrail, not the target.
 
-Production assemblies only: `Unclaimable`, `Unclaimable.AspNetCore`, `Unclaimable.Email`, `Unclaimable.Extended`, and `Unclaimable.FluentValidation`. Test assemblies and generated files are excluded.
+Production assemblies only: `Unclaimable`, `Unclaimable.AspNetCore`, `Unclaimable.Email`, `Unclaimable.Files`, `Unclaimable.Extended`, and `Unclaimable.FluentValidation`. Test assemblies and generated files are excluded.
 "@ | Add-Content -Path $env:GITHUB_STEP_SUMMARY
 }
 
@@ -77,3 +77,4 @@ if ($lineCoverage -lt $MinimumLineCoverage) {
     }
     throw "Line coverage is $lineCoverage%, below the required $MinimumLineCoverage%. The engineering target remains 100%."
 }
+

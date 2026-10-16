@@ -321,7 +321,7 @@ For copy-paste recipes, precedence, migration guidance, ASP.NET Core setup, Emai
 
 ## Companion packages
 
-The repository contains three companion packages that share the same release version as Core. They are summarized here because they are part of the Unclaimable project, but their package-specific READMEs remain the source for detailed usage.
+The repository contains companion packages that share the same release version as Core. They are summarized here because they are part of the Unclaimable project, but their package-specific READMEs remain the source for detailed usage.
 
 ### Unclaimable.AspNetCore
 
@@ -334,6 +334,12 @@ See [the ASP.NET Core package README](platforms/dotnet/src/Unclaimable.AspNetCor
 Adds email local-part identity checking plus protected-domain lookalike and impersonation detection. Its local-part checker starts from the same Core 0.8.3 defaults, including default-on multilingual profanity matching across the localized profanity datasets, while email-specific syntax concerns such as username length, separator, blocked-character, whitespace, and shape checks are handled separately.
 
 See [the Email package README](platforms/dotnet/src/Unclaimable.Email/README.NUGET.md).
+
+### Unclaimable.Files
+
+Adds filename policies through the Core engine: portable/Windows/Linux profiles, exact device-name reservations, extension allow/block lists, and configurable full-name/stem reservations. Core Unicode validation is active; username-specific content restrictions are opt-in. Targets `netstandard2.0` and depends on `Unclaimable`.
+
+See [the Files package README](platforms/dotnet/src/Unclaimable.Files/README.NUGET.md).
 
 ### Unclaimable.Extended
 
@@ -445,6 +451,7 @@ Generic words remain exact rather than broad substring roots: `vote` does not bl
 | [`Unclaimable`](https://www.nuget.org/packages/Unclaimable) | `netstandard2.0` | dependency-free runtime core and embedded datasets |
 | `Unclaimable.AspNetCore` | `net6.0`–`net11.0` | ASP.NET Core DI and DataAnnotations integration; framework-specific assets are tested per target |
 | `Unclaimable.Email` | `netstandard2.0` | email local-part policy and protected-domain impersonation checks |
+| `Unclaimable.Files` | `netstandard2.0` | filename profiles, device-name and extension policies powered by Core |
 | `Unclaimable.Extended` | `netstandard2.0` | optional large reserved-identity datasets powered by the Core matcher |
 
 ### Application ecosystem compatibility
@@ -843,3 +850,4 @@ You may use, modify, embed, and redistribute Unclaimable, including inside comme
 Copyright in Unclaimable remains with Perry3D.nl. Versions **0.8.2 and earlier** remain under the license attached to those releases; the 0.8.3 license change does not revoke earlier grants.
 
 Because the Commons Clause adds a commercial restriction, 0.8.3 and later are described as **source-available**, not OSI open source.
+
