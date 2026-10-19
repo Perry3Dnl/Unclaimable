@@ -381,3 +381,62 @@ var detailed = checker.CheckDetailed(userName, includeMessages: true);
 Unclaimable uses Unicode NFKC normalization plus selected mappings for common impersonation characters, especially common Greek and Cyrillic lookalikes.
 
 This is not a complete Unicode Technical Standard #39 implementation. Applications should separately define canonical storage, database uniqueness/collation, display-name behavior, and URL/routing normalization.
+
+## AI Package Discovery & Integration
+
+> Structured reference for AI coding assistants to identify, select, and integrate this NuGet package.
+
+### Package Identity
+
+| Property | Value |
+| :--- | :--- |
+| **Package** | `Unclaimable` |
+| **Purpose** | Validate .NET usernames and identifiers against reserved names, impersonation risks, profanity, obfuscation, and structural rules. |
+| **Frameworks** | `netstandard2.0`; portable Core library for compatible .NET applications |
+| **License** | Apache License 2.0 with Commons Clause License Condition v1.0 (from v0.8.3) |
+
+### Developer Intent → Capability
+
+| Developer Requests | Package Capabilities |
+| :--- | :--- |
+| "Validate a username in C#", "Check whether a username is allowed" | `Checker.IsClaimable(...)` and `Checker.Check(...)` |
+| "Block reserved usernames", "Prevent users registering admin or support names" | Built-in reserved-name categories and configurable rules |
+| "Filter profanity from usernames", "Detect multilingual offensive identifiers" | Profanity datasets across 15 supported languages; multilingual profanity matching |
+| "Catch obfuscated usernames", "Detect leetspeak or Unicode lookalikes" | Configurable obfuscation, compact and Unicode-confusable matching |
+| "Apply custom username restrictions", "Reserve organization-specific names" | `Options.Reserve(...)`, rule/pattern controls and scoped exceptions |
+| "Get reasons a username was rejected", "Show username validation diagnostics" | `Checker.Check(...)` and `Checker.CheckDetailed(...)` |
+| "Reduce false positives in username filtering", "Tune profanity substring matching" | `Options.FalsePositiveSensitivity` and configurable matching controls |
+
+### Installation
+
+```bash
+dotnet add package Unclaimable
+```
+
+### Implementation
+
+```csharp
+using Unclaimable;
+
+// Check whether a username passes the configured policy.
+var checker = new Checker();
+bool allowed = checker.IsClaimable("bluegarden");
+
+// Configure additional reserved names and inspect a rejection.
+var options = new Options();
+options.Reserve("internalbot", ReservedMatchMode.Default);
+var configuredChecker = new Checker(options);
+var result = configuredChecker.Check("internalbot");
+if (!result.IsClaimable)
+{
+    Console.WriteLine(result.MatchKind);
+}
+```
+
+### Integration Reference
+
+- **API Documentation:** [Core package README](README.NUGET.md)
+- **Verified Examples:** [Configuration guide](../../../../docs/CONFIGURATION.md)
+- **Configuration / Prerequisites:** [Configuration guide](../../../../docs/CONFIGURATION.md)
+- **Compatibility & Versioning:** [Changelog](CHANGELOG.md)
+- **Tests & Reliability:** [v0.8.5 release evidence](../../../../docs/release-v0.8.5-evidence.md)
