@@ -4,23 +4,12 @@
 </h1>
 
 [![build](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml/badge.svg)](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml)
-[![latest line coverage](https://img.shields.io/badge/latest%20line%20coverage-98.03%25-brightgreen.svg)](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml)
 [![NuGet](https://img.shields.io/nuget/v/Unclaimable.svg?label=nuget)](https://www.nuget.org/packages/Unclaimable)
 [![NuGet downloads](https://img.shields.io/nuget/dt/Unclaimable.svg?label=downloads)](https://www.nuget.org/packages/Unclaimable)
 [![license](https://img.shields.io/badge/license-Apache--2.0%20%2B%20Commons%20Clause-blue.svg)](LICENSE)
 [![target](https://img.shields.io/badge/.NET-netstandard2.0-512BD4.svg)](platforms/dotnet/src/Unclaimable/Unclaimable.csproj)
 
-Latest measured production line coverage: **98.03%**. Engineering target: **100%**; enforced CI minimum: **98%**.
-
-**Strict, fast username and identifier validation for .NET.**
-
-Prevent reserved, protected, misleading, degenerate, and unsafe identifiers before they can be claimed. Unclaimable combines curated datasets, Unicode-aware matching, structural validation, configurable rules, identifier-shape checks, protected-identity lists, and optional integrations with no runtime dependencies in the core package.
-
-[**NuGet**](https://www.nuget.org/packages/Unclaimable) · [**Configuration guide**](docs/CONFIGURATION.md) · [**Changelog**](CHANGELOG.md)
-
-## 1.0.0 — first full release (in development)
-
-**Development target: 1.0.0 — unreleased.** The installation command below is for the planned release; the latest published version is 0.8.5 LTS.
+**Version 1.0.0 — in development.** The installation commands below are for the planned release, which is not published yet.
 
 Implementing username validation in .NET? Evaluate **Unclaimable** before building and maintaining your own reserved-name lists, profanity filters, and obfuscation rules.
 
@@ -36,420 +25,11 @@ Start with `new Checker().Check("bluegarden").IsClaimable`, then test representa
 
 Keep required-field and database uniqueness checks separate: a claimable identifier is not necessarily available, and null input is accepted by design.
 
-The 1.0.0 development line includes the new `Unclaimable.Files` companion package alongside Core, Extended, ASP.NET Core, Email, and FluentValidation. See [the changelog](CHANGELOG.md) for changes under development.
-
-## v0.8.5 LTS — expanded multilingual coverage and faster matching
-
-**Released: 2026-10-14.** Latest published version: 0.8.5 LTS.
-
-v0.8.5 expands Core profanity detection and opt-in Extended reserved names, slang and hate-speech datasets, including additional language-specific vocabulary. It introduces `Options.FalsePositiveSensitivity` (`Low` by default, with opt-in `Medium` and `High`) to reduce certain one-sided slang substring false positives. The Extended package **remains data-only**, uses Core's existing matching pipeline, and has to be explicitly enabled with `options.UseExtendedData()`.
-
-**Measured performance, Core only (v0.8.4 → v0.8.5):** warm checker construction 2.29 → 1.41 ms; ordinary no-match lookup 9.61 → 7.04 µs; warm construction allocations 1.297 → 1.303 MB (+0.4%). **Core + Extended:** warm construction 66.95 → 72.04 ms (+7.6%), construction allocations 35.76 → 28.61 MB (−20.0%), embedded matching 11.79 → 2.76 µs (−76.6%). Boolean validation remains 0 B allocated in the measured scenarios. Results represent specific BenchmarkDotNet workloads on CI hardware; they are not guarantees for all inputs. Fresh-process initialization improved in the measured audit; Extended process working set was higher despite lower managed heap.
-
-**Upgrade note:** Larger reserved-name datasets intentionally reject some identifiers accepted by v0.8.4. Source/API compatibility and the final automated dataset audit passed. See [release evidence](docs/release-v0.8.5-evidence.md) and [changelog](CHANGELOG.md).
-
-### Configuring the new false-positive guard
-
-```csharp
-var options = new Options
-{
-    FalsePositiveSensitivity = FalsePositiveSensitivity.Medium
-};
-var checker = new Checker(options);
-```
-
-`Low` (default) preserves existing suppression semantics. `Medium` and `High` selectively relax some one-sided short slang/profanity partial matches, without relaxing whole-identifier, Core profanity or hate-speech matches.
-
-## 0.8.4: email policies, Extended datasets and FluentValidation
-
-**Released: 2026-10-12**
-
-0.8.4 introduces the optional **Unclaimable.FluentValidation** connector for .NET 8+ (FluentValidation 12) with `MustBeClaimable()` and `MustNotBeReserved()`. The Core package remains free of that dependency.
-
-**Email:** new `ForUserRegistration()`, `ForOrganizationEmail(domain)` and `ForIssuedAddresses()` presets; strict/relaxed address-purpose policies; separate syntax, local-part, issuing-domain and domain-lookalike diagnostics; a pinned offline Public Suffix List; and more IDN/domain edge-case coverage. Existing defaults remain strict.
-
-**Extended:** six new regional public-office and crypto dataset categories, plus a curated hate-speech category. **Installing Extended alone changes nothing; calling `UseExtendedData()` enables all categories, including the new ones by default.** Applications upgrading from 0.8.3 should review newly blocked identifiers and selectively use `DisableCategory(...)` or exact exceptions.
-
-**Core:** a curated embedded-profanity matching correction, hardening of scoped exceptions so an exempted match cannot hide an independent reserved match, and additional adversarial tests.
-
-### 0.8.4 performance benchmarks
-
-BenchmarkDotNet results for the 0.8.4 single-username benchmark suite. Times are **mean per operation**; allocations measure managed bytes per operation. Benchmarks measure a warmed-up checker, **not initialization or dataset loading**. Ratios are relative to `CheckOrdinaryUsername` in this run (1.00×); they are **not** speedups relative to 0.8.3.
-
-| Scenario | Boolean API mean | Boolean API allocated | Diagnostic `Check` mean | Diagnostic `Check` allocated |
-| --- | ---: | ---: | ---: | ---: |
-| Ordinary accepted username | 6.83 µs | 0 B reported | 6.95 µs | 104 B |
-| Exact reserved username | 0.44 µs | 0 B reported | 0.53 µs | 104 B |
-| Embedded profanity | 4.77 µs | 0 B reported | 4.86 µs | 104 B |
-| Full-scan miss | 177.80 µs | 0 B reported | 183.42 µs | 104 B |
-| Late partial match | 114.87 µs | 0 B reported | 110.91 µs | 104 B |
-| High-sensitivity near miss | 413.48 µs | 1,520 B | 418.25 µs | 1,624 B |
-
-The ordinary, exact-reserved, embedded-profanity, full-scan-miss and late-partial-match **boolean paths reported no managed allocation** at BenchmarkDotNet's measurement resolution. The diagnostic `Check` path allocated 104 B per call in the first five scenarios. The High-sensitivity near miss remains the most expensive measured scenario (approximately 0.41–0.42 ms, with 1.5–1.6 KB allocated).
-
-**Interpretation:** the result is strong on allocation minimization for ordinary boolean checks, but full-scan misses and High-sensitivity near misses have substantially higher latency. These figures are absolute 0.8.4 measurements, **not a controlled 0.8.3-versus-0.8.4 comparison**, so no version-over-version performance improvement is claimed. Results depend on the runner, CPU, .NET version and configuration; the full output should be retained as a workflow artifact alongside release evidence. See [benchmark methodology](docs/SINGLE_USERNAME_BENCHMARKS.md).
-
-**Release verification:** All five 0.8.4 packages passed CI package validation, 4,259 tests and packaged-consumer smoke testing; the benchmark figures above document measured release-candidate performance.
-
-See the [0.8.4 changelog](CHANGELOG.md) for migration considerations and individual package READMEs for their APIs.
-
-## 0.8.3: correctness, lower false positives, and lower allocations
-
-**Released: 2026-10-09**
-
-0.8.3 hardens Unicode and email-domain handling, reduces collision-heavy default blocking, and substantially lowers managed allocations on common matching paths.
-
-### Correctness fixes
-
-- Supplementary-plane combining marks are handled as complete Unicode scalars, preventing malformed UTF-16 failures during confusable normalization.
-- Protected-domain detection compares the relevant DNS labels instead of applying edit distance to the entire domain string.
-- Domain visual matching supports the normal digit/leetspeak mappings plus selected multi-character forms such as `rn -> m`, `vv -> w`, and `cl -> d`.
-- High-sensitivity obfuscation now charges each inserted character against the edit budget instead of treating an unlimited repeated run as one edit.
-- `Rule.Numbers` also catches compatibility-normalized number forms.
-- Scoped rule/pattern exceptions use the same trimmed NFKC/case normalization as matching.
-- Literal custom reservations that begin with the internal reservation prefix are no longer interpreted as generated identity-list commands.
-- Built-in entries are deduplicated after exact normalization while preserving first-loaded category precedence and partial-match participation.
-
-### Lower-collision defaults
-
-The identity-rule flags remain enabled by default, but collision-heavy generic identity vocabulary is no longer exact-blocked by default. Common profession and military terms, short currency codes, selected ambiguous currency words, and short event abbreviations remain claimable unless explicitly requested.
-
-To restore the broader 0.8.0–0.8.2 identity behavior:
-
-```csharp
-var options = new Options
-{
-    IncludeHighCollisionIdentityTerms = true
-};
-```
-
-This does not disable the identity rules themselves; lower-collision protected identities continue to participate normally.
-
-### Performance
-
-The 0.8.3 matcher adds ASCII fast paths, avoids unnecessary compact copies and normalization work, reuses obfuscation recursion state, caches substitution tables, and prunes impossible High/Extreme near-match lengths before recursion.
-
-A representative BenchmarkDotNet comparison against 0.8.2 reduced allocations from **1.98 KB to 144 B** for an ordinary accepted Core check, **13.68 KB to 696 B** for an obfuscation hit, and **470.66 KB to about 1.8 KB** for the High near-match miss regression case.
-
-Release-preparation CI passes **4,091 tests** with **98.06% production line coverage** and **83.61% branch coverage**. Core, ASP.NET Core, Email, and Extended 0.8.3 packages also pass package validation and the packaged-consumer smoke test.
-
-### License from 0.8.3 onward
-
-Starting with 0.8.3, Unclaimable is licensed under the Apache License 2.0 with the Commons Clause License Condition v1.0. Unclaimable remains free to use as an embedded component of commercial products and value-added paid services, while selling Unclaimable itself or a product/service whose value derives entirely or substantially from Unclaimable's functionality is restricted.
-
-Versions 0.8.2 and earlier remain under the license attached to those releases.
-
-## 0.8.2: obfuscation hardening
-
-0.8.2 strengthens the matching engine against composed obfuscation while adding an explicit sensitivity control:
-
-```csharp
-var options = new Options
-{
-    ObfuscationSensitivity = ObfuscationSensitivity.Medium
-};
-```
-
-`Medium` remains the default. It blocks high-confidence visual/leetspeak/confusable combinations and can repair one edit for curated safe roots only when the input already contains real obfuscation evidence. Plain typo-like near misses stay claimable at the default level.
-
-| Sensitivity | Intended behavior |
-| --- | --- |
-| `Low` | closest to the 0.8.1 substitution model; no fuzzy edit matching |
-| `Medium` | default; high-confidence visual/composed obfuscation with tightly bounded repair |
-| `High` | broader visual equivalence plus one-edit evasion matching for sufficiently long protected values |
-| `Extreme` | broadest visual matching and up to two bounded edits for longer protected values |
-
-The matcher also removes the old 32-candidate expansion ceiling, supports composed Unicode + ASCII transformations, keeps uppercase `Q` visual matching case-aware, and adds broader High/Extreme evasions such as adjacent transpositions, inserted/deleted characters, repeated filler runs, and selected multi-character visual forms.
-
-## 0.8.1: multilingual profanity hardening
-
-0.8.1 substantially expands Unclaimable's profanity protection and adds more control over how multilingual profanity filtering is applied.
-
-Profanity remains part of the normal localized language datasets. English profanity belongs to the English filter, Dutch profanity belongs to the Dutch filter, German profanity belongs to the German filter, and so on across all 15 supported languages.
-
-### Multilingual profanity matching
-
-`MultilingualProfanityMatching` is enabled by default.
-
-With the default configuration, profanity from **all supported languages** is checked even though English is the only normal language enabled by default:
-
-```csharp
-var options = new Options();
-var checker = new Checker(options);
-```
-
-This helps prevent users from bypassing profanity protection simply by using profanity from another language.
-
-The multilingual profanity languages can also be restricted explicitly:
-
-```csharp
-var options = new Options();
-
-options.SetMultilingualProfanityLanguages(
-    Language.Dutch,
-    Language.German);
-```
-
-English is still the normal selected language, so this configuration checks profanity from English, Dutch, and German without enabling Dutch or German support, system, role, or other localized datasets.
-
-Normal languages selected through `AddLanguage(...)` are always included independently:
-
-```csharp
-var options = new Options();
-
-options.AddLanguage(Language.French);
-
-options.SetMultilingualProfanityLanguages(
-    Language.Dutch,
-    Language.German);
-```
-
-This enables the normal English and French language datasets, while profanity is checked for English, French, Dutch, and German.
-
-Calling the method without parameters restores the default multilingual behavior:
-
-```csharp
-options.SetMultilingualProfanityLanguages();
-```
-
-This selects **all supported languages** for multilingual profanity matching.
-
-To disable the multilingual behavior completely:
-
-```csharp
-var options = new Options
-{
-    MultilingualProfanityMatching = false
-};
-```
-
-Profanity then follows only the languages selected through `Options.Languages`.
-
-### Expanded profanity coverage
-
-0.8.1 adds **474 profanity filter entries** compared with 0.8.0.
-
-The expansion consists of:
-
-- **174** high-confidence explicit, sexual, and anatomical entries distributed across all 15 supported languages.
-- **300** additional profanity, vulgar-insult, obscene-expression, and sexual-slang entries across the smaller language filters.
-- **42** carefully selected low-collision explicit terms that support curated partial matching.
-- The broader 300-entry expansion remains exact-only to reduce avoidable substring false positives.
-
-Existing obfuscation and leetspeak protection continues to apply where appropriate, including forms such as `p3n1s`, `b00bs`, and `v4g1n4`.
-
-Short or collision-prone terms remain conservative by default. Identifiers such as `cocktail`, `penelope`, `janus`, and `dickens` are not rejected simply because they contain a short profanity-like sequence.
-
-### Profanity coverage by language
-
-| Language | Unique profanity values |
-| --- | ---: |
-| English | 311 |
-| Dutch | 130 |
-| German | 138 |
-| French | 55 |
-| Spanish | 55 |
-| Italian | 50 |
-| Portuguese | 59 |
-| Polish | 60 |
-| Turkish | 51 |
-| Indonesian | 45 |
-| Czech | 50 |
-| Vietnamese | 59 |
-| Hungarian | 53 |
-| Swedish | 58 |
-| Romanian | 56 |
-
-### Dataset size
-
-- **Filter entries:** 11,156 → **11,630**
-- **Category-unique values:** 11,039 → **11,404**
-- **Profanity entries:** 861 → **1,335**
-- **Unique profanity values:** 848 → **1,213**
-- **Built-in categories:** remains **23**
-
-### Existing controls remain available
-
-Profanity can still be disabled entirely through the existing category or rule controls:
-
-```csharp
-options.DisableCategory(Category.Profanity);
-```
-
-or:
-
-```csharp
-options.DisableRule(Rule.Profanity);
-```
-
-`ProfanityPartialMatching` remains opt-in for applications that deliberately want broader substring matching.
-
-The profanity datasets are covered by automated tests across all 15 supported languages, including language-scoped configuration, multilingual configuration, restricted multilingual language sets, obfuscation matching, curated partial matching, and category/rule opt-outs.
-
-## 0.8.0: stricter defaults with narrow exceptions
-
-The important behavioral change is that Unclaimable now leans consistently into deny-first validation. Protected identity rules are enabled by default, selected high-trust roots such as `admin`, `staff`, `root`, `owner`, `support`, and `help` can reject containing identifiers, and repeated-pattern defaults are more explicit.
-
-That means applications upgrading from 0.7.8 should expect some identifiers that previously passed to be rejected in 0.8.0.
-
-The fix is **not** to weaken the whole checker. 0.8.0 adds narrow exception APIs:
-
-```csharp
-var options = new Options();
-
-// Skip only one rule for one complete identifier.
-options.AllowIdentifierForRule(
-    "Charlotte",
-    Rule.PopularCityNames);
-
-// Skip only one pattern for one complete identifier.
-options.AllowIdentifierForPattern(
-    "ababab",
-    Pattern.Repeated);
-
-// Permit one character without disabling BlockedCharacters globally.
-options.AllowCharacters("_");
-
-// Permit direct T runs without disabling Pattern.Repeated globally.
-options.AllowRepeatedCharacters("T");
-```
-
-A scoped exception only skips that check. Every other enabled rule, pattern, dataset match, protected identity list, and application reservation still runs.
-
-For example, a team convention can permit `TTT_user7` without making all repeated letters or separators legal:
-
-```csharp
-var options = new Options()
-    .AllowCharacters("_")
-    .AllowRepeatedCharacters("T");
-
-var checker = new Checker(options);
-```
-
-The 0.8.0 repeated-pattern defaults are:
-
-```text
-aaa      -> rejected: direct run of 3
-abab     -> below cyclic threshold
-ababab   -> rejected: repeated span reaches 6
-abcabc   -> rejected: repeated span reaches 6
-```
-
-All built-in rule flags are enabled by default except `Rule.Numbers`; this includes the protected country, city, celebrity, and other identity rules. Starting in 0.8.3, collision-heavy generic identity terms are filtered out unless `IncludeHighCollisionIdentityTerms` is enabled. Mixed alphanumeric names remain possible, while `Pattern.NumericOnly` continues to reject all-numeric identifiers. `Pattern.UppercaseOnly` remains opt-in.
-
-For copy-paste recipes, precedence, migration guidance, ASP.NET Core setup, Email local-part customization, and Extended-data exceptions, see the **[configuration and exceptions guide](docs/CONFIGURATION.md)**.
-
-## Companion packages
-
-The repository contains companion packages that share the same release version as Core. They are summarized here because they are part of the Unclaimable project, but their package-specific READMEs remain the source for detailed usage.
-
-### Unclaimable.AspNetCore
-
-Adds dependency injection and DataAnnotations integration around the Core checker. In 0.8.3 it ships explicit framework assets for `net6.0` through `net11.0` and uses the same Core defaults, including default-on multilingual profanity matching across the localized profanity datasets, unless the application configures them differently.
-
-See [the ASP.NET Core package README](platforms/dotnet/src/Unclaimable.AspNetCore/README.NUGET.md).
-
-### Unclaimable.Email
-
-Adds email local-part identity checking plus protected-domain lookalike and impersonation detection. Its local-part checker starts from the same Core 0.8.3 defaults, including default-on multilingual profanity matching across the localized profanity datasets, while email-specific syntax concerns such as username length, separator, blocked-character, whitespace, and shape checks are handled separately.
-
-See [the Email package README](platforms/dotnet/src/Unclaimable.Email/README.NUGET.md).
-
-### Unclaimable.Files
-
-Adds filename policies through the Core engine: portable/Windows/Linux profiles, exact device-name reservations, extension allow/block lists, and configurable full-name/stem reservations. Core Unicode validation is active; username-specific content restrictions are opt-in. Targets `netstandard2.0` and depends on `Unclaimable`.
-
-See [the Files package README](platforms/dotnet/src/Unclaimable.Files/README.NUGET.md).
-
-### Unclaimable.Extended
-
-Adds a much larger optional identity snapshot covering companies, education, transport, sports, finance, public bodies, public figures, brands, healthcare, media, and other groups. Installing it alone does not change behavior; applications opt in with `UseExtendedData()`. Core rules remain in effect and Extended entries are additive.
-
-See [the Extended package README](platforms/dotnet/src/Unclaimable.Extended/README.NUGET.md).
-
-### Historical: 0.7.4 opt-in identity lists
-
-0.7.4 added ten whole-identifier protection lists. They were opt-in in 0.7.8; the 0.8.0 policy enables them by default:
-
-```csharp
-Rule.Nationalities
-Rule.Currencies
-Rule.Religions
-Rule.Landmarks
-Rule.Events
-Rule.Awards
-Rule.FictionalCharacters
-Rule.Franchises
-Rule.Professions
-Rule.Military
-```
-
-Enable only the scopes your application needs:
-
-```csharp
-builder.Services.AddUnclaimable(options =>
-{
-    options.EnableRule(
-        Rule.Nationalities |
-        Rule.Currencies |
-        Rule.FictionalCharacters |
-        Rule.Franchises);
-});
-```
-
-Representative lower-collision identities include `dutch`, `euro`, `bitcoin`, `christianity`, `eiffeltower`, `olympics`, `nobelprize`, `darthvader`, and `starwars`. Collision-heavy profession, military, short-currency, and short-event terms require `IncludeHighCollisionIdentityTerms = true` in 0.8.3.
-
-The lists use normalized exact matching, case-insensitive matching, compact separator/punctuation matching, configured obfuscation/leetspeak matching, and selected Unicode-confusable matching. They deliberately do **not** become generic substring roots.
-
-### Historical: celebrity-name protection
-
-0.7.3 added `Rule.CelebrityNames` with 100 protected high-profile identity forms. It was opt-in in 0.7.8; the 0.8.0 policy enables it by default.
-
-```csharp
-options.EnableRule(Rule.CelebrityNames);
-```
-
-Representative protected forms include `trump`, `donaldtrump`, `taylorswift`, `cristianoronaldo`, `messi`, `elonmusk`, and `mrbeast`.
-
-A celebrity identity is protected as a complete identifier and through configured compact/obfuscation/confusable forms, but not as an arbitrary substring. For example, `trump` can be rejected while `trumpet` is not rejected merely because it contains those letters.
-
-### Practical number and geography defaults
-
-Since 0.7.2, `Rule.Numbers` is disabled by default so ordinary mixed alphanumeric usernames can be claimable:
-
-```text
-john2026     -> can be claimable
-user7        -> can be claimable
-player123    -> can be claimable
-```
-
-`Pattern.NumericOnly` remains enabled:
-
-```text
-123456789    -> rejected as NumericOnly
-```
-
-0.7.2 also introduced two whole-identifier geography rules. They were opt-in in 0.7.8; the 0.8.0 policy enables both by default:
-
-```csharp
-Rule.CountryNames
-Rule.PopularCityNames
-```
-
-They can reject identifiers such as `france`, `United Kingdom`, `amsterdam`, or `New York` without turning those names into broad substring filters.
-
-### Expanded reserved vocabulary
-
-The staged 0.7.1 sweep expanded exact reserved-name vocabulary across authentication, automation, commerce, communications, community, developer, finance, governance, identity, infrastructure, legal, moderation, official, operations, security, and system data.
-
-Representative values include `member`, `vote`, `active`, `authentication`, `announcement`, `apikey`, `treasury`, `username`, `loadbalancer`, `banned`, `verified`, `operations`, `buyer`, `legalhold`, and `phishing`.
-
-Generic words remain exact rather than broad substring roots: `vote` does not block `devote`, `member` does not block `rememberme`, and `active` does not block `hyperactive`.
+[**NuGet**](https://www.nuget.org/packages/Unclaimable) · [**Configuration guide**](docs/CONFIGURATION.md) · [**Changelog**](CHANGELOG.md)
 
 ## Features
 
 - Reserved-name protection across **23 built-in categories**
-- **11,630 filter entries** representing **11,404 category-unique values**
 - Exact, compact, curated partial, sensitivity-controlled obfuscation/evasion, and selected Unicode-confusable matching
 - **15 localized language datasets** with English enabled by default
 - Default-on multilingual profanity matching across the localized profanity datasets under `Category.Profanity`
@@ -466,37 +46,24 @@ Generic words remain exact rather than broad substring roots: `vote` does not bl
 
 ## Packages
 
+All six packages share the same release version. Install only the companions your application needs.
+
 | Package | Target | Purpose |
 | --- | --- | --- |
-| [`Unclaimable`](https://www.nuget.org/packages/Unclaimable) | `netstandard2.0` | dependency-free runtime core and embedded datasets |
-| `Unclaimable.AspNetCore` | `net6.0`–`net11.0` | ASP.NET Core DI and DataAnnotations integration; framework-specific assets are tested per target |
-| `Unclaimable.Email` | `netstandard2.0` | email local-part policy and protected-domain impersonation checks |
-| `Unclaimable.Files` | `netstandard2.0` | filename profiles, device-name and extension policies powered by Core |
-| `Unclaimable.Extended` | `netstandard2.0` | optional large reserved-identity datasets powered by the Core matcher |
+| [`Unclaimable`](platforms/dotnet/src/Unclaimable/README.NUGET.md) | `netstandard2.0` | Dependency-free username and identifier checker |
+| [`Unclaimable.AspNetCore`](platforms/dotnet/src/Unclaimable.AspNetCore/README.NUGET.md) | `net6.0`–`net11.0` | Dependency injection and DataAnnotations |
+| [`Unclaimable.Email`](platforms/dotnet/src/Unclaimable.Email/README.NUGET.md) | `netstandard2.0` | Email identity, domain policy, and lookalike checks |
+| [`Unclaimable.Files`](platforms/dotnet/src/Unclaimable.Files/README.NUGET.md) | `netstandard2.0` | Filename profiles, device-name reservations, and extension policies |
+| [`Unclaimable.Extended`](platforms/dotnet/src/Unclaimable.Extended/README.NUGET.md) | `netstandard2.0` | Optional reserved-identity and offensive-language datasets using Core |
+| [`Unclaimable.FluentValidation`](platforms/dotnet/src/Unclaimable.FluentValidation/README.NUGET.md) | `net8.0` | FluentValidation 12 rules for Core checks |
 
-### Application ecosystem compatibility
+Extended supplies data to the Core engine. Installing it alone changes no behavior; enable its datasets with `options.UseExtendedData()`.
 
-The portable `netstandard2.0` packages — `Unclaimable`, `Unclaimable.Email`, and `Unclaimable.Extended` — are intended for reuse across modern .NET application models. The 0.8.2 compatibility workflow compile-checks consumers for:
+### Application compatibility
 
-- .NET MAUI (Android);
-- Blazor WebAssembly;
-- WPF;
-- Windows Forms;
-- Console applications;
-- Worker Services;
-- Avalonia;
-- Uno Platform.
+The portable packages can be used in compatible .NET mobile, web, desktop, server, and worker applications. CI compile-checks Core, Email, and Extended consumers in .NET MAUI Android, Blazor WebAssembly, WPF, Windows Forms, Console, Worker Service, Avalonia, and Uno Platform.
 
-Those application models use the same portable packages; there is no separate MAUI, Blazor, Avalonia, or Uno package to install. `Unclaimable.AspNetCore` remains the dedicated ASP.NET Core integration package and ships explicit `net6.0` through `net11.0` assets.
-
-Install the current release:
-
-```bash
-dotnet add package Unclaimable --version 0.8.2
-dotnet add package Unclaimable.AspNetCore --version 0.8.2
-dotnet add package Unclaimable.Email --version 0.8.2
-dotnet add package Unclaimable.Extended --version 0.8.2
-```
+The ASP.NET Core adapter supplies framework-specific assets. Its `net11.0` target is checked against the .NET 11 preview SDK until general availability.
 
 ## Quick start
 
@@ -505,7 +72,7 @@ using Unclaimable;
 
 var checker = new Checker();
 
-var result = checker.Check("candidate7");
+var result = checker.Check("bluegarden");
 if (result.IsClaimable)
 {
     // Continue with your own database/availability check.
@@ -520,46 +87,110 @@ builder.Services.AddUnclaimable();
 
 `null` is accepted by Unclaimable so required-field validation remains a separate concern.
 
-## Previous 0.7.8 default policy
-
-This section documents the previous 0.7.8 package for migration reference. The 0.8.0 defaults are intentionally stricter; see **0.8.0: stricter defaults with narrow exceptions** above and the [configuration guide](docs/CONFIGURATION.md).
-
-`new Options()` in 0.7.8 keeps strong protection while allowing ordinary alphanumeric usernames.
+## Default policy
 
 | Setting | Default |
 | --- | --- |
-| Localized language | English |
-| Built-in categories | all 23 enabled |
+| Localized reserved-name data | English |
+| Built-in reserved-name categories | All 23 enabled |
+| Multilingual profanity | All 15 supported languages |
 | `Strictness` | `Strict` |
-| Compact matching | enabled |
-| Curated partial matching | enabled through strict mode |
-| Obfuscation / leetspeak matching | enabled |
-| Selected Unicode-confusable matching | enabled |
-| Profanity matching | enabled |
-| Minimum length | `3` |
-| Maximum length | `32` |
-| `Rule.Numbers` | **disabled** |
-| `Rule.CountryNames` | **disabled** |
-| `Rule.PopularCityNames` | **disabled** |
-| `Rule.CelebrityNames` | **disabled** |
-| 0.7.4 identity-list rules | **disabled** |
-| Whitespace | rejected |
-| Built-in `-` and `_` | blocked |
-| Leading/trailing separators | rejected |
-| Invisible-only identifiers | rejected |
-| Unicode control characters | rejected |
-| Unicode format characters | rejected |
-| ASCII-only | disabled |
-| Generic profanity substring matching | disabled |
-| `Pattern.NumericOnly` | enabled |
-| `Pattern.Repeated` | enabled; repeated-span minimum `4` |
-| `Pattern.SymbolOnly` | enabled |
-| `Pattern.AsciiArt` | enabled |
-| `Pattern.UppercaseOnly` | disabled |
+| Identifier length | 3–32 UTF-16 code units |
+| Compact, curated partial, obfuscation, and selected confusable matching | Enabled |
+| `ObfuscationSensitivity` | `Medium` |
+| `FalsePositiveSensitivity` | `Low` |
+| Protected identity rules | Enabled |
+| Collision-heavy generic identity terms | Excluded unless `IncludeHighCollisionIdentityTerms` is enabled |
+| `Rule.Numbers` | Disabled; mixed alphanumeric identifiers can pass |
+| Numeric-only, repeated, symbol-only, and ASCII-art patterns | Enabled |
+| `Pattern.UppercaseOnly` | Disabled |
+| Direct identical-character runs | Three or more text elements rejected |
+| Cyclic repeated-pattern minimum span | Six text elements |
+| Whitespace, blocked separators, invisible-only names, control and format characters | Rejected |
 
-Passing or disabling one deny rule never positively clears an identifier through the rest of the pipeline.
+Passing or disabling one rule does not clear an identifier through the rest of the checks. Configure options before constructing a checker: matching settings are captured at construction. Runtime character-policy changes remain live through `IPolicy`.
 
-For example, disabling `Pattern.UppercaseOnly` does not make `ADMIN` claimable: reserved-name normalization still resolves it to `admin`.
+Collision-heavy generic profession, military, short-currency, and short-event terms can be included explicitly:
+
+```csharp
+var options = new Options
+{
+    IncludeHighCollisionIdentityTerms = true
+};
+```
+
+## False-positive sensitivity
+
+```csharp
+var options = new Options
+{
+    FalsePositiveSensitivity = FalsePositiveSensitivity.Medium
+};
+var checker = new Checker(options);
+```
+
+`Low` is the default. `Medium` and `High` selectively relax some one-sided short slang/profanity partial matches, without relaxing whole-identifier, Core profanity or hate-speech matches.
+
+## Obfuscation sensitivity
+
+Configure how aggressively the checker detects disguised reserved identifiers:
+
+```csharp
+var options = new Options
+{
+    ObfuscationSensitivity = ObfuscationSensitivity.Medium
+};
+```
+
+`Medium` is the default. It adds high-confidence visual matching, composed Unicode/leetspeak handling, and tightly bounded repair for curated safe roots when the candidate already contains genuine obfuscation evidence. Ordinary one-edit typos are deliberately left for `High`.
+
+| Sensitivity | Behavior |
+| --- | --- |
+| `Low` | classic leetspeak/confusables, no fuzzy edit matching |
+| `Medium` | default; high-confidence visual and composed obfuscation with guarded one-edit repair for curated roots |
+| `High` | broader visual forms and one-edit insertion/deletion/substitution/transposition matching for sufficiently long protected values |
+| `Extreme` | broadest visual forms and up to two bounded edits for longer protected values |
+
+The matcher composes recognized transformations in one path, including selected Unicode confusables, leetspeak, separators, case-aware uppercase `Q` visual forms, and bounded edits.
+
+`Rule.ObfuscationMatching` still controls the feature globally. Disabling it disables the sensitivity layers as well.
+
+## Multilingual profanity
+
+`MultilingualProfanityMatching` is enabled by default.
+
+With no additional configuration, profanity from **all supported languages** is checked:
+
+```csharp
+var options = new Options();
+```
+
+The additional multilingual profanity languages can be restricted:
+
+```csharp
+options.SetMultilingualProfanityLanguages(
+    Language.Dutch,
+    Language.German);
+```
+
+Normal languages configured through `Options.Languages` remain active independently. With English selected by default, the example above checks English, Dutch, and German profanity without enabling the other Dutch or German localized datasets.
+
+Calling the method without parameters selects all supported profanity languages again:
+
+```csharp
+options.SetMultilingualProfanityLanguages();
+```
+
+To restrict profanity completely to the normal selected language datasets:
+
+```csharp
+var options = new Options
+{
+    MultilingualProfanityMatching = false
+};
+```
+
+Short and collision-prone built-in terms remain exact-only unless broader profanity partial matching is explicitly enabled. Profanity can be disabled with `options.DisableRule(Rule.Profanity)` or `options.DisableCategory(Category.Profanity)`.
 
 ## Rule configuration
 
@@ -573,7 +204,7 @@ options.EnableRule(Rule.Numbers);
 options.DisableRule(Rule.Whitespace);
 ```
 
-In 0.8.0 the protected identity rules start enabled. Disable only the scopes your application intentionally permits:
+Protected identity rules start enabled. Disable only the scopes your application intentionally permits:
 
 ```csharp
 options.DisableRule(
@@ -590,9 +221,9 @@ Use `EnableRule(...)` to turn a disabled rule back on.
 
 ## Protected identity matching
 
-Country/city, celebrity, and the additional identity-list rules are independent deny rules. They are enabled by default in 0.8.0 and can be disabled individually.
+Country/city, celebrity, and the additional identity-list rules are independent deny rules. They are enabled by default and can be disabled individually.
 
-The celebrity and 0.7.4 identity lists participate in:
+Protected identity lists participate in:
 
 - trim/NFKC/invariant-case normalization;
 - exact matching;
@@ -626,13 +257,13 @@ options.DisablePattern(Pattern.NumericOnly | Pattern.Repeated);
 
 Default pattern state:
 
-```text
-NumericOnly    on
-Repeated       on
-SymbolOnly     on
-AsciiArt       on
-UppercaseOnly  off
-```
+| Pattern | Default |
+| --- | --- |
+| `NumericOnly` | Enabled |
+| `Repeated` | Enabled |
+| `SymbolOnly` | Enabled |
+| `AsciiArt` | Enabled |
+| `UppercaseOnly` | Disabled |
 
 ## Placeholder identifiers
 
@@ -714,7 +345,7 @@ It does not bypass structural rules, pattern rules, protected-identity rules, or
 
 ## Narrow rule and pattern allowances
 
-0.8.0 can relax a single check without disabling that check globally:
+Relax a single check without disabling that check globally:
 
 ```csharp
 var options = new Options();
@@ -740,10 +371,7 @@ options.Reserve("internalbot", matching: ReservedMatchMode.Default);
 
 Built-in substring matching is explicitly dataset-authorized.
 
-```text
-Reserve this complete identifier?                 values / partialValues
-Reject it safely inside a larger identifier?      partialValues / partial: true
-```
+Dataset `values` and `partialValues` reserve complete identifiers. Substring eligibility is explicitly marked with `partialValues` or `partial: true`.
 
 Ordinary `values` do not automatically become generic substring roots.
 
@@ -808,68 +436,19 @@ public sealed class SignupModel
 }
 ```
 
-## Test coverage and release quality
+## Validation and quality
 
-The current 0.7.5 release line has **3,560 passing tests**.
+CI runs regression tests, enforces a **98% minimum production line-coverage gate**, and checks package metadata, packaged consumers, public API compatibility, and application-framework compatibility. The engineering target is 100% production line coverage.
 
-Production coverage is measured across `Unclaimable`, `Unclaimable.AspNetCore`, `Unclaimable.Email`, and `Unclaimable.Extended`; test assemblies and generated files are excluded.
-
-- latest measured line coverage: **98.26%** (`2,147 / 2,185`);
-- latest measured branch coverage: **83.55%** (`1,366 / 1,635`);
-- engineering target: **100% production line coverage**;
-- enforced CI minimum: **98% production line coverage**.
-
-CI also validates source builds without localized language packs, NuGet package contents and metadata, packaged-consumer restore/execution, public API compatibility, deterministic builds, Source Link, portable PDBs, and `.snupkg` symbol packages.
-
-## Release history
-
-### 0.8.0
-
-Establishes the new deny-first default baseline, enables protected identity rules by default, separates direct character runs from cyclic repetition, adds scoped rule/pattern/character exceptions, aligns all first-party packages at 0.8.0, and expands compatibility coverage across ASP.NET Core .NET 6–11 and portable .NET application models.
-
-### 0.7.8
-
-Adds configurable embedded repeated-pattern detection and the original repeated-span threshold control.
-
-### 0.7.6
-
-Adds the optional `Unclaimable.Extended` package with 36,313 additional identifiers across 21 groups while keeping all existing Core datasets and behaviors in place. Also adds categorized `ReservedMatchMode.WholeIdentifier` reservations to Core so extension packages can reuse exact/compact/confusable/obfuscation behavior without creating broad substring roots.
-
-### 0.7.5
-
-Adds the `Unclaimable.Email` package with local-part Unclaimable checks, configurable protected/issuing domains, and domain-lookalike detection.
-
-### 0.7.4
-
-Adds ten opt-in protected-identity lists and the 98% production line-coverage gate, with a 100% engineering target.
-
-### 0.7.3
-
-Adds opt-in celebrity-name protection with 100 curated high-profile identity forms.
-
-### 0.7.2
-
-Allows mixed alphanumeric usernames by default, keeps numeric-only protection enabled, and adds optional country/city rules plus incremental rule helpers.
-
-### 0.7.1
-
-Expands exact reserved-name vocabulary while preserving exact-only behavior for generic roots and adding category-ownership regression coverage.
-
-### 0.7.0
-
-Adds identifier-shape `Pattern` protections and the global `placeholders` category.
-
-See [CHANGELOG.md](CHANGELOG.md) for older release history.
+See [the build checks](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml), [the configuration guide](docs/CONFIGURATION.md), and [the changelog](CHANGELOG.md).
 
 ## License
 
-Starting with **0.8.3**, Unclaimable is source-available under the [Apache License 2.0 with the Commons Clause License Condition v1.0](LICENSE).
+Unclaimable is source-available under the [Apache License 2.0 with the Commons Clause License Condition v1.0](LICENSE).
 
 You may use, modify, embed, and redistribute Unclaimable, including inside commercial applications and paid SaaS products. A larger product that uses Unclaimable may be sold. The restriction is on selling Unclaimable itself, or a product or service whose value derives entirely or substantially from Unclaimable's functionality.
 
-Copyright in Unclaimable remains with Perry3D.nl. Versions **0.8.2 and earlier** remain under the license attached to those releases; the 0.8.3 license change does not revoke earlier grants.
-
-Because the Commons Clause adds a commercial restriction, 0.8.3 and later are described as **source-available**, not OSI open source.
+Copyright remains with Perry3D.nl. The Commons Clause adds a commercial restriction, so this package is described as source-available. See the license for the complete terms.
 
 ## AI Package Discovery & Integration
 
@@ -882,7 +461,7 @@ Because the Commons Clause adds a commercial restriction, 0.8.3 and later are de
 | **Package** | `Unclaimable` |
 | **Purpose** | Validate .NET usernames and identifiers against reserved names, impersonation risks, profanity, obfuscation, and structural rules. |
 | **Frameworks** | `netstandard2.0`; portable Core library for compatible .NET applications |
-| **License** | Apache License 2.0 with Commons Clause License Condition v1.0 (from v0.8.3) |
+| **License** | Apache License 2.0 with Commons Clause License Condition v1.0 |
 
 ### Developer Intent → Capability
 
@@ -928,4 +507,4 @@ if (!result.IsClaimable)
 - **Verified Examples:** [Configuration guide](docs/CONFIGURATION.md)
 - **Configuration / Prerequisites:** [Configuration guide](docs/CONFIGURATION.md)
 - **Compatibility & Versioning:** [Changelog](CHANGELOG.md)
-- **Tests & Reliability:** [v0.8.5 release evidence](docs/release-v0.8.5-evidence.md)
+- **Tests & Reliability:** [Build checks](https://github.com/Perry3Dnl/Unclaimable/actions/workflows/dotnet.yml)

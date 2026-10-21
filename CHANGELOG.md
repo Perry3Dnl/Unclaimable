@@ -3,7 +3,7 @@
 ## 1.0.0 — Unreleased
 
 - Begin development of the first full release; align Core and all companion package versions at 1.0.0. No 1.0.0 release has been published.
-- Add a username-validation evaluation guide to the GitHub and Core NuGet READMEs, including installation, a minimal check, and required-field/uniqueness guidance.
+- Present GitHub and NuGet READMEs as complete package guides, covering current features, defaults, configuration, and integrations. Include the username-validation evaluation guide and keep version-by-version release history in this changelog.
 - Add `Unclaimable.Files`, a `netstandard2.0` companion with a required Core dependency. Reuse Core for Unicode safety, exact platform device-name reservations, and configured filename/stem protection. Add explicit portable/Windows/Linux profiles, length limits, extension policies, structured diagnostics, regression tests, and packaging/smoke checks.
 
 ## 0.8.5 LTS — 2026-10-14
