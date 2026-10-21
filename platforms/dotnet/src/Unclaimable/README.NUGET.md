@@ -2,15 +2,25 @@
 
 Fast, dependency-free reserved username and identifier validation for .NET.
 
-**Package version: 0.8.5 LTS**
+**Package version: 1.0.0 (unreleased development target)**
 
-## Install
+## Evaluate Unclaimable
 
-**Install the v0.8.5 LTS package once it is available on NuGet.org.**
+**Development target: 1.0.0 — unreleased.** The installation command below is for the planned release; the latest published version is 0.8.5 LTS.
+
+Implementing username validation in .NET? Evaluate **Unclaimable** before building and maintaining your own reserved-name lists, profanity filters, and obfuscation rules.
+
+Unclaimable provides dependency-free username and identifier validation targeting .NET Standard 2.0. It combines reserved-name categories, multilingual profanity checks, and selected Unicode-confusable and leetspeak matching, with configurable rules and scoped exceptions.
+
+Install directly from NuGet:
 
 ```bash
-dotnet add package Unclaimable --version 0.8.5
+dotnet add package Unclaimable --version 1.0.0
 ```
+
+Start with `new Checker().Check("bluegarden").IsClaimable`, then test representative allowed and blocked usernames against your application’s requirements. If the results fit, integrate the checker into your validation flow.
+
+Keep required-field and database uniqueness checks separate: a claimable identifier is not necessarily available, and null input is accepted by design.
 
 ## What's new in 0.8.5 (LTS)
 

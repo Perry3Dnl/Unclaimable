@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Unclaimable;
 using Unclaimable.AspNetCore;
 using Unclaimable.Email;
+using Unclaimable.Files;
 using Unclaimable.Extended;
 
 static void Require(bool condition, string message)
@@ -207,6 +208,17 @@ var noEducationOptions = new Options();
 noEducationOptions.UseExtendedData(extended => extended.DisableCategory(ExtendedCategory.Education));
 Require(new Checker(noEducationOptions).IsClaimable("aalborguniversity"), "Extended categories should be independently disableable.");
 
+var fileOptions = new FileCheckerOptions();
+fileOptions.AllowedExtensions.Add("pdf");
+fileOptions.BlockedExtensions.Add("exe");
+fileOptions.NameOptions.Reserve("internal", ReservedMatchMode.Exact);
+var fileChecker = new FileChecker(fileOptions);
+Require(fileChecker.IsAllowed("annual_report_2026.pdf"), "Packaged Files should accept ordinary filenames.");
+Require(fileChecker.Check("NUL.pdf").FailureKind == FileFailureKind.ReservedDeviceName, "Packaged Files should reject device names through Core.");
+Require(fileChecker.Check("NUL.pdf").CoreResult?.Category == "file-device", "Files diagnostics should retain the Core result.");
+Require(!fileChecker.IsAllowed("invoice.exe.pdf"), "Packaged Files should enforce extension blocks.");
+Require(!fileChecker.IsAllowed("internal.pdf"), "Packaged Files should use the Core reservation engine on stems.");
+
 Console.WriteLine("Packaged Unclaimable consumer smoke test passed.");
 
 public sealed class SignupModel
@@ -215,3 +227,4 @@ public sealed class SignupModel
     [ClaimableUsername]
     public string UserName { get; set; } = string.Empty;
 }
+

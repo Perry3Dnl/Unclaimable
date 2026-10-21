@@ -2,14 +2,14 @@
 
 Large optional reserved-identity datasets for Unclaimable.
 
-**Package version: 0.8.5 LTS**
+**Package version: 1.0.0 (unreleased development target)**
 
 ## Install
 
-**Install the v0.8.5 LTS package once it is available on NuGet.org.**
+**The command below is for the planned 1.0.0 release. The latest published version is 0.8.5 LTS.**
 
 ```bash
-dotnet add package Unclaimable.Extended --version 0.8.5
+dotnet add package Unclaimable.Extended --version 1.0.0
 ```
 
 Installing the package alone does not change validation behavior. Enable the data explicitly.

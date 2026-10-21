@@ -103,6 +103,9 @@ jobs:
       - name: Pack email integration
         run: dotnet pack platforms/dotnet/src/Unclaimable.Email/Unclaimable.Email.csproj --configuration Release --output artifacts
 
+      - name: Pack filename integration
+        run: dotnet pack platforms/dotnet/src/Unclaimable.Files/Unclaimable.Files.csproj --configuration Release --output artifacts
+
       - name: Pack extended datasets
         run: dotnet pack platforms/dotnet/src/Unclaimable.Extended/Unclaimable.Extended.csproj --configuration Release --output artifacts
 
@@ -112,6 +115,16 @@ jobs:
       - name: Validate package contents and metadata
         shell: pwsh
         run: ./platforms/dotnet/scripts/Validate-Packages.ps1 -ArtifactsPath ./artifacts
+
+      - name: Restore Files-only packaged consumer
+        run: >-
+          dotnet restore platforms/dotnet/smoke/Unclaimable.FilesConsumerSmoke/Unclaimable.FilesConsumerSmoke.csproj
+          --configfile platforms/dotnet/smoke/Unclaimable.ConsumerSmoke/NuGet.config
+          --packages artifacts/.smoke-packages
+          --no-cache
+
+      - name: Run Files-only packaged consumer
+        run: dotnet run --project platforms/dotnet/smoke/Unclaimable.FilesConsumerSmoke/Unclaimable.FilesConsumerSmoke.csproj --configuration Release --no-restore
 
       - name: Restore packaged consumer smoke test
         run: >-
@@ -267,6 +280,23 @@ jobs:
             --source https://api.nuget.org/v3/index.json \
             $EXTRA_ARGS
 
+      - name: Publish filename package
+        shell: bash
+        env:
+          NUGET_API_KEY: ${{ steps.login.outputs.NUGET_API_KEY }}
+          VERSION: ${{ needs.build-and-validate.outputs.version }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          EXTRA_ARGS=""
+          if [ "$RUN_ATTEMPT" -gt 1 ]; then
+            EXTRA_ARGS="--skip-duplicate"
+          fi
+
+          dotnet nuget push "artifacts/Unclaimable.Files.${VERSION}.nupkg" \
+            --api-key "$NUGET_API_KEY" \
+            --source https://api.nuget.org/v3/index.json \
+            $EXTRA_ARGS
+
       - name: Publish extended package
         shell: bash
         env:
@@ -326,3 +356,4 @@ jobs:
             artifacts/SHA256SUMS.txt \
             --repo "$GITHUB_REPOSITORY" \
             --clobber
+

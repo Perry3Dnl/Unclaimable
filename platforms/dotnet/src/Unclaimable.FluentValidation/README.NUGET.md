@@ -2,14 +2,14 @@
 
 FluentValidation rules for usernames and identifiers checked by Unclaimable.
 
-**Package version: 0.8.5 LTS**
+**Package version: 1.0.0 (unreleased development target)**
 
 ## Install
 
-**Install the v0.8.5 LTS package once it is available on NuGet.org.**
+**The command below is for the planned 1.0.0 release. The latest published version is 0.8.5 LTS.**
 
 ```bash
-dotnet add package Unclaimable.FluentValidation --version 0.8.5
+dotnet add package Unclaimable.FluentValidation --version 1.0.0
 ```
 
 This package targets .NET 8 or newer and depends on Unclaimable and FluentValidation 12. FluentValidation is restored as a normal NuGet dependency; its license is Apache-2.0. The Unclaimable Core package does not acquire this dependency.

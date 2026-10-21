@@ -2,14 +2,14 @@
 
 Email-address identity and protected-domain impersonation checks.
 
-**Package version: 0.8.5 LTS**
+**Package version: 1.0.0 (unreleased development target)**
 
 ## Install
 
-**Install the v0.8.5 LTS package once it is available on NuGet.org.**
+**The command below is for the planned 1.0.0 release. The latest published version is 0.8.5 LTS.**
 
 ```bash
-dotnet add package Unclaimable.Email --version 0.8.5
+dotnet add package Unclaimable.Email --version 1.0.0
 ```
 
 ## 0.8.5 LTS

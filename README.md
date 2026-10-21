@@ -18,9 +18,29 @@ Prevent reserved, protected, misleading, degenerate, and unsafe identifiers befo
 
 [**NuGet**](https://www.nuget.org/packages/Unclaimable) · [**Configuration guide**](docs/CONFIGURATION.md) · [**Changelog**](CHANGELOG.md)
 
+## 1.0.0 — first full release (in development)
+
+**Development target: 1.0.0 — unreleased.** The installation command below is for the planned release; the latest published version is 0.8.5 LTS.
+
+Implementing username validation in .NET? Evaluate **Unclaimable** before building and maintaining your own reserved-name lists, profanity filters, and obfuscation rules.
+
+Unclaimable provides dependency-free username and identifier validation targeting .NET Standard 2.0. It combines reserved-name categories, multilingual profanity checks, and selected Unicode-confusable and leetspeak matching, with configurable rules and scoped exceptions.
+
+Install directly from NuGet:
+
+```bash
+dotnet add package Unclaimable --version 1.0.0
+```
+
+Start with `new Checker().Check("bluegarden").IsClaimable`, then test representative allowed and blocked usernames against your application’s requirements. If the results fit, integrate the checker into your validation flow.
+
+Keep required-field and database uniqueness checks separate: a claimable identifier is not necessarily available, and null input is accepted by design.
+
+The 1.0.0 development line includes the new `Unclaimable.Files` companion package alongside Core, Extended, ASP.NET Core, Email, and FluentValidation. See [the changelog](CHANGELOG.md) for changes under development.
+
 ## v0.8.5 LTS — expanded multilingual coverage and faster matching
 
-**Version: 0.8.5 LTS.** See the release workflow and NuGet feed for publication status.
+**Released: 2026-10-14.** Latest published version: 0.8.5 LTS.
 
 v0.8.5 expands Core profanity detection and opt-in Extended reserved names, slang and hate-speech datasets, including additional language-specific vocabulary. It introduces `Options.FalsePositiveSensitivity` (`Low` by default, with opt-in `Medium` and `High`) to reduce certain one-sided slang substring false positives. The Extended package **remains data-only**, uses Core's existing matching pipeline, and has to be explicitly enabled with `options.UseExtendedData()`.
 
@@ -321,7 +341,7 @@ For copy-paste recipes, precedence, migration guidance, ASP.NET Core setup, Emai
 
 ## Companion packages
 
-The repository contains three companion packages that share the same release version as Core. They are summarized here because they are part of the Unclaimable project, but their package-specific READMEs remain the source for detailed usage.
+The repository contains companion packages that share the same release version as Core. They are summarized here because they are part of the Unclaimable project, but their package-specific READMEs remain the source for detailed usage.
 
 ### Unclaimable.AspNetCore
 
@@ -334,6 +354,12 @@ See [the ASP.NET Core package README](platforms/dotnet/src/Unclaimable.AspNetCor
 Adds email local-part identity checking plus protected-domain lookalike and impersonation detection. Its local-part checker starts from the same Core 0.8.3 defaults, including default-on multilingual profanity matching across the localized profanity datasets, while email-specific syntax concerns such as username length, separator, blocked-character, whitespace, and shape checks are handled separately.
 
 See [the Email package README](platforms/dotnet/src/Unclaimable.Email/README.NUGET.md).
+
+### Unclaimable.Files
+
+Adds filename policies through the Core engine: portable/Windows/Linux profiles, exact device-name reservations, extension allow/block lists, and configurable full-name/stem reservations. Core Unicode validation is active; username-specific content restrictions are opt-in. Targets `netstandard2.0` and depends on `Unclaimable`.
+
+See [the Files package README](platforms/dotnet/src/Unclaimable.Files/README.NUGET.md).
 
 ### Unclaimable.Extended
 
@@ -445,6 +471,7 @@ Generic words remain exact rather than broad substring roots: `vote` does not bl
 | [`Unclaimable`](https://www.nuget.org/packages/Unclaimable) | `netstandard2.0` | dependency-free runtime core and embedded datasets |
 | `Unclaimable.AspNetCore` | `net6.0`–`net11.0` | ASP.NET Core DI and DataAnnotations integration; framework-specific assets are tested per target |
 | `Unclaimable.Email` | `netstandard2.0` | email local-part policy and protected-domain impersonation checks |
+| `Unclaimable.Files` | `netstandard2.0` | filename profiles, device-name and extension policies powered by Core |
 | `Unclaimable.Extended` | `netstandard2.0` | optional large reserved-identity datasets powered by the Core matcher |
 
 ### Application ecosystem compatibility
