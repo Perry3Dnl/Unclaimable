@@ -76,4 +76,44 @@ public sealed class FalsePositiveGuard100BoundaryTests
         Assert.True(checker.IsReserved("dickinson"));
         Assert.True(checker.IsReserved("dickgarden"));
     }
+    [Theory]
+    [InlineData(FalsePositiveSensitivity.Medium, true)]
+    [InlineData(FalsePositiveSensitivity.High, false)]
+    public void SixCharacterTermUsesHighOnly(
+        FalsePositiveSensitivity sensitivity, bool shouldBlock)
+    {
+        var checker = Create(sensitivity, "zorbix");
+        Assert.Equal(shouldBlock, checker.IsReserved("abcdzorbix"));
+        Assert.Equal(shouldBlock, checker.IsReserved("zorbixabcd"));
+    }
+
+    [Theory]
+    [InlineData(FalsePositiveSensitivity.Medium)]
+    [InlineData(FalsePositiveSensitivity.High)]
+    public void SevenCharacterTermIsNotSuppressed(FalsePositiveSensitivity sensitivity)
+    {
+        var checker = Create(sensitivity, "zorbina");
+        Assert.True(checker.IsReserved("abcdzorbina"));
+        Assert.True(checker.IsReserved("zorbinaabcd"));
+    }
+
+    [Theory]
+    [InlineData(FalsePositiveSensitivity.Medium)]
+    [InlineData(FalsePositiveSensitivity.High)]
+    public void IndependentCustomMatchSurvivesSuppressedSlang(FalsePositiveSensitivity sensitivity)
+    {
+        var options = new Options { FalsePositiveSensitivity = sensitivity };
+        options.Reserve("zorb", "slangprofanity");
+        options.Reserve("flarn", "custom");
+        var checker = new Checker(options);
+
+        // The first four-character slang fragment is suppressible, but the
+        // independent later reservation must still reject this identifier.
+        const string value = "zorbabcdflarn";
+        var result = checker.Check(value);
+        Assert.True(result.IsReserved);
+        Assert.False(checker.IsClaimable(value));
+        Assert.Equal("custom", result.Category);
+    }
+
 }
