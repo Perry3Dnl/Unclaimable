@@ -62,4 +62,81 @@ public sealed class OptionalTooling100Tests
         Assert.Throws<ArgumentNullException>(() => ValidationExplanation.Describe((Diagnostic)null!));
         Assert.Throws<ArgumentNullException>(() => ValidationExplanation.Describe((DetailedResult)null!));
     }
+    [Fact]
+    public void InspectorCoversAllInvalidNumericBoundariesWithoutMutation()
+    {
+        var options = new Options
+        {
+            MinimumLength = -1,
+            MaximumLength = 0,
+            PartialMatchMinimumLength = 0,
+            RepeatedPatternMinimumLength = 1
+        };
+
+        var problems = PolicyConfigurationInspector.Inspect(options);
+        Assert.Contains(problems, p => p.Contains("MinimumLength must not be negative"));
+        Assert.Contains(problems, p => p.Contains("MaximumLength must be at least 1"));
+        Assert.Contains(problems, p => p.Contains("PartialMatchMinimumLength must be at least 1"));
+        Assert.Contains(problems, p => p.Contains("RepeatedPatternMinimumLength must be at least 2"));
+        Assert.Equal(4, problems.Count);
+        Assert.Equal(-1, options.MinimumLength);
+        Assert.Equal(0, options.MaximumLength);
+        Assert.Equal(0, options.PartialMatchMinimumLength);
+        Assert.Equal(1, options.RepeatedPatternMinimumLength);
+    }
+
+    [Fact]
+    public void InspectorReportsUnsupportedObfuscationSensitivity()
+    {
+        var options = new Options
+        {
+            ObfuscationSensitivity = (ObfuscationSensitivity)999
+        };
+
+        var problems = PolicyConfigurationInspector.Inspect(options);
+        Assert.Single(problems);
+        Assert.Contains("ObfuscationSensitivity", problems[0]);
+        Assert.Equal((ObfuscationSensitivity)999, options.ObfuscationSensitivity);
+        Assert.Throws<ArgumentOutOfRangeException>(() => new Checker(options));
+    }
+
+    [Fact]
+    public void InspectorAcceptsValidConfigurationBoundaries()
+    {
+        var options = new Options
+        {
+            MinimumLength = 0,
+            MaximumLength = 1,
+            PartialMatchMinimumLength = 1,
+            RepeatedPatternMinimumLength = 2
+        };
+
+        Assert.Empty(PolicyConfigurationInspector.Inspect(options));
+    }
+
+    [Fact]
+    public void ExplanationsDescribeCategoryAndOriginalOffsetsWithoutChangingResults()
+    {
+        var diagnostic = new Diagnostic(
+            MatchKind.Partial,
+            matchedValue: "zorb",
+            category: "custom",
+            matchStartIndex: 2,
+            matchLength: 4);
+        var description = ValidationExplanation.Describe(diagnostic);
+
+        Assert.Contains("Partial", description);
+        Assert.Contains("custom", description);
+    }
+
+    [Fact]
+    public void ExplanationsReportOriginalOffendingCharacterIndex()
+    {
+        var diagnostic = new Diagnostic(
+            MatchKind.BlockedCharacter,
+            offendingCharacterIndex: 2,
+            offendingCharacter: "/");
+        Assert.Contains("original UTF-16 offset 2", ValidationExplanation.Describe(diagnostic));
+    }
+
 }
