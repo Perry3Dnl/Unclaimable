@@ -58,15 +58,15 @@ jobs:
           --configuration Release
           --filter "FullyQualifiedName~Options080DefaultContractTests"
 
-      - name: Audit staged TextInspector Pro lexical import (read-only)
-        run: python3 tools/audit_textinspector_import.py --json artifacts/textinspector-import-audit.json
+      - name: Audit staged Unclaimable vocabulary import (read-only)
+        run: python3 tools/audit_vocabulary_import.py --json artifacts/vocabulary-import-audit.json
 
       - name: Upload lexical import audit
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: textinspector-import-audit
-          path: artifacts/textinspector-import-audit.json
+          name: vocabulary-import-audit
+          path: artifacts/vocabulary-import-audit.json
           if-no-files-found: warn
           retention-days: 14
 
