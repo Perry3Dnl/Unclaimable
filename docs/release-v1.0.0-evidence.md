@@ -21,3 +21,14 @@ Development branch: `feature/1.0.0`. This document records verified evidence, no
 - Measure performance with Core alone and Core + Extended using comparable conditions.
 - Validate release README, dependency metadata, license, changelog and migration guidance.
 - Obtain explicit authorization before NuGet publication or GitHub release/tag.
+
+## Backward-compatibility gate (2026-10-22)
+
+**Strict policy:** v1.0.0 must preserve the published v0.8.5 public API, existing target framework support, package dependency contracts and established default configuration behavior. The frozen v0.8.0 defaults test remains in CI as a longer-term historical contract. Do not accept source/binary breaking changes or behavioral regressions without an explicit review and authorization.
+
+- Changed package validation baseline from `0.8.0` to **`0.8.5`** in Core, ASP.NET Core, Email and Extended.
+- Enabled NuGet package validation against published **0.8.5** for FluentValidation, which previously did not have the package validation gate.
+- Updated the compatibility workflow to pack and validate all **five previously published packages**; the new Files package has no released 0.8.5 baseline.
+- Existing `Options080DefaultContractTests`, behavior corpus, framework compatibility matrix, and packaged-consumer smoke tests remain in place.
+- **CI result for these gate changes is pending and must be confirmed** before recording them as passed.
+- NuGet package API validation does not, by itself, establish full behavioral or source compatibility. Continue regression and clean-consumer verification before release.
