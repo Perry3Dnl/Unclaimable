@@ -56,12 +56,6 @@ public static class PolicyConfigurationInspector
             problems.Add("FalsePositiveSensitivity must be a supported value.");
         }
 
-        if (!options.PartialMatching && options.Strictness == Strictness.Strict)
-        {
-            // The getter re-enables PartialMatching in Strict mode by design;
-            // this branch documents future-proof handling without overriding it.
-        }
-
         return problems.AsReadOnly();
     }
 }
