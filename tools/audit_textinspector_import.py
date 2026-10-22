@@ -58,10 +58,20 @@ def audit():
     existing, scanned = load_existing()
     groups = []
     introduced = collections.defaultdict(set)
+    flagged = collections.defaultdict(list)
+    seen_source = collections.defaultdict(set)
     for group in staged["groups"]:
         values = group["entries"]
         duplicates = collections.Counter(map(normalize, values))
         unique = set(duplicates)
+        for token in unique:
+            seen_source[token].add(group["sourceRule"])
+            if len(token) <= 3:
+                flagged["veryShort"].append((group["sourceRule"], token))
+            elif len(token) <= 5:
+                flagged["short"].append((group["sourceRule"], token))
+            if any(ch.isdigit() for ch in token):
+                flagged["containsDigits"].append((group["sourceRule"], token))
         overlap = unique.intersection(existing)
         new = unique.difference(existing)
         groups.append({
@@ -84,7 +94,15 @@ def audit():
         "sourceEntries": sum(g["sourceEntries"] for g in groups),
         "sourceGroupNormalizedOverlaps": sum(g["existingNormalizedOverlaps"] for g in groups),
         "potentiallyNewUniqueNormalizedAcrossGroups": len(introduced),
-        "crossGroupPotentialCollisions": sum(len(v) > 1 for v in introduced.values()),
+        "crossGroupPotentialCollisions": sum(len(v) > 1 for v in seen_source.values()),
+        "highCollisionReview": {
+            "sourceVeryShortUpTo3": len(flagged["veryShort"]),
+            "sourceShort4To5": len(flagged["short"]),
+            "sourceContainsDigits": len(flagged["containsDigits"]),
+            "samplesVeryShort": sorted(flagged["veryShort"])[:20],
+            "samplesShort": sorted(flagged["short"])[:20],
+            "samplesContainsDigits": sorted(flagged["containsDigits"])[:20],
+        },
         "groups": groups,
         "notice": "A potentially new term is not automatically appropriate for blocking. Review provenance, false positives, match modes and migration behavior before enabling."
     }
@@ -95,6 +113,8 @@ def main():
     parser.add_argument("--json", type=Path, help="Optional output report path")
     args = parser.parse_args()
     result = audit()
+    if result["sourceGroups"] != 23 or result["sourceEntries"] != 4782:
+        raise SystemExit("Staged TextInspector source changed unexpectedly; review extraction before continuing.")
     report = json.dumps(result, ensure_ascii=False, indent=2) + "\n"
     if args.json:
         args.json.parent.mkdir(parents=True, exist_ok=True)
