@@ -13,7 +13,7 @@
     <PackageIcon>unclaimable-icon.png</PackageIcon>
     <PackageTags>username;username-validation;reserved-names;reserved-words;blocked-names;reserved-identity;identity-protection;impersonation;datasets;wordlist;blocklist;brands;brand-protection;companies;organizations;education;sports;public-figures;transport;government;profanity;profanity-filter;multilingual;content-moderation;moderation;validation;security;dotnet;netstandard;cross-platform;maui;blazor;webassembly;wpf;winforms;console;worker-service;avalonia;uno</PackageTags>
     <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>0.8.0</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>0.8.5</PackageValidationBaselineVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Unclaimable/Unclaimable.csproj" />
