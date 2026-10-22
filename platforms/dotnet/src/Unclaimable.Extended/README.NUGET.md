@@ -2,26 +2,21 @@
 
 Large optional reserved-identity datasets for Unclaimable.
 
-**Package version: 0.8.5 LTS**
+**Package version: 1.0.0 (unreleased development target)**
 
 ## Install
 
-**Install the v0.8.5 LTS package once it is available on NuGet.org.**
+**The command below is for the planned 1.0.0 release, which is not published yet.**
 
 ```bash
-dotnet add package Unclaimable.Extended --version 0.8.5
+dotnet add package Unclaimable.Extended --version 1.0.0
 ```
 
 Installing the package alone does not change validation behavior. Enable the data explicitly.
 
-## What's new in 0.8.5 (LTS)
+## How Extended works
 
-- Expanded reserved identities, institutions, companies, media, professions, public figures, cryptocurrency and other curated categories.
-- Added language-specific profanity/slang datasets covering Czech, German, English, Spanish, French, Hungarian, Indonesian, Italian, Dutch, Polish, Portuguese, Romanian, Swedish, Turkish and Vietnamese, plus other hate-speech and offensive-language coverage.
-- Extended **supplies data, not a separate detection engine**. Explicitly activate it using `options.UseExtendedData()`; Core's matching and false-positive settings apply.
-- **Core + Extended CI benchmark:** warm checker construction 66.95 → 72.04 ms (+7.6%), construction allocations 35.76 → 28.61 MB (−20.0%), ordinary lookup 9.81 → 5.34 µs, and embedded lookup 11.79 → 2.76 µs. Warm-process results; increased vocabulary and application-specific settings may affect timings.
-- Larger reserved lists intentionally block additional names. Applications should evaluate categories and `FalsePositiveSensitivity` before upgrading.
-
+Extended supplies optional datasets to the Core matching engine. It covers companies, institutions, public figures, regional roles, crypto identities, multilingual slang/profanity, hate speech, and other reserved-name groups. Core rules, matching sensitivity, false-positive settings, and application reservations continue to apply.
 
 ## Cross-platform app compatibility
 
@@ -41,9 +36,9 @@ options.UseExtendedData();
 var checker = new Checker(options);
 ```
 
-All Extended dataset groups, including the new 0.8.4 categories, are enabled when `UseExtendedData()` is called. Developers can disable individual categories explicitly.
+All Extended dataset groups, are enabled when `UseExtendedData()` is called. Developers can disable individual categories explicitly.
 
-The checker still uses the normal 0.8.3 Core defaults at the same time, including the lower-collision default treatment for generic Core identity vocabulary. Extended data remains explicitly opt-in and additive: enabling it does not disable or replace Core structural, matching, pattern, or identity rules already active in `Options`.
+The checker still uses the normal Core defaults at the same time, including the lower-collision default treatment for generic Core identity vocabulary. Extended data remains explicitly opt-in and additive: enabling it does not disable or replace Core structural, matching, pattern, or identity rules already active in `Options`.
 
 ## Select categories
 
@@ -59,9 +54,9 @@ options.UseExtendedData(extended =>
 
 A disabled group can be enabled again with `EnableCategory(...)`.
 
-### New 0.8.4 modules
+### Regional and cryptocurrency categories
 
-All new modules are included automatically. Disable any categories your application does not want:
+All categories are included when Extended data is enabled. Disable any categories your application does not want:
 
 ```csharp
 options.UseExtendedData(extended =>
@@ -72,7 +67,7 @@ options.UseExtendedData(extended =>
 });
 ```
 
-Also available: `RegionalRolesUnitedStates`, `CryptoProtocols`, and `CryptoTokens`. Each starts enabled when `UseExtendedData()` is called. Entries use whole-identifier matching; these are deliberately small curated sets rather than a broad or continuously updated market list. Review the terms for your application and use `AllowedIdentifiers` for exact exceptions.
+Also available: `RegionalRolesUnitedStates`, `CryptoProtocols`, and `CryptoTokens`. Each starts enabled when `UseExtendedData()` is called. These are curated embedded sets rather than a continuously updated market list. Review the terms for your application and use `AllowedIdentifiers` for exact exceptions.
 
 ## Exact Extended exceptions
 
@@ -85,7 +80,7 @@ options.UseExtendedData(extended =>
 
 The exception applies to that complete Extended identifier without disabling the entire category.
 
-Configure this exception inside `UseExtendedData(...)` because Extended entries are registered into Core as explicit whole-identifier reservations. Core rule or pattern exceptions do not erase an Extended reservation after it has been registered.
+Configure this exception inside `UseExtendedData(...)` because Extended entries are registered into Core as explicit reservations using `ReservedMatchMode.Default`. Core rule or pattern exceptions do not erase an Extended reservation after it has been registered.
 
 Use Core's scoped APIs separately for Core rules and patterns:
 
@@ -104,50 +99,57 @@ This keeps Extended identity exceptions distinct from username-shape exceptions.
 
 ## Dataset snapshot
 
-The original Extended snapshot contains **36,313 identifiers**. 0.8.4 adds 30 entries across six new regional/crypto modules and a separate curated hate-speech dataset; all are included with `UseExtendedData()` by default. The counts below describe the original snapshot and exclude the 0.8.4 additions:
+The embedded snapshot contains **43,779 raw entries across **43 JSON files** and **28 categories**. These are source-entry counts, not globally unique normalized identifiers; Core can merge equivalent reservations.
 
-| Extended group | Entries |
+| Extended group | Raw entries |
 | --- | ---: |
-| Companies | 12,500 |
+| Companies | 12,458 |
 | Education | 10,155 |
-| Geography / administrative subdivisions | 3,722 |
-| Transport, airports and operators | 3,446 |
-| Sports clubs, teams and leagues | 2,740 |
-| Financial institutions | 1,105 |
-| Regional brands | 616 |
-| Healthcare / pharma | 608 |
-| Media organizations | 260 |
-| Professions / titles | 159 |
-| Celebrities | 120 |
-| Crypto projects | 120 |
-| Fictional characters / franchises | 114 |
-| Platforms / services | 99 |
-| Historical figures | 96 |
-| Entertainment properties | 91 |
-| Government / public bodies | 86 |
-| Public figures | 74 |
-| Multilingual reserved vocabulary | 72 |
-| Regional slang / profanity | 69 |
-| International organizations | 61 |
+| Slang Profanity | 4,145 |
+| Geography | 3,722 |
+| Transport | 3,446 |
+| Sports | 2,739 |
+| Financial Institutions | 1,105 |
+| Regional Brands | 615 |
+| Healthcare | 608 |
+| Professions | 587 |
+| Historical Figures | 561 |
+| Platforms | 544 |
+| Celebrities | 523 |
+| Fiction | 507 |
+| Entertainment | 505 |
+| Media | 500 |
+| Public Figures | 202 |
+| Government | 175 |
+| International Organizations | 133 |
+| Hate Speech | 112 |
+| Crypto | 95 |
+| Crypto Tokens | 87 |
+| Multilingual | 72 |
+| Crypto Wallets | 63 |
+| Crypto Protocols | 61 |
+| Crypto Exchanges | 49 |
+| Regional Roles Netherlands | 5 |
+| Regional Roles United States | 5 |
 
-## Hate-speech dataset (0.8.4)
+Use `ExtendedData.TotalEntries` and `ExtendedData.GetCount(...)` to inspect the packaged snapshot.
 
-`ExtendedCategory.HateSpeech` contributes an additional curated set of identity-targeting abusive identifiers and hateful slogans. It is included when `UseExtendedData()` is enabled, and may be disabled independently:
+## Hate-speech dataset
+
+`ExtendedCategory.HateSpeech` supplies a curated set of identity-targeting abusive identifiers and hateful slogans. It is included when `UseExtendedData()` is enabled, and may be disabled independently:
 
 ```csharp
 options.UseExtendedData(extended =>
     extended.DisableCategory(ExtendedCategory.HateSpeech));
 ```
 
-As with all Extended groups, installation alone does not enable it. Entries are passed into Core using `ReservedMatchMode.WholeIdentifier`; no independent detection engine or blanket substring matching is introduced. Coverage is curated rather than exhaustive and should not be treated as a complete multilingual content-moderation system.
+As with all Extended groups, installation alone does not enable it. Entries are passed into Core using `ReservedMatchMode.Default`, so Core controls exact, compact, partial, obfuscation, and confusable matching according to the configured rules. Coverage is curated rather than exhaustive and should not be treated as a complete multilingual content-moderation system.
 
 ## Matching behavior
 
-Extended entries use `ReservedMatchMode.WholeIdentifier`.
+Extended registers entries with `ReservedMatchMode.Default`. Core applies its configured exact, compact, partial, selected Unicode-confusable, and obfuscation matching pipeline. Eligible entries can therefore match inside larger identifiers when partial matching is enabled. Tune the Core options and test representative allowed names before enabling broad datasets.
 
-That means exact, compact, selected Unicode-confusable, and sensitivity-controlled obfuscation checks still apply, while these large identity datasets do **not** become arbitrary substring roots. In 0.8.3 they use the same Core `ObfuscationSensitivity` setting as other whole-identifier reservations; `Medium` remains the default. The 0.8.3 runtime matching and allocation optimizations also apply to these whole-identifier reservations.
-
-Core entries are indexed first. If an Extended identity is already protected by Core, the existing Core match and category remain authoritative.
+`ObfuscationSensitivity` defaults to `Medium`; `FalsePositiveSensitivity` defaults to `Low`. Extended has no independent detection engine. Core entries are indexed first; an identity already protected by Core retains its Core match and category.
 
 ## Embedded snapshot and provenance
 

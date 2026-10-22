@@ -2,26 +2,26 @@
 
 Email-address identity and protected-domain impersonation checks.
 
-**Package version: 0.8.5 LTS**
+**Package version: 1.0.0 (unreleased development target)**
 
 ## Install
 
-**Install the v0.8.5 LTS package once it is available on NuGet.org.**
+**The command below is for the planned 1.0.0 release, which is not published yet.**
 
 ```bash
-dotnet add package Unclaimable.Email --version 0.8.5
+dotnet add package Unclaimable.Email --version 1.0.0
 ```
 
-## 0.8.5 LTS
+## False-positive sensitivity
 
-Email retains its existing domain/syntax/issued-address checking behavior and integration API. Its local-part Core checker picks up v0.8.5 dataset and matching improvements, with the optional `FalsePositiveSensitivity` guard available through `LocalPartOptions`; `Low` remains the default.
+The local-part checker uses Core matching. Configure its false-positive sensitivity through `LocalPartOptions`; `Low` is the default.
 
 ```csharp
 var options = new EmailOptions();
 options.LocalPartOptions.FalsePositiveSensitivity = FalsePositiveSensitivity.Medium;
 ```
 
-The guard affects eligible local-part slang substring matching, **not** protected-domain detection. New reserved terms can change local-part acceptance. No new Email-specific matching engine is introduced.
+The guard affects eligible local-part slang substring matching, **not** protected-domain detection. Local-part matching uses the Core engine.
 
 
 ## Cross-platform app compatibility
@@ -47,13 +47,13 @@ var created = checker.CheckNewAddress("bluegarden@lidl.nl");
 
 The email local part is checked with an email-adapted Unclaimable policy. Domain checks are handled separately.
 
-In 0.8.3, local-part identity protection starts from the same Core defaults as the main checker, including default-on multilingual profanity matching. Identity-rule flags remain enabled, while collision-heavy generic profession, military, currency, and event terms are claimable unless `LocalPartOptions.IncludeHighCollisionIdentityTerms` is enabled. `Rule.Numbers` remains disabled by default. Email-specific syntax concerns are adjusted separately, so username-oriented length, whitespace, separator, blocked-character, and shape checks are not applied as ordinary username restrictions.
+Local-part identity protection starts from the same Core defaults as the main checker, including default-on multilingual profanity matching. Identity-rule flags remain enabled, while collision-heavy generic profession, military, currency, and event terms are claimable unless `LocalPartOptions.IncludeHighCollisionIdentityTerms` is enabled. `Rule.Numbers` remains disabled by default. Email-specific syntax concerns are adjusted separately, so username-oriented length, whitespace, separator, blocked-character, and shape checks are not applied as ordinary username restrictions.
 
 ## Customize local-part identity checks
 
-### 0.8.3 local-part identity and obfuscation controls
+### Local-part identity and obfuscation controls
 
-The local-part checker inherits Core's new sensitivity setting through `LocalPartOptions`:
+The local-part checker uses Core's sensitivity setting through `LocalPartOptions`:
 
 ```csharp
 var options = new EmailOptions();
@@ -120,7 +120,7 @@ Protected-domain matching checks:
 5. Bounded Damerau-Levenshtein typo distance, including adjacent transpositions.
 6. Protected registrant-label reuse on other TLDs or lure labels.
 
-0.8.3 applies typo/confusable comparison to the relevant DNS labels instead of treating the complete domain as one edit-distance string. It also recognizes the supported domain visual substitutions, including selected multi-character lookalikes, without confusing service prefixes such as `www` with the protected registrant identity.
+The matcher applies typo/confusable comparison to the relevant DNS labels instead of treating the complete domain as one edit-distance string. It also recognizes the supported domain visual substitutions, including selected multi-character lookalikes, without confusing service prefixes such as `www` with the protected registrant identity.
 
 The default maximum typo distance is `1`.
 
@@ -160,10 +160,10 @@ The package validates practical unquoted mailbox local parts plus DNS/IDN domain
 
 It does **not** perform DNS or MX lookups and does not prove that a domain or mailbox exists.
 
-### Issuing-domain allowlist scope (0.8.4)
+### Issuing-domain allowlist scope
 
 `IssuingDomains` normally restricts **newly issued** email addresses, not externally existing
-addresses. Two optional settings make its scope explicit while retaining the old defaults:
+addresses. Two optional settings make its scope explicit with configurable enforcement:
 
 ```csharp
 var options = new EmailOptions
@@ -189,9 +189,9 @@ Other enabled local-part, syntax, and domain-lookalike checks can still reject a
 `IssuingDomains` are still automatically included in protected-domain checks. This
 allowlist controls accepted issuing domains; it does not disable other protections.
 
-### Context-aware existing email validation (0.8.4)
+### Context-aware existing email validation
 
-The defaults preserve 0.8.3's strict behavior. To accept externally owned
+The default policy is strict. To accept externally owned
 email addresses without automatically denying reserved-looking mailbox names
 or lookalike domains:
 
@@ -210,7 +210,7 @@ bool suspicious = result.IsSuspiciousDomain; // remains available independently
 `EmailUsage.Auto` (default) retains the purpose passed to `Check`,
 `CheckExistingAddress`, or `CheckNewAddress`. Selecting `ExistingAddress`
 or `IssuedAddress` overrides the caller-provided purpose when selecting policy.
-`EmailProtectionLevel.Strict` (default) preserves historical enforcement.
+`EmailProtectionLevel.Strict` (default) enforces local-part and domain protection.
 `Relaxed` applies only to externally owned addresses: syntax validation,
 explicit issuing-domain restrictions, and all full issuing-address checks remain
 enforced. Reserved local-part and protected-domain findings are still included
@@ -224,7 +224,7 @@ Unicode-confusable detection remains a selected mapping set rather than complete
 UTS #39 conformance. Combining marks may be removed while constructing matching
 skeletons; evaluate strict modes for false positives with internationalized inputs.
 
-### 0.8.4 policy presets and diagnostics
+### Policy presets and diagnostics
 
 ```csharp
 var signup = EmailOptions.ForUserRegistration(); // ExistingAddress + Relaxed

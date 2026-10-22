@@ -2,21 +2,21 @@
 
 ASP.NET Core dependency-injection and DataAnnotations integration for Unclaimable.
 
-**Package version: 0.8.5 LTS**
+**Package version: 1.0.0 (unreleased development target)**
 
 ## Install
 
-**Install the v0.8.5 LTS package once it is available on NuGet.org.**
+**The command below is for the planned 1.0.0 release, which is not published yet.**
 
 ```bash
-dotnet add package Unclaimable.AspNetCore --version 0.8.5
+dotnet add package Unclaimable.AspNetCore --version 1.0.0
 ```
 
 The required `Unclaimable` core dependency is installed transitively.
 
-## 0.8.5 LTS
+## False-positive sensitivity
 
-The ASP.NET Core adapter preserves the established dependency-injection and DataAnnotations integration. It uses the updated Core 0.8.5 engine, expanded reserved-word coverage, matching improvements and optional false-positive guard; no adapter-specific public API changes are intended.
+Configure Core matching through the dependency-injection registration callback:
 
 ```csharp
 builder.Services.AddUnclaimable(options =>
@@ -25,24 +25,20 @@ builder.Services.AddUnclaimable(options =>
 });
 ```
 
-`Low` remains the default. Updated reserved names may change which user inputs are rejected; these are content/validation changes rather than a change to DI registration semantics.
+`Low` is the default. `Medium` and `High` selectively suppress eligible one-sided slang/profanity substring false positives; the setting does not bypass independent deny rules.
 
 
 ## Framework support
 
-`Unclaimable.AspNetCore` 0.8.4 ships framework-specific assets for `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0`, and `net11.0`. NuGet selects the matching asset for the consuming application automatically.
+`Unclaimable.AspNetCore` ships framework-specific assets for `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0`, and `net11.0`. NuGet selects the matching asset for the consuming application automatically.
 
 The compatibility suite compiles and runs the DI and DataAnnotations integration on every advertised target. `net11.0` support is tested against the current .NET 11 prerelease SDK until .NET 11 reaches general availability.
 
-## 0.8.4 behavior
+## Identity policy
 
-This package continues to register the same Core checker and policy through DI and DataAnnotations. The Core 0.8.4 embedded-profanity and scoped-exception corrections apply automatically; the public ASP.NET Core integration API is unchanged. Existing required-field validation remains separate from `[ClaimableUsername]`.
+ASP.NET Core uses the same Core `Options` object and matching pipeline. Required-field validation remains separate from `[ClaimableUsername]`.
 
-## 0.8.3 Core behavior
-
-ASP.NET Core uses the Core `Options` object, so the 0.8.3 correctness, lower-collision identity defaults, Unicode fixes, and matching performance improvements apply automatically.
-
-Collision-heavy identity vocabulary is claimable by default while the identity rules remain enabled. Applications that intentionally want the broader identity vocabulary can opt back in during registration:
+Collision-heavy identity vocabulary is claimable by default while the identity rules remain enabled. Applications that intentionally want the broader identity vocabulary can enable it during registration:
 
 ```csharp
 builder.Services.AddUnclaimable(options =>
@@ -63,7 +59,7 @@ builder.Services.AddUnclaimable(options =>
 });
 ```
 
-`Medium` is the default. Use `Low` for behavior closest to 0.8.1, or opt into `High` / `Extreme` when the application intentionally prefers more aggressive evasion blocking.
+`Medium` is the default. Use `Low` for classic visual substitutions without fuzzy edit matching, or opt into `High` / `Extreme` when the application intentionally prefers more aggressive evasion blocking.
 
 ## Register services
 
@@ -75,7 +71,7 @@ builder.Services.AddUnclaimable();
 
 This registers the configured `Options`, a live singleton `IPolicy`, and an `IChecker`.
 
-With no configuration callback, the registered checker uses the same 0.8.3 defaults as a normal `new Checker()`: all built-in protected identity rules are enabled except `Rule.Numbers`, the standard pattern defaults apply, and the same deny-first behavior is preserved.
+With no configuration callback, the registered checker uses the same defaults as a normal `new Checker()`: all built-in protected identity rules are enabled except `Rule.Numbers`, the standard pattern defaults apply, and the same deny-first behavior is preserved.
 
 Configure the checker during registration:
 
@@ -137,7 +133,7 @@ Application-wide and reason-specific validation messages can also be configured 
 
 ## Startup allowances and scoped exceptions
 
-Keep the 0.8.3 defaults enabled and express application conventions narrowly:
+Keep the defaults enabled and express application conventions narrowly:
 
 ```csharp
 builder.Services.AddUnclaimable(options =>

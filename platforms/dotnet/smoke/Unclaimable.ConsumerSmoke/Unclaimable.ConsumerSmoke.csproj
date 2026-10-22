@@ -13,8 +13,10 @@
     <PackageReference Include="Unclaimable" Version="$(UnclaimableVersion)" />
     <PackageReference Include="Unclaimable.AspNetCore" Version="$(UnclaimableVersion)" />
     <PackageReference Include="Unclaimable.Email" Version="$(UnclaimableVersion)" />
+    <PackageReference Include="Unclaimable.Files" Version="$(UnclaimableVersion)" />
     <PackageReference Include="Unclaimable.Extended" Version="$(UnclaimableVersion)" />
     <PackageReference Include="Unclaimable.FluentValidation" Version="$(UnclaimableVersion)" />
   </ItemGroup>
 
 </Project>
+

@@ -16,7 +16,7 @@
     <PackageTags>username;username-validation;username-validator;username-filter;identifier;identifier-validation;name-validation;reserved-names;reserved-words;blocked-names;profanity;profanity-filter;profanity-detection;multilingual;content-moderation;moderation;impersonation;identity-protection;spoofing;unicode;unicode-normalization;homoglyph;confusables;obfuscation;leetspeak;security;validation;dotnet;netstandard;cross-platform;maui;blazor;webassembly;wpf;winforms;console;worker-service;avalonia;uno</PackageTags>
 
     <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>0.8.0</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>0.8.5</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <ItemGroup>
