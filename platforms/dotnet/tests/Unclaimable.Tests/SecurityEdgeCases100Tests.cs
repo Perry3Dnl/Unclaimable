@@ -6,10 +6,6 @@ namespace Unclaimable.Tests;
 public sealed class SecurityEdgeCases100Tests
 {
     [Theory]
-    [InlineData("\uD800")]
-    [InlineData("\uDC00")]
-    [InlineData("blue\uD800garden")]
-    [InlineData("blue\uDC00garden")]
     [InlineData("blue\u0000garden")]
     [InlineData("blue\u202Egarden")]
     [InlineData("blue\u200Bgarden")]
@@ -20,6 +16,24 @@ public sealed class SecurityEdgeCases100Tests
         Assert.False(checker.IsClaimable(input));
         Assert.True(checker.Check(input).IsReserved);
         Assert.True(checker.CheckDetailed(input).IsReserved);
+    }
+
+    [Fact]
+    public void UnpairedSurrogatesAreRejectedAcrossResultApis()
+    {
+        // Construct malformed UTF-16 at execution time. xUnit theory discovery
+        // can replace unpaired surrogates with U+FFFD and collapse distinct test IDs.
+        foreach (var surrogate in new[] { (char)0xD800, (char)0xDC00 })
+        {
+            foreach (var input in new[] { surrogate.ToString(), "blue" + surrogate + "garden" })
+            {
+                var checker = new Checker();
+                Assert.True(checker.IsReserved(input));
+                Assert.False(checker.IsClaimable(input));
+                Assert.Equal(MatchKind.InvalidCharacters, checker.Check(input).MatchKind);
+                Assert.True(checker.CheckDetailed(input).IsReserved);
+            }
+        }
     }
 
     [Fact]
