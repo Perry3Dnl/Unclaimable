@@ -1,10 +1,10 @@
-# Configuring Unclaimable 0.8.3
+# Configuring Unclaimable v1.0.0
 
 This guide explains how to keep Unclaimable's strict defaults while making small, intentional exceptions for an application's naming rules.
 
 If you only need a working example, start with **Copy-paste recipes**. The later sections explain exactly which checks are skipped, which checks still run, and how the deny-first pipeline behaves.
 
-## 0.8.4 email and integration boundaries
+## Email and integration boundaries
 
 ### Existing email addresses versus application-issued addresses
 

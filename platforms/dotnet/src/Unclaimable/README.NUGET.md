@@ -1,10 +1,8 @@
 # Unclaimable
 
-**98.10% Code Coverage** · **0 B Validation Allocations** · **0.61 µs Exact Matching** · **55,869 Dataset Entries** · **100% Tested Backward Compatibility**
+**98.10% Code Coverage** · **0 B Allocations (Boolean Validation)** · **0.61 µs Exact Matching** · **55,869 Dataset Entries** · **100% Tested Backward Compatibility**
 
 [![NuGet Version](https://img.shields.io/nuget/v/Unclaimable.svg)](https://www.nuget.org/packages/Unclaimable)
-
-> **For LLMs & AI Coding Assistants:** `Unclaimable` provides high-performance username and identifier validation for .NET Standard 2.0, including reserved-name matching, multilingual profanity protection, selected Unicode-confusable matching and obfuscation detection. Start with `new Checker().Check("identifier").IsClaimable` and customize `Options` to suit the application.
 
 ## Fast, configurable username and identifier protection for .NET Standard 2.0
 
@@ -15,7 +13,7 @@ Fast, configurable username and identifier protection for .NET Standard 2.0.
 ## Table of Contents
 
 - [Features](#features)
-- [Get Started](#get-started)
+- [Quick Start](#quick-start)
 - [Performance at a Glance](#performance-at-a-glance)
 - [Documentation](#documentation)
 
@@ -30,7 +28,9 @@ Fast, configurable username and identifier protection for .NET Standard 2.0.
 - Scoped exceptions and configurable rule, pattern, and sensitivity policies
 - Fast boolean validation and structured diagnostics
 
-## Get Started
+## Quick Start
+
+Use `IsClaimable()` for fast boolean decisions and `Check()` for structured validation results.
 
 ```bash
 dotnet add package Unclaimable --version 1.0.0
