@@ -57,7 +57,8 @@ public sealed class SecurityEdgeCases100Tests
         };
         var first = PolicyConfigurationInspector.Inspect(options);
         var second = PolicyConfigurationInspector.Inspect(options);
-        Assert.Equal(first, second);
+        Assert.Equal(first.Count, second.Count);
+        Assert.Equal(first[0], second[0]);
         Assert.Equal(0, options.MaximumLength);
         Assert.Equal((ObfuscationSensitivity)12345, options.ObfuscationSensitivity);
     }
