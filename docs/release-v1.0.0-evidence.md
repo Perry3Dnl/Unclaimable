@@ -32,3 +32,23 @@ Development branch: `feature/1.0.0`. This document records verified evidence, no
 - Existing `Options080DefaultContractTests`, behavior corpus, framework compatibility matrix, and packaged-consumer smoke tests remain in place.
 - **CI result for these gate changes is pending and must be confirmed** before recording them as passed.
 - NuGet package API validation does not, by itself, establish full behavioral or source compatibility. Continue regression and clean-consumer verification before release.
+
+## Verified 1.0.0 gate before the latest additive changes
+
+- Commit `10fabf2ce77299d8e5b9ad85e8ba3ecbee061cdf`:
+  - [Main .NET workflow](https://github.com/Perry3Dnl/Unclaimable/actions/runs/39778286716) successful: **20,357 passed, 0 failed**, production line coverage **98.11% (3,736/3,808)**, branch **86.25%**.
+  - Ecosystem compatibility [39778287002](https://github.com/Perry3Dnl/Unclaimable/actions/runs/39778287002) and backward compatibility [39778286839](https://github.com/Perry3Dnl/Unclaimable/actions/runs/39778286839) passed.
+  - NuGet validation [39778286641](https://github.com/Perry3Dnl/Unclaimable/actions/runs/39778286641) passed; **publication and tagged release skipped**.
+  - The staged-vocabulary audit executed and uploaded a JSON artifact.
+- This evidence does **not** apply to later commits adding presets, opt-in identity vocabulary, new regression tests, smoke checks, or performance workflow. Those changes require their own green CI run.
+
+## New additive changes awaiting fresh CI
+
+- Four explicit, fresh-instance policy presets (`ValidationPresets.Username`, `DisplayName`, `OrganizationName`, `GameTag`). Default `Options` and `Checker` behavior unchanged.
+- `UseSupplementalIdentityData()` in the Extended package registers **410** screened identity candidates using only Core `ReservedMatchMode.Exact`. This is separate from and never loaded by the existing `UseExtendedData()`. The complete 4,782-entry staged audit corpus is not automatically used.
+- A full supplemental-identity regression matrix checks all 410 entries and their prefixed/suffixed variants against Core to establish exact-only scope.
+- Six-package clean consumer smoke includes optional identity and preset API calls.
+- A dedicated Core versus Core+Extended benchmark workflow has been added. Measurements must be collected and compared on suitable hardware before signing off performance.
+- **Still required:** Core+Extended full overlap report review, per-language linguistic/false-positive review for remaining candidates, direct 0.8.5 versus 1.0.0 behavioral differential over identical fixtures, final quality/security pass, full successful latest-commit CI, clean-consumer package checks and release metadata sign-off.
+
+No package is authorized for publication, tagging, merging or release.
