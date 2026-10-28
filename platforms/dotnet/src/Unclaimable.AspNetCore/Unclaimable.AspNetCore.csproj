@@ -15,7 +15,7 @@
     <PackageTags>aspnetcore;aspnet-core;username;username-validation;username-validator;identifier-validation;reserved-names;reserved-words;profanity-filter;impersonation;identity-protection;validation;model-validation;dataannotations;data-annotations;dependency-injection;di;web-api;web;blazor;server;security;dotnet</PackageTags>
 
     <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>0.8.0</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>0.8.5</PackageValidationBaselineVersion>
   </PropertyGroup>
 
   <ItemGroup>

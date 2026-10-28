@@ -10,6 +10,8 @@
     <Description>FluentValidation rules for Unclaimable username and identifier checks.</Description>
     <PackageReadmeFile>README.NUGET.md</PackageReadmeFile>
     <PackageIcon>unclaimable-icon.png</PackageIcon>
+    <EnablePackageValidation>true</EnablePackageValidation>
+    <PackageValidationBaselineVersion>0.8.5</PackageValidationBaselineVersion>
     <PackageTags>fluentvalidation;fluent-validation;username;username-validation;username-validator;identifier;identifier-validation;name-validation;reserved-names;reserved-words;profanity;profanity-filter;impersonation;identity-protection;validation;validation-rules;security;dotnet;net8</PackageTags>
   </PropertyGroup>
   <ItemGroup>

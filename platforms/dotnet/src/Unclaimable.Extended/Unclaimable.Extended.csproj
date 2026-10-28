@@ -13,13 +13,14 @@
     <PackageIcon>unclaimable-icon.png</PackageIcon>
     <PackageTags>username;username-validation;reserved-names;reserved-words;blocked-names;reserved-identity;identity-protection;impersonation;datasets;wordlist;blocklist;brands;brand-protection;companies;organizations;education;sports;public-figures;transport;government;profanity;profanity-filter;multilingual;content-moderation;moderation;validation;security;dotnet;netstandard;cross-platform;maui;blazor;webassembly;wpf;winforms;console;worker-service;avalonia;uno</PackageTags>
     <EnablePackageValidation>true</EnablePackageValidation>
-    <PackageValidationBaselineVersion>0.8.0</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>0.8.5</PackageValidationBaselineVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../Unclaimable/Unclaimable.csproj" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Data/*.json" LogicalName="Unclaimable.Extended.Data.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Vocabulary/identity.json" LogicalName="Unclaimable.Extended.Vocabulary.identity.json" />
     <None Include="README.NUGET.md" Pack="true" PackagePath="/" />
     <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
     <None Include="Data/SOURCES.md" Pack="true" PackagePath="data/" />

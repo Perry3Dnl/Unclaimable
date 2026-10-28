@@ -1,112 +1,60 @@
 # Unclaimable.AspNetCore
 
-ASP.NET Core dependency-injection and DataAnnotations integration for Unclaimable.
+**Unclaimable v1.0.0** · **Unclaimable-Powered Validation** · **Modular .NET Integration**
 
-**Package version: 0.8.5 LTS**
+[![NuGet Version](https://img.shields.io/nuget/v/Unclaimable.AspNetCore.svg)](https://www.nuget.org/packages/Unclaimable.AspNetCore)
 
-## Install
+> **For LLMs & AI Coding Assistants:** `Unclaimable.AspNetCore` integrates the Unclaimable checker into ASP.NET Core applications. Register with `builder.Services.AddUnclaimable()` and validate models using `[ClaimableUsername]`. Application policy can be configured through the registration callback.
 
-**Install the v0.8.5 LTS package once it is available on NuGet.org.**
+## Dependency injection and DataAnnotations integration for Unclaimable
+
+**Unclaimable.AspNetCore v1.0.0**
+
+Dependency injection and DataAnnotations integration for Unclaimable.
+
+## Table of Contents
+
+- [Features](#features)
+- [Get Started](#get-started)
+- [Documentation](#documentation)
+
+---
+
+## Features
+
+- One-line dependency-injection registration
+- IChecker injection throughout application services
+- ClaimableUsername DataAnnotations attribute
+- Configurable sensitivity and reserved-name policy at registration
+- Scoped allowances, application reservations, and runtime character-policy integration
+- Framework-specific support across .NET 6 through .NET 11
+
+## Get Started
 
 ```bash
-dotnet add package Unclaimable.AspNetCore --version 0.8.5
+dotnet add package Unclaimable.AspNetCore --version 1.0.0
 ```
 
-The required `Unclaimable` core dependency is installed transitively.
-
-## 0.8.5 LTS
-
-The ASP.NET Core adapter preserves the established dependency-injection and DataAnnotations integration. It uses the updated Core 0.8.5 engine, expanded reserved-word coverage, matching improvements and optional false-positive guard; no adapter-specific public API changes are intended.
+### Register the checker
 
 ```csharp
-builder.Services.AddUnclaimable(options =>
-{
-    options.FalsePositiveSensitivity = FalsePositiveSensitivity.Medium;
-});
-```
-
-`Low` remains the default. Updated reserved names may change which user inputs are rejected; these are content/validation changes rather than a change to DI registration semantics.
-
-
-## Framework support
-
-`Unclaimable.AspNetCore` 0.8.4 ships framework-specific assets for `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0`, and `net11.0`. NuGet selects the matching asset for the consuming application automatically.
-
-The compatibility suite compiles and runs the DI and DataAnnotations integration on every advertised target. `net11.0` support is tested against the current .NET 11 prerelease SDK until .NET 11 reaches general availability.
-
-## 0.8.4 behavior
-
-This package continues to register the same Core checker and policy through DI and DataAnnotations. The Core 0.8.4 embedded-profanity and scoped-exception corrections apply automatically; the public ASP.NET Core integration API is unchanged. Existing required-field validation remains separate from `[ClaimableUsername]`.
-
-## 0.8.3 Core behavior
-
-ASP.NET Core uses the Core `Options` object, so the 0.8.3 correctness, lower-collision identity defaults, Unicode fixes, and matching performance improvements apply automatically.
-
-Collision-heavy identity vocabulary is claimable by default while the identity rules remain enabled. Applications that intentionally want the broader identity vocabulary can opt back in during registration:
-
-```csharp
-builder.Services.AddUnclaimable(options =>
-{
-    options.IncludeHighCollisionIdentityTerms = true;
-});
-```
-
-## Obfuscation sensitivity
-
-Sensitivity is configured in the normal registration callback:
-
-```csharp
-builder.Services.AddUnclaimable(options =>
-{
-    options.ObfuscationSensitivity =
-        ObfuscationSensitivity.High;
-});
-```
-
-`Medium` is the default. Use `Low` for behavior closest to 0.8.1, or opt into `High` / `Extreme` when the application intentionally prefers more aggressive evasion blocking.
-
-## Register services
-
-```csharp
+using Unclaimable;
 using Microsoft.Extensions.DependencyInjection;
 
 builder.Services.AddUnclaimable();
 ```
 
-This registers the configured `Options`, a live singleton `IPolicy`, and an `IChecker`.
-
-With no configuration callback, the registered checker uses the same 0.8.3 defaults as a normal `new Checker()`: all built-in protected identity rules are enabled except `Rule.Numbers`, the standard pattern defaults apply, and the same deny-first behavior is preserved.
-
-Configure the checker during registration:
+### Apply custom policy
 
 ```csharp
 builder.Services.AddUnclaimable(options =>
 {
-    options.AdditionalReserved.Add("examplebrand");
-    options.AdditionalBlockedCharacters("^");
-    options.DisableCategory(Category.Brands);
+    options.FalsePositiveSensitivity = FalsePositiveSensitivity.Medium;
+    options.AllowCharacters("_");
 });
 ```
 
-## Inject the checker
-
-```csharp
-public sealed class AccountService
-{
-    private readonly IChecker _checker;
-
-    public AccountService(IChecker checker)
-    {
-        _checker = checker;
-    }
-
-    public bool CanClaim(string userName) => _checker.IsClaimable(userName);
-}
-```
-
-## DataAnnotations
-
-Use `[ClaimableUsername]` on a string property, field, or parameter:
+### Validate a model
 
 ```csharp
 using System.ComponentModel.DataAnnotations;
@@ -116,68 +64,35 @@ public sealed class SignupModel
 {
     [Required]
     [ClaimableUsername]
-    public string UserName { get; set; } = string.Empty;
+    public string Username { get; set; } = string.Empty;
 }
 ```
 
-`ClaimableUsernameAttribute` accepts `null`, allowing `[Required]` or another required-field mechanism to remain independent.
-
-When dependency injection is available, the attribute uses the registered `IChecker`. Otherwise it falls back to `Checker.Default`.
-
-## Validation messages
-
-A custom attribute message can be supplied normally:
+### Inject into a service
 
 ```csharp
-[ClaimableUsername(ErrorMessage = "Choose another username.")]
-public string UserName { get; set; } = string.Empty;
-```
-
-Application-wide and reason-specific validation messages can also be configured through the registered `Options`.
-
-## Startup allowances and scoped exceptions
-
-Keep the 0.8.3 defaults enabled and express application conventions narrowly:
-
-```csharp
-builder.Services.AddUnclaimable(options =>
+public sealed class AccountService
 {
-    // Team names may use underscores.
-    options.AllowCharacters("_");
+    private readonly IChecker _checker;
 
-    // Team prefixes may repeat T directly.
-    options.AllowRepeatedCharacters("T");
+    public AccountService(IChecker checker) => _checker = checker;
 
-    // This complete identifier may skip only the city-name rule.
-    options.AllowIdentifierForRule(
-        "Charlotte",
-        Rule.PopularCityNames);
-
-    // This complete identifier may skip only repetition detection.
-    options.AllowIdentifierForPattern(
-        "ababab",
-        Pattern.Repeated);
-
-    // Application-owned names remain explicit denies.
-    options.Reserve(
-        "internalbot",
-        ReservedMatchMode.Exact);
-});
+    public bool CanClaim(string username) => _checker.IsClaimable(username);
+}
 ```
 
-A scoped exception skips only the selected check. It does not make the identifier globally allowed.
 
-For a convention such as `TTT_user7`, `AllowCharacters("_")` and `AllowRepeatedCharacters("T")` preserve the rest of the checker. `AAA_user7` can still fail repetition, `TTT-user7` can still fail the blocked-character policy, and an application reservation can still deny `TTT_user7` explicitly.
+## Framework Support
 
-## Runtime character policy
+Targets `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0`, and `net11.0` with the matching NuGet asset selected by the target application.
 
-The registered `IPolicy` remains live after startup:
+## Unclaimable Policy Integration
 
-```csharp
-var policy = app.Services.GetRequiredService<IPolicy>();
+The adapter uses the same Unclaimable `Options` object, matching pipeline, sensitivity settings, and scoped exceptions. Runtime character policies are accessible through the registered `IPolicy`.
 
-policy.BlockCharacter("@");
-policy.AllowCharacter("@");
-```
+## Documentation
 
-Startup `Options` are captured when the checker is constructed; runtime character-policy changes remain visible to that checker.
+- [GitHub project guide](https://github.com/Perry3Dnl/Unclaimable/blob/feature/1.0.0/README.md)
+- [Configuration guide](https://github.com/Perry3Dnl/Unclaimable/blob/feature/1.0.0/docs/CONFIGURATION.md)
+
+**Unclaimable v1.0.0 — One validation engine. Modular packages. Flexible policies. Built for .NET.**

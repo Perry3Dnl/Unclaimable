@@ -1,0 +1,55 @@
+name: .NET 1.0.0 Core and Extended Benchmarks
+
+on:
+  push:
+    branches:
+      - feature/1.0.0
+    paths:
+      - "platforms/dotnet/src/**"
+      - "platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/**"
+      - ".github/workflows/benchmark-100.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  core-and-extended:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Record benchmark host
+        run: |
+          dotnet --info
+          lscpu
+      - name: Cold Core constructor and allocation sample
+        run: >-
+          dotnet run
+          --project platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/Unclaimable.ExtendedBenchmarks085.csproj
+          --configuration Release -- --cold-measure core
+      - name: Cold Core plus Extended constructor and allocation sample
+        run: >-
+          dotnet run
+          --project platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/Unclaimable.ExtendedBenchmarks085.csproj
+          --configuration Release -- --cold-measure extended
+      - name: Benchmark Core versus Core plus Extended
+        run: >-
+          dotnet run
+          --project platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/Unclaimable.ExtendedBenchmarks085.csproj
+          --configuration Release --
+          --filter '*ExtendedIndex085Benchmarks*'
+          --exporters markdown json csv
+      - name: Upload reproducible benchmark results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: unclaimable-1.0.0-core-extended-benchmarks
+          path: BenchmarkDotNet.Artifacts/**
+          if-no-files-found: warn
+          retention-days: 30
