@@ -97,9 +97,32 @@ options.UseExtendedData(extended =>
 
 This keeps Extended identity exceptions distinct from username-shape exceptions.
 
+## Additional exact-only identity vocabulary (new, separate opt-in)
+
+The 1.0.0 package also contains **410 conservatively screened supplemental identity
+names**, split into official roles, government bodies, cryptocurrency exchanges,
+protocols, wallets and projects. These are deliberately separate from the existing
+43,779-entry Extended snapshot.
+
+```csharp
+using Unclaimable;
+using Unclaimable.Extended;
+
+var options = new Options();
+options.UseSupplementalIdentityData(); // explicitly opt in
+var checker = new Checker(options);
+```
+
+Registration uses Core's `ReservedMatchMode.Exact`, so new entries do not
+automatically become substring, compact or obfuscation denials. Installing Extended,
+or calling the preexisting `UseExtendedData()`, **does not register these new entries**.
+The four policy presets live in Core and likewise require an explicit selection.
+Short and collision-prone generic names were excluded from this supplement.
+The full staged 1.0.0 candidate vocabulary is not packaged as active rules.
+
 ## Dataset snapshot
 
-The embedded snapshot contains **43,779 raw entries across **43 JSON files** and **28 categories**. These are source-entry counts, not globally unique normalized identifiers; Core can merge equivalent reservations.
+The default-enabled Extended snapshot contains **43,779 raw entries across 43 JSON files** and **28 categories**. These are source-entry counts, not globally unique normalized identifiers; Core can merge equivalent reservations.
 
 | Extended group | Raw entries |
 | --- | ---: |
