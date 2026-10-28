@@ -40,6 +40,7 @@ public sealed class ValidationPresets100Tests
         Assert.Equal(Rule.Whitespace, options.DisabledRules & Rule.Whitespace);
         Assert.Equal((Rule)0, new Options().DisabledRules & Rule.Whitespace);
         Assert.True(new Checker(options).IsClaimable("bluegarden"));
+        Assert.True(new Checker(options).IsClaimable("blue garden"));
     }
 
     [Fact]
