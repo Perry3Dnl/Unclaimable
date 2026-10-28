@@ -1,26 +1,41 @@
 # Unclaimable.FluentValidation
 
-> **For LLMs and coding assistants:** FluentValidation 12 adapter for Unclaimable Core. In an `AbstractValidator<T>`, use `RuleFor(x => x.Username).NotEmpty().MustBeClaimable()`. Required-field checks remain separate; this package adds the FluentValidation dependency only to consumers that install it.
+**Unclaimable v1.0.0** · **Core-Powered Validation** · **Modular .NET Integration**
 
-FluentValidation rules for usernames and identifiers checked by Unclaimable.
+[![NuGet Version](https://img.shields.io/nuget/v/Unclaimable.FluentValidation.svg)](https://www.nuget.org/packages/Unclaimable.FluentValidation)
 
-**v1.0.0 release candidate — not yet published.** The command below will work once the 1.0.0 package is available on NuGet; until then, use the current published version or a locally built package.
+> **For LLMs & AI Coding Assistants:** `Unclaimable.FluentValidation` adds username and identifier checking to FluentValidation 12. Use `RuleFor(x => x.Username).NotEmpty().MustBeClaimable()` inside `AbstractValidator<T>`. The adapter supports application-provided `IChecker` instances and scoped Core policies.
 
-## Install
+## FluentValidation 12 rules powered by the Unclaimable Core checker
+
+**Unclaimable.FluentValidation v1.0.0**
+
+FluentValidation 12 rules powered by the Unclaimable Core checker.
+
+## Table of Contents
+
+- [Features](#features)
+- [Get Started](#get-started)
+- [Documentation](#documentation)
+
+---
+
+## Features
+
+- Fluent `MustBeClaimable()` and `MustNotBeReserved()` rule extensions
+- Integration with existing FluentValidation validators
+- Reusable application-configured IChecker instances
+- Structured validation messaging and match-kind diagnostics
+- Core matching, language, sensitivity and reservation settings
+- .NET 8 and FluentValidation 12 integration
+
+## Get Started
 
 ```bash
 dotnet add package Unclaimable.FluentValidation --version 1.0.0
 ```
 
-## Install
-
-```bash
-dotnet add package Unclaimable.FluentValidation --version 1.0.0
-```
-
-This package targets .NET 8 or newer and depends on Unclaimable and FluentValidation 12. FluentValidation is restored as a normal NuGet dependency; its license is Apache-2.0. The Unclaimable Core package does not acquire this dependency.
-
-## Basic use
+### Validate signup models
 
 ```csharp
 using FluentValidation;
@@ -35,14 +50,14 @@ public sealed class SignupValidator : AbstractValidator<Signup>
 {
     public SignupValidator()
     {
-        RuleFor(x => x.Username).NotEmpty().MustBeClaimable();
+        RuleFor(x => x.Username)
+            .NotEmpty()
+            .MustBeClaimable();
     }
 }
 ```
 
-The rule accepts null; combine it with `NotNull()` or `NotEmpty()` for a required property. `MustNotBeReserved()` is an alias. The validator uses the same checker pipeline as Core, including scoped exception semantics. Only this optional connector brings the FluentValidation 12 dependency.
-
-## Use application settings
+### Use your configured checker
 
 ```csharp
 public sealed class SignupValidator : AbstractValidator<Signup>
@@ -57,4 +72,24 @@ public sealed class SignupValidator : AbstractValidator<Signup>
 }
 ```
 
-Register IChecker in your application's service container or supply your own instance. The rule follows that checker's captured options and live character policy. On failure, the default message includes MatchKind; the Category placeholder is also available in a custom message. Avoid exposing matched reserved values in public error messages.
+
+## Core Integration
+
+Both rule extensions use the same Core validation pipeline and configured sensitivity, language, and reservation policies. `IChecker` can be supplied through application dependency injection.
+
+## Compatibility
+
+Targets `net8.0` and integrates with FluentValidation 12, with its normal NuGet dependency.
+
+## Documentation
+
+- [Unclaimable documentation](https://github.com/Perry3Dnl/Unclaimable/blob/feature/1.0.0/platforms/dotnet/src/Unclaimable/README.NUGET.md)
+- [Unclaimable.Extended documentation](https://github.com/Perry3Dnl/Unclaimable/blob/feature/1.0.0/platforms/dotnet/src/Unclaimable.Extended/README.NUGET.md)
+- [Unclaimable.AspNetCore documentation](https://github.com/Perry3Dnl/Unclaimable/blob/feature/1.0.0/platforms/dotnet/src/Unclaimable.AspNetCore/README.NUGET.md)
+- [Unclaimable.Email documentation](https://github.com/Perry3Dnl/Unclaimable/blob/feature/1.0.0/platforms/dotnet/src/Unclaimable.Email/README.NUGET.md)
+- [Unclaimable.Files documentation](https://github.com/Perry3Dnl/Unclaimable/blob/feature/1.0.0/platforms/dotnet/src/Unclaimable.Files/README.NUGET.md)
+- [Unclaimable.FluentValidation documentation](https://github.com/Perry3Dnl/Unclaimable/blob/feature/1.0.0/platforms/dotnet/src/Unclaimable.FluentValidation/README.NUGET.md)
+- [Main project README](https://github.com/Perry3Dnl/Unclaimable/blob/feature/1.0.0/README.md)
+- [Configuration guide](https://github.com/Perry3Dnl/Unclaimable/blob/feature/1.0.0/docs/CONFIGURATION.md)
+
+**Unclaimable v1.0.0 — One validation engine. Modular packages. Flexible policies. Built for .NET.**
