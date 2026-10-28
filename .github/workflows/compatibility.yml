@@ -49,6 +49,25 @@ jobs:
       - name: Run behavioral compatibility corpus
         run: dotnet test platforms/dotnet/tests/Unclaimable.Tests/Unclaimable.Tests.csproj --configuration Release
 
+      - name: Build independent 0.8.5 and 1.0.0 behavior consumers
+        run: |
+          dotnet build platforms/dotnet/compat/BehavioralDifferential/Baseline085/Baseline085.csproj --configuration Release
+          dotnet build platforms/dotnet/compat/BehavioralDifferential/Current100/Current100.csproj --configuration Release
+
+      - name: Differential-check default Core and Core plus Extended behavior against 0.8.5
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/compat
+          for mode in core extended; do
+            args=()
+            if [[ "$mode" == "extended" ]]; then args=(--extended); fi
+            dotnet run --project platforms/dotnet/compat/BehavioralDifferential/Baseline085/Baseline085.csproj --configuration Release --no-build --no-restore -- "${args[@]}" > "artifacts/compat/baseline-$mode.tsv"
+            dotnet run --project platforms/dotnet/compat/BehavioralDifferential/Current100/Current100.csproj --configuration Release --no-build --no-restore -- "${args[@]}" > "artifacts/compat/current-$mode.tsv"
+            diff -u "artifacts/compat/baseline-$mode.tsv" "artifacts/compat/current-$mode.tsv"
+            echo "Verified identical 0.8.5 and 1.0.0 decisions for $mode ($(wc -l < "artifacts/compat/current-$mode.tsv") inputs)."
+          done
+
       # Compare against the latest published 0.x version; also retain the frozen 0.8.0 default-behavior tests.
       - name: Validate core public API against latest published NuGet baseline (v0.8.5)
         run: dotnet pack platforms/dotnet/src/Unclaimable/Unclaimable.csproj --configuration Release --output artifacts/compat
