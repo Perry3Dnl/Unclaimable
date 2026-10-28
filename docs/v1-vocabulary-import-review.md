@@ -1,8 +1,7 @@
-# Unclaimable 1.0.0 dataset fit review for Unclaimable 1.0.0
+# Unclaimable v1.0.0 supplemental vocabulary review
 
-Source: `Perry3Dnl/Upstream vocabularyPro`, branch `release/1.1.0`, `Presets/rules.json`.
-Owner has authorized reuse of data. Check third-party provenance separately where applicable.
-Stage: `data/imports/unclaimable-v1-vocabulary.review.json`, not included as an embedded runtime dataset.
+Source: owner-authorized lexical data with source traceability retained in repository history. Continue third-party provenance review where applicable.
+Full staging area: `data/imports/unclaimable-v1-vocabulary.review.json`. It is not included in the runtime. A separately reviewed conservative subset is embedded in `Unclaimable.Extended/Vocabulary/identity.json` and only loaded by explicit `UseSupplementalIdentityData()` calls.
 
 ## Initial screening (2026-10-22)
 
@@ -34,8 +33,10 @@ Stage: `data/imports/unclaimable-v1-vocabulary.review.json`, not included as an 
 
 ## Compatibility decision
 
-**No staged entry is activated yet.** Existing v0.8.5 users, including those who enabled `UseExtendedData()`, must not silently get new username rejections when upgrading to 1.0.0. Merely adding a new category to Extended is insufficient if `UseExtendedData()` enables new categories by default.
+**410 vetted-by-structure identity candidates are available only through a new explicit opt-in API**: `options.UseSupplementalIdentityData()`. They represent six identity groups (70 official roles, 173 government names, 20 exchanges, 47 protocols, 54 wallets, 46 crypto projects), selected from 525 source entries with conservative length and common-word collision exclusions. They use `ReservedMatchMode.Exact` via Core, not a new matching engine. This first-pass curation is not a claim of linguistic or trademark verification for every name.
 
-Activation requires: (1) full normalized duplicate audit, (2) human-reviewed category and scope, (3) explicit opt-in semantics where new behavior is introduced, (4) acceptance/rejection differential corpus against v0.8.5, and (5) passing six-package CI plus package/API backward-compatibility checks.
+The remaining staged entries are not activated. Existing v0.8.5 users, including those who enabled `UseExtendedData()`, must not silently get new username rejections when upgrading to 1.0.0. Merely adding a new category to Extended is insufficient if `UseExtendedData()` enables new categories by default.
+
+Activation of further entries requires: (1) full normalized duplicate audit, (2) human-reviewed category and scope, (3) explicit opt-in semantics where new behavior is introduced, (4) acceptance/rejection differential corpus against v0.8.5, and (5) passing six-package CI plus package/API backward-compatibility checks.
 
 This report is an initial engineering fit review, **not** a claim that all 4,782 values have received individual linguistic validation.
