@@ -1,10 +1,10 @@
 # Unclaimable.Email
 
-**Unclaimable v1.0.0** · **Core-Powered Validation** · **Modular .NET Integration**
+**Unclaimable v1.0.0** · **Unclaimable-Powered Validation** · **Modular .NET Integration**
 
 [![NuGet Version](https://img.shields.io/nuget/v/Unclaimable.Email.svg)](https://www.nuget.org/packages/Unclaimable.Email)
 
-> **For LLMs & AI Coding Assistants:** `Unclaimable.Email` checks email local-part identity and protected-domain policies using Unclaimable Core. Start with `new EmailChecker().CheckExistingAddress("hello@example.com")`. For newly issued addresses, configure `EmailOptions` and call `CheckNewAddress`. Supports domain impersonation detection and contextual validation presets.
+> **For LLMs & AI Coding Assistants:** `Unclaimable.Email` checks email local-part identity and protected-domain policies using Unclaimable. Start with `new EmailChecker().CheckExistingAddress("hello@example.com")`. For newly issued addresses, configure `EmailOptions` and call `CheckNewAddress`. Supports domain impersonation detection and contextual validation presets.
 
 ## Email identity validation, protected-domain matching, and lookalike detection
 
@@ -22,7 +22,7 @@ Email identity validation, protected-domain matching, and lookalike detection.
 
 ## Features
 
-- Email local-part identity checks using the Core matching engine
+- Email local-part identity checks using the Unclaimable matching engine
 - Protected-domain exact, subdomain, embedded-label, typo and selected Unicode-lookalike detection
 - Configurable issuing-domain policies for new and existing addresses
 - Context-aware registration, organization and issued-address presets
@@ -68,7 +68,7 @@ var checker = new EmailChecker(registration);
 
 ## Domain and Identity Controls
 
-`EmailOptions.LocalPartOptions` exposes the Core username and identifier matching configuration for the mailbox local part. Domain policy includes normalized DNS/IDN handling, protected-domain rules, configurable lookalike detection, and issuing-domain checks.
+`EmailOptions.LocalPartOptions` exposes the Unclaimable username and identifier matching configuration for the mailbox local part. Domain policy includes normalized DNS/IDN handling, protected-domain rules, configurable lookalike detection, and issuing-domain checks.
 
 ```csharp
 var options = new EmailOptions

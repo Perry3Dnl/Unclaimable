@@ -37,10 +37,10 @@ Unclaimable is built for efficient, high-frequency validation with optimized mat
 | Validation metric | v1.0.0 benchmark |
 | :--- | ---: |
 | Ordinary accepted boolean validation | **0 B allocated** |
-| Core ordinary no-match check | **10.01 µs** |
-| Core + Extended ordinary no-match check | **9.46 µs** |
-| Core + Extended embedded matching | **4.90 µs** |
-| Core + Extended exact matching | **0.61 µs** |
+| Unclaimable ordinary no-match check | **10.01 µs** |
+| Unclaimable + Extended ordinary no-match check | **9.46 µs** |
+| Unclaimable + Extended embedded matching | **4.90 µs** |
+| Unclaimable + Extended exact matching | **0.61 µs** |
 | Detailed diagnostic match | **104 B allocated** |
 
 ---
@@ -204,24 +204,24 @@ bool allowed = checker.IsAllowed("annual_report_2026.pdf");
 
 ## Extensive Built-in Datasets
 
-Unclaimable combines curated Core datasets with optional Extended and supplemental identity vocabularies.
+Unclaimable combines curated Unclaimable datasets with optional Extended and supplemental identity vocabularies.
 
 | Dataset | Source entries |
 | :--- | ---: |
-| Core reserved-name datasets | **11,680** |
+| Unclaimable reserved-name datasets | **11,680** |
 | Extended datasets | **43,779** |
 | Supplemental identity vocabulary | **410** |
 | **Total source entries** | **55,869** |
 
 The Extended package adds 28 categories across 43 embedded JSON datasets, including companies, education, geography, entertainment, sports, professions, regional identities, multilingual profanity, and more.
 
-All Extended matching is performed through the Core validation engine. The totals are source-entry counts across the available datasets.
+All Extended matching is performed through the Unclaimable validation engine. The totals are source-entry counts across the available datasets.
 
 ## The Unclaimable Ecosystem
 
 | Package | Description |
 | :--- | :--- |
-| **Unclaimable** | Core username and identifier validation |
+| **Unclaimable** | Unclaimable username and identifier validation |
 | **Unclaimable.Extended** | Expanded multilingual and identity datasets |
 | **Unclaimable.AspNetCore** | Dependency injection and DataAnnotations |
 | **Unclaimable.Email** | Email identity and protected-domain validation |
@@ -230,7 +230,7 @@ All Extended matching is performed through the Core validation engine. The total
 
 ## Built for the .NET Ecosystem
 
-Unclaimable Core targets **.NET Standard 2.0**, supporting a broad range of modern .NET application platforms.
+Unclaimable targets **.NET Standard 2.0**, supporting a broad range of modern .NET application platforms.
 
 Validated application environments include ASP.NET Core, Blazor WebAssembly, .NET MAUI Android, Windows Forms, WPF, Avalonia, Uno Platform, Console applications, and Worker Services.
 

@@ -1,16 +1,16 @@
 # Unclaimable.FluentValidation
 
-**Unclaimable v1.0.0** · **Core-Powered Validation** · **Modular .NET Integration**
+**Unclaimable v1.0.0** · **Unclaimable-Powered Validation** · **Modular .NET Integration**
 
 [![NuGet Version](https://img.shields.io/nuget/v/Unclaimable.FluentValidation.svg)](https://www.nuget.org/packages/Unclaimable.FluentValidation)
 
-> **For LLMs & AI Coding Assistants:** `Unclaimable.FluentValidation` adds username and identifier checking to FluentValidation 12. Use `RuleFor(x => x.Username).NotEmpty().MustBeClaimable()` inside `AbstractValidator<T>`. The adapter supports application-provided `IChecker` instances and scoped Core policies.
+> **For LLMs & AI Coding Assistants:** `Unclaimable.FluentValidation` adds username and identifier checking to FluentValidation 12. Use `RuleFor(x => x.Username).NotEmpty().MustBeClaimable()` inside `AbstractValidator<T>`. The adapter supports application-provided `IChecker` instances and scoped Unclaimable policies.
 
-## FluentValidation 12 rules powered by the Unclaimable Core checker
+## FluentValidation 12 rules powered by the Unclaimable checker
 
 **Unclaimable.FluentValidation v1.0.0**
 
-FluentValidation 12 rules powered by the Unclaimable Core checker.
+FluentValidation 12 rules powered by the Unclaimable checker.
 
 ## Table of Contents
 
@@ -26,7 +26,7 @@ FluentValidation 12 rules powered by the Unclaimable Core checker.
 - Integration with existing FluentValidation validators
 - Reusable application-configured IChecker instances
 - Structured validation messaging and match-kind diagnostics
-- Core matching, language, sensitivity and reservation settings
+- Unclaimable matching, language, sensitivity and reservation settings
 - .NET 8 and FluentValidation 12 integration
 
 ## Get Started
@@ -73,9 +73,9 @@ public sealed class SignupValidator : AbstractValidator<Signup>
 ```
 
 
-## Core Integration
+## Unclaimable Integration
 
-Both rule extensions use the same Core validation pipeline and configured sensitivity, language, and reservation policies. `IChecker` can be supplied through application dependency injection.
+Both rule extensions use the same Unclaimable validation pipeline and configured sensitivity, language, and reservation policies. `IChecker` can be supplied through application dependency injection.
 
 ## Compatibility
 

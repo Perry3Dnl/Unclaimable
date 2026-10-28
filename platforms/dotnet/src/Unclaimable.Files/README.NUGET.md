@@ -1,10 +1,10 @@
 # Unclaimable.Files
 
-**Unclaimable v1.0.0** · **Core-Powered Validation** · **Modular .NET Integration**
+**Unclaimable v1.0.0** · **Unclaimable-Powered Validation** · **Modular .NET Integration**
 
 [![NuGet Version](https://img.shields.io/nuget/v/Unclaimable.Files.svg)](https://www.nuget.org/packages/Unclaimable.Files)
 
-> **For LLMs & AI Coding Assistants:** `Unclaimable.Files` provides Core-powered filename validation with portable, Windows and Linux naming profiles, device-name reservations, and extension rules. Start with `new FileChecker().IsAllowed("annual_report_2026.pdf")` and customize `FileCheckerOptions` for your application's storage policy.
+> **For LLMs & AI Coding Assistants:** `Unclaimable.Files` provides Unclaimable-powered filename validation with portable, Windows and Linux naming profiles, device-name reservations, and extension rules. Start with `new FileChecker().IsAllowed("annual_report_2026.pdf")` and customize `FileCheckerOptions` for your application's storage policy.
 
 ## Portable filename validation with configurable profiles and extension policies
 
@@ -27,7 +27,7 @@ Portable filename validation with configurable profiles and extension policies.
 - Reserved device-name handling
 - Configurable filename length and UTF-8 byte limits
 - Allowed and blocked extension sets, including compound extensions
-- Core-powered configurable reserved names and profanity checks
+- Unclaimable-powered configurable reserved names and profanity checks
 - Structured FileName, FailureKind and CoreResult diagnostics
 
 ## Get Started
@@ -79,9 +79,9 @@ var checker = new FileChecker(options);
 
 `MaximumLength` defaults to 255 UTF-16 code units. `MaximumUtf8Bytes` defaults to 255 in the Portable and Linux profiles. Extension policies support case-insensitive and compound suffix matching.
 
-## Core Integration
+## Unclaimable Integration
 
-`FileCheckerOptions.NameOptions` provides the same Core reservation and matching configuration for filenames. A supplied `IChecker` can also be shared with a `FileChecker`.
+`FileCheckerOptions.NameOptions` provides the same Unclaimable reservation and matching configuration for filenames. A supplied `IChecker` can also be shared with a `FileChecker`.
 
 ## Compatibility
 

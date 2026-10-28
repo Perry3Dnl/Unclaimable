@@ -74,10 +74,10 @@ Unclaimable is built for efficient, high-frequency validation with optimized mat
 | Validation metric | v1.0.0 benchmark |
 | :--- | ---: |
 | Ordinary accepted boolean validation | **0 B allocated** |
-| Core ordinary no-match check | **10.01 µs** |
-| Core + Extended ordinary no-match check | **9.46 µs** |
-| Core + Extended embedded matching | **4.90 µs** |
-| Core + Extended exact matching | **0.61 µs** |
+| Unclaimable ordinary no-match check | **10.01 µs** |
+| Unclaimable + Extended ordinary no-match check | **9.46 µs** |
+| Unclaimable + Extended embedded matching | **4.90 µs** |
+| Unclaimable + Extended exact matching | **0.61 µs** |
 | Detailed diagnostic match | **104 B allocated** |
 
 ## Validation Defaults

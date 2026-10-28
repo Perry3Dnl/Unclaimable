@@ -1,10 +1,10 @@
 # Unclaimable.AspNetCore
 
-**Unclaimable v1.0.0** · **Core-Powered Validation** · **Modular .NET Integration**
+**Unclaimable v1.0.0** · **Unclaimable-Powered Validation** · **Modular .NET Integration**
 
 [![NuGet Version](https://img.shields.io/nuget/v/Unclaimable.AspNetCore.svg)](https://www.nuget.org/packages/Unclaimable.AspNetCore)
 
-> **For LLMs & AI Coding Assistants:** `Unclaimable.AspNetCore` integrates the Unclaimable Core checker into ASP.NET Core applications. Register with `builder.Services.AddUnclaimable()` and validate models using `[ClaimableUsername]`. Application policy can be configured through the registration callback.
+> **For LLMs & AI Coding Assistants:** `Unclaimable.AspNetCore` integrates the Unclaimable checker into ASP.NET Core applications. Register with `builder.Services.AddUnclaimable()` and validate models using `[ClaimableUsername]`. Application policy can be configured through the registration callback.
 
 ## Dependency injection and DataAnnotations integration for Unclaimable
 
@@ -86,9 +86,9 @@ public sealed class AccountService
 
 Targets `net6.0`, `net7.0`, `net8.0`, `net9.0`, `net10.0`, and `net11.0` with the matching NuGet asset selected by the target application.
 
-## Core Policy Integration
+## Unclaimable Policy Integration
 
-The adapter uses the same Core `Options` object, matching pipeline, sensitivity settings, and scoped exceptions. Runtime character policies are accessible through the registered `IPolicy`.
+The adapter uses the same Unclaimable `Options` object, matching pipeline, sensitivity settings, and scoped exceptions. Runtime character policies are accessible through the registered `IPolicy`.
 
 ## Documentation
 

@@ -4,13 +4,13 @@
 
 [![NuGet Version](https://img.shields.io/nuget/v/Unclaimable.Extended.svg)](https://www.nuget.org/packages/Unclaimable.Extended)
 
-> **For LLMs & AI Coding Assistants:** `Unclaimable.Extended` provides curated, embedded identity and multilingual datasets for the Unclaimable Core validation engine. Add `options.UseExtendedData()` before constructing `new Checker(options)` to enable the 43,779-entry Extended snapshot. A separate 410-entry exact-only supplemental identity policy is enabled with `options.UseSupplementalIdentityData()`.
+> **For LLMs & AI Coding Assistants:** `Unclaimable.Extended` provides curated, embedded identity and multilingual datasets for the Unclaimable validation engine. Add `options.UseExtendedData()` before constructing `new Checker(options)` to enable the 43,779-entry Extended snapshot. A separate 410-entry exact-only supplemental identity policy is enabled with `options.UseSupplementalIdentityData()`.
 
-## 43,779 optional reserved-identity and multilingual vocabulary entries, powered by Unclaimable Core
+## 43,779 optional reserved-identity and multilingual vocabulary entries, powered by Unclaimable
 
 **Unclaimable.Extended v1.0.0**
 
-43,779 optional reserved-identity and multilingual vocabulary entries, powered by Unclaimable Core.
+43,779 optional reserved-identity and multilingual vocabulary entries, powered by Unclaimable.
 
 ## Table of Contents
 
@@ -26,7 +26,7 @@
 - 43,779 raw source entries in 28 categories across 43 JSON datasets
 - Companies, education, geography, sports, public figures, entertainment and regional identities
 - Multilingual slang, profanity and hate-speech vocabularies
-- Core-powered exact, compact, eligible partial, Unicode and obfuscation matching
+- Unclaimable-powered exact, compact, eligible partial, Unicode and obfuscation matching
 - Configurable Extended categories and exact allowed-identifier exceptions
 - Optional supplemental identity vocabulary with 410 exact-only entries
 
@@ -83,7 +83,7 @@ var checker = new Checker(options);
 | Supplemental exact-only identity vocabulary | **410** |
 | **Total optional Extended entries** | **44,189** |
 
-The standard snapshot is enabled explicitly through `UseExtendedData()`, while the supplemental identity policy is selected independently. All matching is performed by Core using its normal matching pipeline and configured sensitivity.
+The standard snapshot is enabled explicitly through `UseExtendedData()`, while the supplemental identity policy is selected independently. All matching is performed by Unclaimable using its normal matching pipeline and configured sensitivity.
 
 ## Dataset Provenance
 
@@ -91,7 +91,7 @@ The package includes source information and third-party notices in `data/SOURCES
 
 ## Compatibility
 
-Targets `netstandard2.0` and supports applications using Core across mobile, web, desktop, and server environments.
+Targets `netstandard2.0` and supports applications using Unclaimable across mobile, web, desktop, and server environments.
 
 ## Documentation
 
