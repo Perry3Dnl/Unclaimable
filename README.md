@@ -87,6 +87,45 @@ builder.Services.AddUnclaimable();
 
 `null` is accepted by Unclaimable so required-field validation remains a separate concern.
 
+## Optional 1.0.0 policy presets and identity protection
+
+The existing `new Options()` and `new Checker()` behavior remains unchanged. To opt into a
+specific application policy, choose a fresh preset explicitly:
+
+```csharp
+var usernameChecker = new Checker(ValidationPresets.Username());
+var displayNameChecker = new Checker(ValidationPresets.DisplayName());
+var organizationChecker = new Checker(ValidationPresets.OrganizationName());
+var gameTagChecker = new Checker(ValidationPresets.GameTag());
+```
+
+The `Username` preset retains existing defaults. `DisplayName` uses lengths 2–64 and
+disables the whitespace rule; `OrganizationName` uses 2–80 and disables that rule;
+`GameTag` uses 3–24 with ASCII-only input. Other built-in protections still apply.
+Presets are independent `Options` instances; none changes the global default.
+
+`Unclaimable.Extended` adds a **separately opt-in** supplemental identity vocabulary
+containing 410 conservatively screened names from government, official-role, and crypto
+identity groups. These reservations use Core `ReservedMatchMode.Exact` only:
+
+```csharp
+using Unclaimable;
+using Unclaimable.Extended;
+
+var options = new Options();
+options.UseSupplementalIdentityData();
+var checker = new Checker(options);
+```
+
+Installing Extended or calling `UseExtendedData()` does **not** automatically enable this
+supplemental vocabulary. Ordinary generic project words are deliberately excluded. Further
+staged vocabulary remains under review and is not loaded into the package.
+
+Use `PolicyConfigurationInspector.Inspect(options)` for optional non-mutating
+configuration review and `ValidationExplanation.Describe(checker.CheckDetailed(value))`
+for developer-oriented explanations of existing diagnostics. These optional helpers do not
+alter results or run on the ordinary boolean-check path.
+
 ## Default policy
 
 | Setting | Default |
