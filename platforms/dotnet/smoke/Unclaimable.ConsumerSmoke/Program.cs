@@ -36,6 +36,19 @@ var fluentFailure = (await fluentCustom.ValidateAsync("localbrandexample")).Erro
 Require(fluentFailure.ErrorMessage == "Exact:customcategory",
     "Packaged FluentValidation connector should resolve reason and category placeholders.");
 
+
+// The additive v1.0.0 presets and optional identity vocabulary must work from
+// the packed NuGet assemblies, not only from project-referenced tests.
+Require(ValidationPresets.Username().MinimumLength == 3, "Packaged default preset must preserve existing defaults.");
+Require(ValidationPresets.GameTag().AsciiOnly, "Packaged game-tag preset must be explicit ASCII-only.");
+var optionalIdentity = new Options().UseSupplementalIdentityData();
+var optionalIdentityResult = new Checker(optionalIdentity).Check("Bitfinex");
+Require(optionalIdentityResult.IsReserved
+    && optionalIdentityResult.Category == "identity-crypto-exchanges",
+    "Packaged optional identity data must be embedded and registered through Core.");
+Require(new Checker().IsClaimable("bluegarden"),
+    "Opt-in vocabulary cannot change default Core validation.");
+
 var checker = Checker.Default;
 
 Require(checker.Check("customersupport").Category == "support", "English support names should be reserved by default.");
