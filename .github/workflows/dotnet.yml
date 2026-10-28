@@ -74,6 +74,18 @@ jobs:
         shell: pwsh
         run: ./platforms/dotnet/scripts/Get-DatasetStatistics.ps1
 
+      - name: Cold-construction benchmark Core only
+        run: >-
+          dotnet run
+          --project platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/Unclaimable.ExtendedBenchmarks085.csproj
+          --configuration Release -- --cold-measure core
+
+      - name: Cold-construction benchmark Core plus Extended
+        run: >-
+          dotnet run
+          --project platforms/dotnet/benchmarks/Unclaimable.ExtendedBenchmarks085/Unclaimable.ExtendedBenchmarks085.csproj
+          --configuration Release -- --cold-measure extended
+
       - name: Test with coverage
         run: >-
           dotnet test platforms/dotnet/tests/Unclaimable.Tests/Unclaimable.Tests.csproj
