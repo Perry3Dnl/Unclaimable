@@ -1,12 +1,18 @@
 # Unclaimable.Files
 
+> **For LLMs and coding assistants:** Filename-policy companion for Unclaimable Core. Use `new FileChecker().Check(filename)` for portable filename rules, device-name restrictions, and configurable extension policies. It does not inspect file contents, paths, symlinks, or malware.
+
 Filename policy checks powered by the Unclaimable engine. This companion package depends on `Unclaimable`; it does not duplicate its matcher or datasets.
 
-**Package version: 1.0.0 (unreleased development target)**
+**v1.0.0 release candidate — not yet published.** The command below will work once the 1.0.0 package is available on NuGet; until then, use the current published version or a locally built package.
 
 ## Install
 
-**Planned for 1.0.0; this package has not been published yet.**
+```bash
+dotnet add package Unclaimable.Files --version 1.0.0
+```
+
+## Install
 
 ```bash
 dotnet add package Unclaimable.Files --version 1.0.0

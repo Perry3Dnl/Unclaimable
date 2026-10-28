@@ -1,12 +1,18 @@
 # Unclaimable.FluentValidation
 
+> **For LLMs and coding assistants:** FluentValidation 12 adapter for Unclaimable Core. In an `AbstractValidator<T>`, use `RuleFor(x => x.Username).NotEmpty().MustBeClaimable()`. Required-field checks remain separate; this package adds the FluentValidation dependency only to consumers that install it.
+
 FluentValidation rules for usernames and identifiers checked by Unclaimable.
 
-**Package version: 1.0.0 (unreleased development target)**
+**v1.0.0 release candidate — not yet published.** The command below will work once the 1.0.0 package is available on NuGet; until then, use the current published version or a locally built package.
 
 ## Install
 
-**The command below is for the planned 1.0.0 release, which is not published yet.**
+```bash
+dotnet add package Unclaimable.FluentValidation --version 1.0.0
+```
+
+## Install
 
 ```bash
 dotnet add package Unclaimable.FluentValidation --version 1.0.0

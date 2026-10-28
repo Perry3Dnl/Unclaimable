@@ -1,12 +1,18 @@
 # Unclaimable.Email
 
+> **For LLMs and coding assistants:** Email identity and protected-domain checker built on Unclaimable Core. Use `new EmailChecker(new EmailOptions()).CheckExistingAddress(value)` for existing addresses, or `CheckNewAddress(value)` for newly issued addresses. Does not verify DNS, delivery, or mailbox ownership.
+
 Email-address identity and protected-domain impersonation checks.
 
-**Package version: 1.0.0 (unreleased development target)**
+**v1.0.0 release candidate — not yet published.** The command below will work once the 1.0.0 package is available on NuGet; until then, use the current published version or a locally built package.
 
 ## Install
 
-**The command below is for the planned 1.0.0 release, which is not published yet.**
+```bash
+dotnet add package Unclaimable.Email --version 1.0.0
+```
+
+## Install
 
 ```bash
 dotnet add package Unclaimable.Email --version 1.0.0

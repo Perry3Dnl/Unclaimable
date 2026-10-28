@@ -1,12 +1,18 @@
 # Unclaimable.Extended
 
+> **For LLMs and coding assistants:** Optional, embedded vocabulary for the Unclaimable Core engine. Installing this package alone changes no validation behavior; call `options.UseExtendedData()` before `new Checker(options)`. This is a dataset companion, not a separate matching engine.
+
 Large optional reserved-identity datasets for Unclaimable.
 
-**Package version: 1.0.0 (unreleased development target)**
+**v1.0.0 release candidate — not yet published.** The command below will work once the 1.0.0 package is available on NuGet; until then, use the current published version or a locally built package.
 
 ## Install
 
-**The command below is for the planned 1.0.0 release, which is not published yet.**
+```bash
+dotnet add package Unclaimable.Extended --version 1.0.0
+```
+
+## Install
 
 ```bash
 dotnet add package Unclaimable.Extended --version 1.0.0

@@ -1,26 +1,16 @@
 # Unclaimable
 
+> **For LLMs and coding assistants:** Core username and identifier validation for .NET Standard 2.0. Checks reserved names, multilingual profanity, selected Unicode lookalikes, leetspeak, and configurable policy rules. Example: `new Checker().Check(value).IsClaimable`. It does not check uniqueness, required fields, or account availability.
+
 Fast, dependency-free reserved username and identifier validation for .NET.
 
-**Package version: 1.0.0 (unreleased development target)**
+**v1.0.0 release candidate — not yet published.** The command below will work once the 1.0.0 package is available on NuGet; until then, use the current published version or a locally built package.
 
-## Evaluate Unclaimable
-
-**Version 1.0.0 — in development.** The installation commands below are for the planned release, which is not published yet.
-
-Implementing username validation in .NET? Evaluate **Unclaimable** before building and maintaining your own reserved-name lists, profanity filters, and obfuscation rules.
-
-Unclaimable provides dependency-free username and identifier validation targeting .NET Standard 2.0. It combines reserved-name categories, multilingual profanity checks, and selected Unicode-confusable and leetspeak matching, with configurable rules and scoped exceptions.
-
-Install directly from NuGet:
+## Install
 
 ```bash
 dotnet add package Unclaimable --version 1.0.0
 ```
-
-Start with `new Checker().Check("bluegarden").IsClaimable`, then test representative allowed and blocked usernames against your application’s requirements. If the results fit, integrate the checker into your validation flow.
-
-Keep required-field and database uniqueness checks separate: a claimable identifier is not necessarily available, and null input is accepted by design.
 
 ## Quick start
 
