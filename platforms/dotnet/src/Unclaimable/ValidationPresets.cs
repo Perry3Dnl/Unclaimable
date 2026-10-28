@@ -17,7 +17,7 @@ public static class ValidationPresets
     {
         MinimumLength = 2,
         MaximumLength = 64
-    }.DisableRule(Rule.Whitespace);
+    }.DisableRule(Rule.Whitespace).AllowCharacters(" ");
 
     /// <summary>
     /// Returns an organization-name policy with a longer length range and
