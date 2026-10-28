@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Data/*.json" LogicalName="Unclaimable.Extended.Data.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="Vocabulary/identity.json" LogicalName="Unclaimable.Extended.Vocabulary.identity.json" />
     <None Include="README.NUGET.md" Pack="true" PackagePath="/" />
     <None Include="../../../../assets/unclaimable-icon.png" Pack="true" PackagePath="/" Link="unclaimable-icon.png" />
     <None Include="Data/SOURCES.md" Pack="true" PackagePath="data/" />
