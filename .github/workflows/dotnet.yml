@@ -63,7 +63,7 @@ jobs:
 
       - name: Upload lexical import audit
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: vocabulary-import-audit
           path: artifacts/vocabulary-import-audit.json
@@ -96,7 +96,7 @@ jobs:
 
       - name: Upload coverage report
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: unclaimable-coverage
           path: artifacts/coverage/**/coverage.cobertura.xml
@@ -162,7 +162,7 @@ jobs:
         run: ./platforms/dotnet/scripts/Test-Coverage.ps1 -ResultsPath ./artifacts/coverage -MinimumLineCoverage 98
 
       - name: Upload package artifacts
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: unclaimable-nuget-packages
           path: |
